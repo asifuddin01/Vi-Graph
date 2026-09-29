@@ -22,7 +22,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import DiagramNode from "@/components/editor/DiagramNode";
 import GroupNode from "@/components/editor/GroupNode";
 import Inspector from "@/components/editor/Inspector";
-import { ApiError, saveGraph, type DiagramGraph, type EditedGraph } from "@/lib/api";
+import {
+  ApiError,
+  downloadBlob,
+  EXPORT_EXTENSIONS,
+  exportGraph,
+  saveGraph,
+  type DiagramGraph,
+  type EditedGraph,
+  type ExportFormat,
+} from "@/lib/api";
 import {
   DIAGRAM_TYPES,
   edgeAppearance,
@@ -267,6 +276,20 @@ function Editor({ diagramId, original, edited, onSaved }: Props) {
     }
   }
 
+  async function exportAs(format: ExportFormat) {
+    try {
+      const blob = await exportGraph(fromFlow(nodes, edges, diagramType), format);
+      downloadBlob(blob, `vigraph-${diagramId.slice(0, 8)}.${EXPORT_EXTENSIONS[format]}`);
+      setSave({ kind: "notice", message: `Exported ${format.toUpperCase()}.` });
+    } catch (err) {
+      setSave({
+        kind: "error",
+        message: err instanceof Error ? err.message : "Export failed.",
+        problems: err instanceof ApiError ? err.problems : [],
+      });
+    }
+  }
+
   const singleNode = selectedNodes.length === 1 ? nodes.find((n) => n.id === selectedNodes[0]) : undefined;
   const edge = selectedEdge ? edges.find((e) => e.id === selectedEdge) : undefined;
 
@@ -301,11 +324,27 @@ function Editor({ diagramId, original, edited, onSaved }: Props) {
             </option>
           ))}
         </select>
+        <select
+          aria-label="Export"
+          value=""
+          disabled={nodes.length === 0}
+          onChange={(e) => {
+            if (e.target.value) void exportAs(e.target.value as ExportFormat);
+          }}
+          className="ml-auto rounded border border-zinc-300 bg-white px-1.5 py-1 text-xs disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900"
+        >
+          <option value="">Export…</option>
+          <option value="svg">SVG</option>
+          <option value="png">PNG</option>
+          <option value="pdf">PDF</option>
+          <option value="json">JSON</option>
+          <option value="mermaid">Mermaid</option>
+        </select>
         <button
           type="button"
           onClick={() => void saveNow()}
           disabled={!dirty || nodes.length === 0 || save.kind === "saving"}
-          className="ml-auto rounded-md bg-zinc-900 px-3 py-1 text-xs font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+          className="rounded-md bg-zinc-900 px-3 py-1 text-xs font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
         >
           {save.kind === "saving" ? "Saving…" : "Save"}
         </button>

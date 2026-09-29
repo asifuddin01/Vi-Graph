@@ -10,6 +10,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
+# Graphviz renders the SVG/PNG/PDF exports (§28); without it only JSON/Mermaid export.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends graphviz fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /srv
 
 COPY requirements.txt ./

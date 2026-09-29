@@ -151,6 +151,36 @@ export async function saveGraph(
   return (await res.json()) as EditedGraph;
 }
 
+export type ExportFormat = "svg" | "png" | "pdf" | "json" | "mermaid";
+
+export const EXPORT_EXTENSIONS: Record<ExportFormat, string> = {
+  svg: "svg",
+  png: "png",
+  pdf: "pdf",
+  json: "json",
+  mermaid: "mmd",
+};
+
+/** Render/serialize a graph on the server (spec §28 POST /api/export). */
+export async function exportGraph(graph: DiagramGraph, format: ExportFormat): Promise<Blob> {
+  const res = await fetch(`${API_BASE_URL}/api/export`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ graph, format }),
+  });
+  if (!res.ok) throw await apiError(res);
+  return res.blob();
+}
+
+export function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 async function apiError(res: Response): Promise<ApiError> {
   const fallback = `Request failed (HTTP ${res.status})`;
   try {

@@ -193,7 +193,7 @@ def analyze(
 
 @router.get("/analyses/{diagram_id}", response_model=AnalyzeResponse)
 def get_analysis(diagram_id: str, runs: RunStoreDep) -> AnalyzeResponse:
-    record = _find(runs, diagram_id)
+    record = find_analysis(runs, diagram_id)
     return to_response(record, cached=False, edited=runs.latest_graph_version(record.id))
 
 
@@ -205,7 +205,7 @@ class SaveGraphRequest(BaseModel):
 @router.put("/analyses/{diagram_id}/graph", response_model=EditedGraphView)
 def save_graph(diagram_id: str, body: SaveGraphRequest, runs: RunStoreDep) -> EditedGraphView:
     """Save an edited graph as the analysis's next version (§11 "save edited structure")."""
-    record = _find(runs, diagram_id)
+    record = find_analysis(runs, diagram_id)
     graph, problems = validate_graph(body.graph)
     if graph is None:
         raise HTTPException(status_code=422, detail=problems)
@@ -218,7 +218,7 @@ def save_graph(diagram_id: str, body: SaveGraphRequest, runs: RunStoreDep) -> Ed
     return to_edited_view(runs.save_graph_version(record.id, graph, layout))
 
 
-def _find(runs: RunStoreDep, diagram_id: str) -> AnalysisRecord:
+def find_analysis(runs: RunStoreDep, diagram_id: str) -> AnalysisRecord:
     record = runs.get(diagram_id) if _DIAGRAM_ID.fullmatch(diagram_id) else None
     if record is None:
         raise HTTPException(status_code=404, detail="analysis not found")

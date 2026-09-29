@@ -16,8 +16,9 @@ Diagram image → VLM → structured JSON → validate / normalize / repair
              → topology-aware question answering
 ```
 
-> **Status:** Phase 1 complete — upload a diagram and get a validated, versioned JSON graph
-> (with retry/repair and full run logging). Graph editing, Mermaid, and QA come next. See
+> **Status:** Phases 1–2 complete — upload a diagram, get a validated, versioned JSON graph
+> (with retry/repair and run logging), edit it interactively, and export it as JSON,
+> Mermaid, SVG, PNG, or PDF. Question answering comes next. See
 > [`CLAUDE.md`](CLAUDE.md) for current status and [`docs/SPEC.md`](docs/SPEC.md) for the
 > full specification.
 
@@ -72,12 +73,17 @@ VIGRAPH_VLM_BACKEND=hf VIGRAPH_VLM_DTYPE=float16 ../.venv/bin/python -m app.vlm 
 
 `python -m app.vlm` prints the raw model output and its reproducibility metadata.
 
+SVG/PNG/PDF export needs [Graphviz](https://graphviz.org/) (`apt install graphviz` /
+`brew install graphviz`); without it, JSON and Mermaid export still work.
+
 ### API
 
 | Endpoint                   | Purpose                                                        |
 | -------------------------- | -------------------------------------------------------------- |
 | `POST /api/analyze`        | Multipart `file` (PNG/JPEG/WebP) → graph, status, raw outputs  |
-| `GET /api/analyses/{id}`   | A stored analysis                                              |
+| `GET /api/analyses/{id}`   | A stored analysis (with its latest saved edit)                 |
+| `PUT /api/analyses/{id}/graph` | Save an edited graph as a new version                      |
+| `POST /api/export`         | `json`, `mermaid`, `svg`, `png`, `pdf` of an analysis or graph |
 | `GET /health`              | Liveness + active VLM backend                                  |
 
 Every analysis is logged to `$VIGRAPH_STORAGE_DIR/vigraph.sqlite3` with the model revision,

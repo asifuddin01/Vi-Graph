@@ -7,18 +7,18 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 2 — Graph reconstruction (in progress, step 3 of 4 done). Phase 1 complete.
-Last completed: Phase 2 step 3 — React Flow editor (frontend/components/editor/) + graph
-  versions backend; 371 backend + 12 frontend (vitest) tests; editor verified end-to-end in
-  Chromium (19 checks: rename, retype, add, connect, edge edit, delete, group, save, server
-  validation, reset, persistence).
+Phase: 2 COMPLETE (milestone met: image → editable graph, with Mermaid + exports).
+  Phase 3 (multimodal QA) starts next.
+Last completed: Phase 2 step 4 — exports: POST /api/export (json, mermaid, svg, png, pdf)
+  via Graphviz (backend/app/exporters/graphviz.py) + editor Export menu. 398 backend + 12
+  frontend tests; all 5 formats verified as real downloads in Chromium.
 Phase 2 plan (in order):
   1. [done] build_graph + §9 queries (predecessors/successors/sources/sinks/paths/parallel
      branches/group members/flatten) + validate_graph diagnostics
   2. [done] Mermaid generation (edge labels, subgraphs from group_id, escaping) + API field
   3. [done] React Flow editor (move/rename/add/delete nodes+edges, edge labels, types,
      group/ungroup, inspect, reset, save) + backend save endpoint
-  4. Exports (§28 POST /api/export: json, mermaid, svg, png, pdf)
+  4. [done] Exports (§28 POST /api/export: json, mermaid, svg, png, pdf)
 Phase 1 plan (do in order, one at a time):
   1. [done] Schema v2 Pydantic models + validation tests (§7, §8 Stage C reject list)
   2. [done] Thin VLM interface + mock backend (backend/app/vlm/), single swap point (§33.3)
@@ -33,7 +33,17 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 2 step 4 — exports (§28 POST /api/export: json, mermaid, svg, png, pdf).
+Next up: Phase 3 — step 1 question router (§12.1, rule-based) + graph query answers.
+Export decisions (Phase 2 step 4):
+  - POST /api/export {format, diagram_id | graph, source: latest|original}. A posted graph
+    is validated (422 lists problems) — the editor exports the canvas as-is, unsaved edits
+    included. Generated filenames only; nosniff header.
+  - SVG/PNG/PDF via Graphviz `dot` subprocess (no shell, 20 s timeout, ≤500 nodes). DOT ids
+    generated; labels escaped incl. Graphviz's \N/\G/\n escapes — 25 adversarial labels
+    verified literal in real SVG output. Groups → nested clusters; edges to a group use an
+    invisible anchor + lhead/ltail. PNG at 144 dpi.
+  - Graphviz is optional (§6): without `dot`, svg/png/pdf → 501; json/mermaid still work.
+    Installed here via apt; backend Dockerfile installs graphviz + fonts-dejavu-core.
 Editor decisions (Phase 2 step 3):
   - Edits saved via PUT /api/analyses/{id}/graph as numbered versions (graph_versions
     table, DB schema v2) + editor layout; the model's reconstruction is never overwritten.
@@ -194,6 +204,9 @@ Known issues / TODOs:
   - Public demo: uploads/runs are kept indefinitely; add temporary storage + cleanup
     before a public deployment (§29).
   - Rate limiting is in-process (per worker); fine for a single-process demo.
+  - UNVERIFIED: the backend Dockerfile's new graphviz apt layer was not built here (Docker
+    Hub returned 429 rate limit for python:3.11-slim). Standard apt line; build it where
+    Docker Hub is reachable.
   - Matching threshold sensitivity (§38 Limitations): edit distance rates short labels as
     close — "Encoder"/"Decoder" 0.714, "Conv 3x3"/"Conv 1x1" 0.75, "Zeta"/"Beta" 0.75 all
     clear 0.70 when types agree. Calibrate against hand-labeled real diagrams (Phase 5/7)
