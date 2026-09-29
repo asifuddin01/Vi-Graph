@@ -7,13 +7,9 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 1 COMPLETE (milestone met: image → valid graph JSON incl. retry/repair, shown in
-  the UI). Next: node/edge matching (§20.1), then Phase 2.
-Last completed: Phase 1 step 9 — POST /api/analyze + GET /api/analyses/{id}
-  (backend/app/api/analyze.py), upload limits + rate limit (api/limits.py), image store,
-  frontend upload workbench (components/AnalyzeWorkbench.tsx, ResultPanel.tsx). 295 tests
-  passing; verified end-to-end in headless Chromium (upload → Valid, cache hit on repeat,
-  server rejects disguised non-image, client rejects .txt).
+Phase: 1 COMPLETE; node/edge matching (§20.1, §42 item 4) done. Phase 2 starts next.
+Last completed: evaluation/metrics/matching.py — matching v1 (see Static conventions);
+  320 tests passing (evaluation/tests/ now collected too).
 Phase 1 plan (do in order, one at a time):
   1. [done] Schema v2 Pydantic models + validation tests (§7, §8 Stage C reject list)
   2. [done] Thin VLM interface + mock backend (backend/app/vlm/), single swap point (§33.3)
@@ -28,11 +24,9 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: node/edge matching algorithm (evaluation/metrics/matching.py, §20.1). §42 puts
-  it (item 4) before Mermaid (item 5) and says not to reverse that order; it is small and
-  self-contained, so it goes at the Phase 1/2 boundary. Then Phase 2: NetworkX graph layer
-  (§9 functions incl. group support) → Mermaid (edge labels, subgraphs, escaping) → React
-  Flow editor → exports (§28).
+Next up: Phase 2 — step 1 NetworkX graph layer (backend/app/graph/, §9 functions incl.
+  group support) → step 2 Mermaid (edge labels, subgraphs, escaping) → step 3 React Flow
+  editor → step 4 exports (§28: json, mermaid, svg, png, pdf).
 API decisions (Phase 1 step 9):
   - POST /api/analyze: multipart "file" (+ optional "model", must equal the served model
     id). Response = §28 shape {diagram_id, graph, mermaid (null until Phase 2), metrics,
@@ -156,6 +150,10 @@ Known issues / TODOs:
   - Public demo: uploads/runs are kept indefinitely; add temporary storage + cleanup
     before a public deployment (§29).
   - Rate limiting is in-process (per worker); fine for a single-process demo.
+  - Matching threshold sensitivity (§38 Limitations): edit distance rates short labels as
+    close — "Encoder"/"Decoder" 0.714, "Conv 3x3"/"Conv 1x1" 0.75, "Zeta"/"Beta" 0.75 all
+    clear 0.70 when types agree. Calibrate against hand-labeled real diagrams (Phase 5/7)
+    and report a threshold sweep.
 ```
 
 ## Static conventions
@@ -163,9 +161,15 @@ Known issues / TODOs:
 - **Names:** package/repo/paths `vigraph`; display name **Vi-Graph**.
 - **Schema version in effect:** `"2.0"` (§7). Pinned in `backend/app/schemas/`. Every graph
   carries `schema_version`; unknown versions are rejected.
-- **Node/edge matching (§20.1):** lives in `evaluation/metrics/matching.py`. Similarity
-  function and threshold are **not yet locked** (spec suggests 0.7). Once chosen, they are
-  a versioned, project-defining constant — record the decision here.
+- **Node/edge matching (§20.1) — LOCKED as matching v1** in `evaluation/metrics/matching.py`
+  (`MATCHING_VERSION = "1"`; `matching_config()` reports it with library versions):
+  label similarity = rapidfuzz normalized Levenshtein on NFC + whitespace-collapsed +
+  casefolded labels; ±0.05 type bonus/penalty, clipped to [0, 1]; THRESHOLD 0.70 (spec
+  default, not yet calibrated on real data); Hungarian assignment with a 0.01 × neighbourhood
+  (pred/succ label multiset-Jaccard) tie-break — without it, a perfect prediction of a chain
+  with repeated "Conv 3x3" labels scored edge F1 0.0. Edges: directed, each GT edge claimed
+  once; strict variant also requires relation. Changing ANY of this = bump MATCHING_VERSION
+  and record why here.
 - **Non-negotiables:**
   - Never train on the test set; keep one untouched benchmark set.
   - Never silently repair or normalize model output — every correction is logged (§8 C/D).
