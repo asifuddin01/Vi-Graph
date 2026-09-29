@@ -198,8 +198,8 @@ Known issues / TODOs:
     inference where HF is reachable (or allow huggingface.co in the environment settings).
   - Docker builds inside this sandbox need the agent-proxy CA injected (verify-only, not
     committed). The committed Dockerfiles are standard and need no changes elsewhere.
-  - §44.2 badge text says "node 18+"; Next 16 requires Node >= 20.9 — use that when badges
-    are added (Phase 2).
+  - README badges added at Phase 2 (§44.2), with Node 20.9+ (not the spec's 18+). Replace the
+    "research in progress" badge with a CI build badge once CI exists.
   - frontend/app/favicon.ico is still the Next.js default.
   - Public demo: uploads/runs are kept indefinitely; add temporary storage + cleanup
     before a public deployment (§29).

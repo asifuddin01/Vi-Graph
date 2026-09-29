@@ -1,5 +1,12 @@
 # Vi-Graph
 
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Python](https://img.shields.io/badge/python-3.11%2B-blue)
+![Node](https://img.shields.io/badge/node-20.9%2B-green)
+![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688)
+![Next.js](https://img.shields.io/badge/frontend-Next.js-black)
+![Status](https://img.shields.io/badge/status-research%20in%20progress-yellow)
+
 **Vision-language diagram understanding, graph reconstruction, and multimodal reasoning.**
 
 Vi-Graph takes a diagram image (a neural-network architecture, ML pipeline, flowchart,
