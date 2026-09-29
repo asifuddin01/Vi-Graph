@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from PIL import Image
 
 from app.qa.engine import answer_question
@@ -138,3 +139,70 @@ def test_empty_model_reply_is_reported() -> None:
     result = answer_question("What color is it?", spec(), vlm=RecordingVLM("  "), image=image())
 
     assert result.answer == "The model returned no answer."
+
+
+def labelled(*labels: str) -> DiagramGraph:
+    nodes = [{"id": f"n{i}", "label": label, "type": "module"} for i, label in enumerate(labels, 1)]
+    edges = [
+        {"source": f"n{i}", "target": f"n{i + 1}", "relation": "flows_to"}
+        for i in range(1, len(labels))
+    ]
+    return DiagramGraph.model_validate(
+        {"schema_version": "2.0", "diagram_type": "flowchart", "nodes": nodes, "edges": edges}
+    )
+
+
+@pytest.mark.parametrize(
+    ("question", "intent"),
+    [
+        # Words inside labels must not pick the intent.
+        ("What comes after Merge Features?", "successors"),
+        ("What feeds into Color Jitter?", "predecessors"),
+        ("Is there a path from Load Data to Merge Features?", "paths"),
+        ("What comes after the Output Split?", "successors"),
+        # When the label was the only cue, the unmasked question is routed.
+        ("What is the output?", "sinks"),
+        # Generic mentions carry the intent and stay.
+        ("What is the input?", "sources"),
+        # A one-word keyword label after a named node or a plural subject is the verb...
+        ("Where do the branches from Transform merge?", "common_successor"),
+        ("Where do the branches from Merge merge?", "common_successor"),
+        ("Which nodes merge information?", "fan_in"),
+        # ...anywhere else it is the node.
+        ("What comes after Merge?", "successors"),
+        ("Is there a path from Merge to Output?", "paths"),
+        ("Is there a path from Merge to Load Data?", "paths"),
+        # A repeated label (two nodes named Load Data) is masked once.
+        ("Where do the branches from Load Data merge?", "common_successor"),
+    ],
+)
+def test_labels_are_masked_when_routing(question: str, intent: str) -> None:
+    diagram = labelled(
+        "Load Data",
+        "Color Jitter",
+        "Merge Features",
+        "Output Split",
+        "Transform",
+        "Merge",
+        "Output",
+        "Load Data",
+    )
+
+    result = answer_question(question, diagram, vlm=None, image=None)
+
+    assert result.route.intent == intent
+
+
+def test_masked_routing_answers_from_the_graph() -> None:
+    diagram = labelled("Load Data", "Merge Features", "Report")
+
+    result = answer_question("What comes after Merge Features?", diagram, vlm=None, image=None)
+
+    assert result.source == "graph"
+    assert result.answer == "After Merge Features, the flow goes to Report."
+
+
+def test_without_a_graph_the_question_is_routed_as_asked() -> None:
+    result = answer_question("What comes after Merge Features?", None, vlm=None, image=None)
+
+    assert result.route.intent == "fan_in"

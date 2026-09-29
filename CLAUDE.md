@@ -7,16 +7,16 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 5 — Evaluation framework (in progress, step 1 of 5 done). Phases 1–4 complete
+Phase: 5 — Evaluation framework (in progress, step 2 of 5 done). Phases 1–4 complete
   (usable product + synthetic dataset).
-Last completed: Phase 5 step 1 — per-sample scores + automatic error taxonomy
-  (evaluation/metrics/scores.py, errors.py); 607 tests passing.
+Last completed: Phase 5 step 2 — structural QA benchmark (evaluation/metrics/
+  structural_qa.py) + QA routing fixes it exposed; 653 tests passing.
 Phase 5 plan (in order):
   1. [done] Per-sample scores v1: validity (first-attempt, bare JSON, post-repair), node/edge
      P/R/F1 (loose/strict), graph similarity, label accuracy/CER/WER, edge text,
      grouping, diagram type; automatic §23 taxonomy (all types but 9)
-  2. Structural QA benchmark (§20.7): questions generated from the ground truth, answered
-     on the predicted graph
+  2. [done] Structural QA benchmark (§20.7): questions generated from the ground truth,
+     answered on the predicted graph
   3. Evaluation runner: dataset split → pipeline (any VLM backend) → predictions +
      per-sample scores → run directory with §18.1 metadata + split hash; resumable
      (Colab); aggregates (macro + micro; by level / diagram type / layout), latency
@@ -65,7 +65,25 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 5 step 2 — structural QA benchmark.
+Next up: Phase 5 step 3 — evaluation runner.
+Structural QA decisions (Phase 5 step 2):
+  - QA_BENCHMARK_VERSION = "1" (evaluation/metrics/structural_qa.py; definition in its
+    docstring). ≤1 question per kind per graph, seeded by sample id, only about nodes with
+    unique labels: successors, predecessors, sources, sinks, path_exists (one reachable,
+    one unreachable), count_nodes (non-group), count_edges, group_members, merge_point.
+    synthetic-v1: 25,698 questions (~9 per graph).
+  - Answers computed with app.graph topology functions; entities resolved and answer nodes
+    mapped through the §20.1 assignment (structure only — labels are scored elsewhere);
+    exact equality of GT-id sets / bool / int (bool never equals a count).
+  - Each question has NL text + the router intent it is phrased for (for a later
+    end-to-end QA eval); all 25,698 route correctly.
+  - Router/engine fixes found by it (Phase 3 code): "inputs of the diagram" → sources (was
+    predecessors); count_edges before neighbors ("How many connections…"); the engine
+    routes with named nodes masked (route_with_mentions) so label words can't pick the
+    intent — one-word keyword labels ("Merge") stay words after a named node or plural
+    subject; falls back to the unmasked question if masked is unknown. Entity linking:
+    a fuzzy match loses to an exact match of another label on the same words
+    ("Transform" ≠ "Transform 2"). Routing on the benchmark: 25,076 → 25,698 / 25,698.
 Scores decisions (Phase 5 step 1):
   - SCORES_VERSION = "1" in evaluation/metrics/scores.py pins every definition (full text in
     its docstring); changing one = bump + record here. Built on matching v1 (unchanged;

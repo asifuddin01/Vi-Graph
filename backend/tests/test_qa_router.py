@@ -39,6 +39,11 @@ MORE_EXAMPLES = [
     ("What does this diagram show?", "explanation", "explain_flow"),
     ("How does Input Image reach Classifier?", "structural", "paths"),
     ("What comes after the Output Layer?", "direct", "successors"),
+    # Found by the structural QA benchmark (Phase 5): whole-diagram inputs, edge counts.
+    ("What are the inputs of the diagram?", "direct", "sources"),
+    ("What are the inputs to this model?", "direct", "sources"),
+    ("How many connections are there?", "direct", "count_edges"),
+    ("How many nodes are connected to Fusion?", "structural", "neighbors"),
 ]
 
 

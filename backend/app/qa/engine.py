@@ -1,6 +1,7 @@
 """Question answering over a reconstructed diagram (spec §12.1 routing procedure).
 
-1. Route the question (``router``) and find the nodes it mentions (``entities``).
+1. Find the nodes the question mentions (``entities``) and route it (``router``) with
+   those names masked, so words inside labels can't hijack the intent.
 2. Direct / structural / comparative / explanation → answered from the graph alone.
 3. Visual → the VLM answers from the image, with the graph as context.
 4. Mixed ("why") → the graph answers the topological part; the VLM adds the reason.
@@ -20,7 +21,7 @@ from pydantic import BaseModel
 
 from app.graph import build_graph
 from app.qa.answers import GraphAnswer, Grounding, answer_from_graph
-from app.qa.entities import find_mentions, unique_nodes
+from app.qa.entities import Mention, find_mentions, normalize, unique_nodes
 from app.qa.router import Route, route_question
 from app.schemas import DiagramGraph
 from app.vlm.base import DecodingParams, VLMBackend, VLMOutput
@@ -50,6 +51,41 @@ class QAResult(BaseModel):
     prompt_sha256: str | None = None
 
 
+def route_with_mentions(question: str, mentions: list[Mention]) -> Route:
+    """Route with the named nodes masked out, so words inside labels can't pick the intent
+    ("What comes after Merge Features?" is a successors question, not a fan-in one).
+
+    - Generic mentions ("the input") are kept: they carry the intent.
+    - A keyword mention — a one-word label that routes by itself, like "Merge" or "Split" —
+      is read as the word, not the node, when it directly follows another named node or a
+      plural subject: in "Where do the branches from Transform merge?", "merge" is the verb
+      even if a node is called Merge; in "Is there a path from Merge to X?" it is the node.
+    - When the masked question matches no rule (the label was the only cue, as in "What is
+      the output?" about a node labeled "Output"), the question is routed as asked.
+    """
+    text = normalize(question)
+    # Distinct spans: a repeated label gives several mentions of the same words.
+    spans = sorted({(m.start, m.end) for m in mentions if m.how != "generic"})
+    masked: list[tuple[int, int]] = []
+    for index, (start, end) in enumerate(spans):
+        before = text[:start].rstrip()
+        after_node = index > 0 and len(before) == spans[index - 1][1]
+        after_subject = before.rsplit(" ", 1)[-1] in _SUBJECTS
+        if not (_is_keyword(text[start:end]) and (after_node or after_subject)):
+            masked.append((start, end))
+    for start, end in reversed(masked):
+        text = f"{text[:start]}x{text[end:]}"
+    route = route_question(text)
+    return route if route.intent != "unknown" else route_question(question)
+
+
+_SUBJECTS = {"branches", "paths", "nodes", "flows", "streams", "they", "both"}
+
+
+def _is_keyword(span: str) -> bool:
+    return len(span.split()) == 1 and route_question(span).intent != "unknown"
+
+
 def answer_question(
     question: str,
     diagram: DiagramGraph | None,
@@ -65,6 +101,7 @@ def answer_question(
         graph = build_graph(diagram)
         mentions = find_mentions(question, diagram, graph)
         mentioned = unique_nodes(mentions)
+        route = route_with_mentions(question, mentions)
         graph_answer = answer_from_graph(route.intent, diagram, graph, mentions)
 
     def result(answer: str, source: AnswerSource, **extra: object) -> QAResult:

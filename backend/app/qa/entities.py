@@ -111,8 +111,12 @@ def _longest_non_overlapping(candidates: list[Mention]) -> list[Mention]:
     kept: list[Mention] = []
     for mention in ordered:
         overlaps = [k for k in kept if mention.start < k.end and k.start < mention.end]
-        # Same span as a kept mention (a repeated label): keep it too; otherwise it loses.
-        if not overlaps or all((k.start, k.end) == (mention.start, mention.end) for k in overlaps):
+        # Same span and match kind as a kept mention (a repeated label): keep it too. A fuzzy
+        # match on words that exactly name another node loses ("Transform" is not
+        # "Transform 2" when a node called Transform exists).
+        if not overlaps or all(
+            (k.start, k.end, k.how) == (mention.start, mention.end, mention.how) for k in overlaps
+        ):
             kept.append(mention)
     unique = {(m.node_id, m.start): m for m in kept}
     return sorted(unique.values(), key=lambda m: (m.start, m.node_id))

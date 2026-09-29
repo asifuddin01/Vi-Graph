@@ -102,17 +102,24 @@ _RULES: list[tuple[Category, str, str]] = [
     ),
     ("structural", "cycles", r"\bcycles?\b|\bcyclic\b|\bloops?\b|\bfeedback\b|\brecurren\w*"),
     (
-        "structural",
-        "neighbors",
-        r"\bconnect(ed|s|ion|ions)?\b|\bneighbou?rs?\b|\blinked\b|\badjacent\b|\bwired\b",
-    ),
-    (
         "direct",
         "count_edges",
         r"\bhow many\b.*\b(edges?|connections?|arrows?|links?)\b"
         r"|\bnumber of (edges|connections|arrows|links)\b",
     ),
+    (
+        "structural",
+        "neighbors",
+        r"\bconnect(ed|s|ion|ions)?\b|\bneighbou?rs?\b|\blinked\b|\badjacent\b|\bwired\b",
+    ),
     ("direct", "count_nodes", r"\bhow many\b|\bnumber of\b|\bcount\b"),
+    # "inputs of the diagram" is about the whole diagram, not one node's predecessors.
+    (
+        "direct",
+        "sources",
+        r"\binputs? (of|to|for) (the|this) (diagram|graph|figure|model|pipeline|network|system"
+        r"|workflow|flowchart|architecture)\b",
+    ),
     (
         "direct",
         "predecessors",

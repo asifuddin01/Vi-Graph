@@ -85,3 +85,20 @@ def test_generic_words_do_not_override_named_nodes() -> None:
 
 def test_no_mentions() -> None:
     assert mentions("What comes after it?", spec()) == []
+
+
+def test_an_exact_label_beats_fuzzy_matches_of_similar_labels() -> None:
+    diagram = DiagramGraph.model_validate(
+        {
+            "schema_version": "2.0",
+            "diagram_type": "data_pipeline",
+            "nodes": [
+                {"id": "a", "label": "Transform", "type": "module"},
+                {"id": "b", "label": "Transform 2", "type": "module"},
+            ],
+            "edges": [{"source": "a", "target": "b", "relation": "flows_to"}],
+        }
+    )
+
+    assert mentions("What comes after Transform?", diagram) == [("a", "exact")]
+    assert mentions("What comes after Transform 2?", diagram) == [("b", "exact")]
