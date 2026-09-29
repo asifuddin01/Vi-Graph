@@ -1,0 +1,47 @@
+# QLoRA fine-tuning of a compact VLM on a Colab T4 (16 GB, fp16 — no bf16).
+# Spec §18. Every value here is logged with the run (training_run.json).
+# Don't treat these as tuned: benchmark memory/stability first (the notebook's smoke run).
+
+run_name: qwen3vl-2b-qlora-v1
+seed: 0
+
+model:
+  id: Qwen/Qwen3-VL-2B-Instruct
+  revision: null            # null = latest; the resolved commit hash is logged
+
+data:
+  dataset: synthetic-v1      # built in Colab with python -m data.generator build
+  train_split: train
+  eval_split: val
+  eval_samples: 48           # val prefix for periodic eval loss (stratified: multiple of 28 is ideal)
+  image_max_side: 1024       # Stage A downscale limit, the same at inference (§24B variable)
+  train_limit: null          # null = the whole split; the smoke run sets a small number
+
+quantization:                # 4-bit NF4 weights, fp16 compute (T4 has no bf16)
+  load_in_4bit: true
+  quant_type: nf4
+  double_quant: true
+  compute_dtype: float16
+
+lora:                        # language-model projections only; the vision tower stays frozen
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+optimization:
+  epochs: 2
+  micro_batch_size: 1
+  gradient_accumulation_steps: 16
+  learning_rate: 1.0e-4
+  lr_scheduler: cosine
+  warmup: 0.03               # fraction of total steps
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  optimizer: paged_adamw_8bit
+
+checkpointing:               # to Google Drive, so a disconnect loses at most save_steps steps
+  save_steps: 20             # optimizer steps (= 20 × 16 samples)
+  save_total_limit: 3
+  eval_steps: 40
+  logging_steps: 5

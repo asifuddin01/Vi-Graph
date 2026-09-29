@@ -1,0 +1,4 @@
+# Colab T4 training (QLoRA). Installed by the training notebook; never needed by the app.
+-r requirements-vlm.txt
+bitsandbytes>=0.50,<1.0   # 4-bit NF4 weights + paged 8-bit AdamW
+pyyaml>=6.0,<7.0
