@@ -7,13 +7,23 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 5 — Evaluation framework (next). Phases 1–4 complete (usable product + synthetic
-  dataset).
-Last completed: Phase 4 step 3 — dataset builder CLI, held-out splits, manifest
-  (data/generator/dataset.py, __main__.py); 572 tests passing.
-Phase 5 plan (in order): to be written at the start of Phase 5 (§20: JSON validity,
-  node/edge P/R/F1 via matching v1, label accuracy, graph similarity, structural QA,
-  diagram-type accuracy, latency, run metadata + split hash, variance/significance).
+Phase: 5 — Evaluation framework (in progress, step 1 of 5 done). Phases 1–4 complete
+  (usable product + synthetic dataset).
+Last completed: Phase 5 step 1 — per-sample scores + automatic error taxonomy
+  (evaluation/metrics/scores.py, errors.py); 607 tests passing.
+Phase 5 plan (in order):
+  1. [done] Per-sample scores v1: validity (first-attempt, bare JSON, post-repair), node/edge
+     P/R/F1 (loose/strict), graph similarity, label accuracy/CER/WER, edge text,
+     grouping, diagram type; automatic §23 taxonomy (all types but 9)
+  2. Structural QA benchmark (§20.7): questions generated from the ground truth, answered
+     on the predicted graph
+  3. Evaluation runner: dataset split → pipeline (any VLM backend) → predictions +
+     per-sample scores → run directory with §18.1 metadata + split hash; resumable
+     (Colab); aggregates (macro + micro; by level / diagram type / layout), latency
+  4. Seeds + significance (§20.10–20.11): mean ± std across runs, paired bootstrap +
+     paired t-test / Wilcoxon on per-sample scores, compare CLI, markdown report
+  5. Non-VLM baseline (§19.1, §42 item 10): OCR + OpenCV geometry → graph, scored by the
+     same runner
 Phase 6 (Colab hand-off) — USER PREFERENCE (stated during Phase 4): deliver .ipynb, one
   notebook split into clearly separated sections, each with its own purpose, in order:
   library install/import → dataset import (build in Colab, verify against the committed
@@ -55,7 +65,23 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 5 — evaluation framework (§20).
+Next up: Phase 5 step 2 — structural QA benchmark.
+Scores decisions (Phase 5 step 1):
+  - SCORES_VERSION = "1" in evaluation/metrics/scores.py pins every definition (full text in
+    its docstring); changing one = bump + record here. Built on matching v1 (unchanged;
+    MatchResult gained edge_pairs = claimed (pred, gt) edge indices, additive).
+  - Primary graph metric (§20.5) = graph similarity: 1 − cost / (|V_p|+|V_g|+|E_p|+|E_g|),
+    cost = edit cost under the §20.1 assignment (1 per unmatched node/edge, 1 − pair
+    similarity per matched node, 1 per matched edge with a different relation). Upper
+    bound on exact GED with these costs (tested against networkx GED); exact GED is
+    intractable at 40 nodes. Edge text and grouping scored separately, not in it.
+  - Failed predictions score as empty: F1 0, similarity 0, type wrong; label/edge-text/
+    grouping undefined, taxonomy not computed (failures counted separately).
+  - Labels: Stage D text normalization, case-sensitive exact + casefold exact, normalized
+    Levenshtein, pooled CER/WER. Edge text = label else condition, casefolded.
+  - Taxonomy (errors.py): unmatched edges explained reversed → wrong (same source, then
+    same target) → missing / spurious. Forks/merges: ≥2 distinct successors/predecessors.
+  - Sanity: all 2,800 synthetic-v1 GT graphs self-score perfectly; ~3 ms/sample.
 Dataset decisions (Phase 4 step 3):
   - synthetic-v1 = seed 0, 2000 train / 300 val / 500 test (§32). Stratified: levels cycle
     fastest, then diagram types. Per-sample seed "{seed}:{split}:{index}".

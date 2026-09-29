@@ -42,7 +42,7 @@ from rapidfuzz.process import cdist
 from scipy.optimize import linear_sum_assignment
 
 from app.pipeline.normalize import normalize_text
-from app.schemas import DiagramGraph
+from app.schemas import DiagramGraph, Edge
 
 MATCHING_VERSION = "1"
 THRESHOLD = 0.70
@@ -86,6 +86,8 @@ class MatchResult(BaseModel):
     edge_true_positives: list[EdgeKey]
     edge_false_positives: list[EdgeKey]
     edge_false_negatives: list[EdgeKey]
+    # (predicted edge index, claimed ground-truth edge index) per loose true positive.
+    edge_pairs: list[tuple[int, int]]
 
     @property
     def assignment(self) -> dict[str, str]:
@@ -184,6 +186,7 @@ def match_graphs(predicted: DiagramGraph, ground_truth: DiagramGraph) -> MatchRe
         edge_true_positives=loose.true_positives,
         edge_false_positives=loose.false_positives,
         edge_false_negatives=loose.false_negatives,
+        edge_pairs=loose.pairs,
     )
 
 
@@ -192,6 +195,7 @@ class _EdgeScore(BaseModel):
     true_positives: list[EdgeKey]
     false_positives: list[EdgeKey]
     false_negatives: list[EdgeKey]
+    pairs: list[tuple[int, int]]
 
 
 def _score_edges(
@@ -202,29 +206,33 @@ def _score_edges(
 
     # A list per key: in the loose variant, two ground-truth edges between the same nodes
     # with different relations share a key, and each can be claimed once.
-    unclaimed: dict[tuple[str, ...], list[EdgeKey]] = defaultdict(list)
-    for e in ground_truth.edges:
-        unclaimed[key(e.source, e.target, e.relation)].append(
-            EdgeKey(source=e.source, target=e.target, relation=e.relation)
-        )
+    unclaimed: dict[tuple[str, ...], list[int]] = defaultdict(list)
+    for index, e in enumerate(ground_truth.edges):
+        unclaimed[key(e.source, e.target, e.relation)].append(index)
     true_positives: list[EdgeKey] = []
     false_positives: list[EdgeKey] = []
-    for edge in predicted.edges:
-        as_key = EdgeKey(source=edge.source, target=edge.target, relation=edge.relation)
+    pairs: list[tuple[int, int]] = []
+    for index, edge in enumerate(predicted.edges):
+        as_key = _edge_key(edge)
         if edge.source in mapping and edge.target in mapping:
             bucket = unclaimed.get(key(mapping[edge.source], mapping[edge.target], edge.relation))
             if bucket:
-                bucket.pop(0)
+                pairs.append((index, bucket.pop(0)))
                 true_positives.append(as_key)
                 continue
         false_positives.append(as_key)
-    false_negatives = [edge for bucket in unclaimed.values() for edge in bucket]
+    false_negatives = sorted(i for bucket in unclaimed.values() for i in bucket)
     return _EdgeScore(
         prf=prf(len(true_positives), len(false_positives), len(false_negatives)),
         true_positives=true_positives,
         false_positives=false_positives,
-        false_negatives=false_negatives,
+        false_negatives=[_edge_key(ground_truth.edges[i]) for i in false_negatives],
+        pairs=pairs,
     )
+
+
+def _edge_key(edge: Edge) -> EdgeKey:
+    return EdgeKey(source=edge.source, target=edge.target, relation=edge.relation)
 
 
 _Context = tuple[Counter[str], Counter[str]]  # (predecessor labels, successor labels)

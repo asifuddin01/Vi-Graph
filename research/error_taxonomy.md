@@ -17,3 +17,18 @@ in `evaluation/metrics/matching.py` (spec §20.1).
 | 9  | Layout interpretation failure | The spatial arrangement is misunderstood.                                  |
 | 10 | Edge-label loss               | A decision/conditional edge label ("Yes"/"No") is dropped or hallucinated. |
 | 11 | Grouping failure              | A nested component loses its `group_id`, or ungrouped nodes are wrongly nested. |
+
+## Automatic counting
+
+`evaluation/metrics/errors.py` counts every type except 9 per prediction, from the §20.1
+matching (exact definitions in its docstring; pinned by `SCORES_VERSION` in
+`evaluation/metrics/scores.py`). In short: unmatched ground-truth / predicted nodes are
+types 1 / 2; matched nodes with different labels are type 3; unmatched edges are explained
+as reversed (6), then wrong (4: shares a source, else a target, with a missed edge), and
+what is left is missing (5) or spurious (unmatched predicted edges no type explains).
+Types 7 / 8 count ground-truth forks / merges whose mapped successor / predecessor set is
+wrong; 10 and 11 count matched edges with wrong text and matched nodes in the wrong group.
+
+Type 9 (layout interpretation failure) needs a human looking at the image and is assigned
+manually during error analysis. Failed predictions (no graph) are counted separately, not
+as omissions.
