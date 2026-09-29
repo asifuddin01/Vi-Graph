@@ -7,16 +7,36 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 0 — Project initialization (complete). Phase 1 starts next.
-Last completed: Phase 0 — directory structure (§5), root config files, FastAPI skeleton
-  with GET /health + settings + tests, Next.js skeleton showing backend status,
-  Dockerfiles + docker-compose (both images built and run end-to-end), READMEs,
-  research/error_taxonomy.md, research/experiment_matrix.md.
-Next up: Phase 1, step 1 — canonical graph schema v2 as Pydantic models in
-  backend/app/schemas/ (§7), with schema validation tests written alongside it (§33.3).
-  Then: thin VLM interface + mock backend (backend/app/vlm/), prompt template with
-  version hash (§8 Stage B), validation → retry → repair path (§8 Stage C), metadata
-  logging from the first inference call (§18.1).
+Phase: 1 — Working VLM prototype (in progress, step 1 of 8 done).
+Last completed: Phase 1 step 1 — canonical graph schema v2 (backend/app/schemas/graph.py)
+  + 56 passing tests (backend/tests/test_schema_graph.py; §7 example is a fixture and
+  round-trips byte-for-byte as JSON).
+Phase 1 plan (do in order, one at a time):
+  1. [done] Schema v2 Pydantic models + validation tests (§7, §8 Stage C reject list)
+  2. Thin VLM interface + mock backend (backend/app/vlm/), single swap point (§33.3)
+  3. Prompt template (§8 Stage B) with version hash; fix the diagram_type vocabulary
+  4. Stage A image preprocessing (RGB, size checks, aspect-preserving resize)
+  5. Stage C: extract JSON from raw model text → validate → one corrective retry →
+     programmatic repair (marked repaired, with a list of fixes) → structured failure;
+     every outcome logged; first-attempt vs post-repair validity tracked
+  6. Stage D normalization, every change logged
+  7. Reproducibility metadata logging per inference call (§18.1), SQLite
+  8. POST /api/analyze + frontend upload + raw output display (milestone: one image →
+     valid graph JSON, including the repair path)
+Next up: Phase 1 step 2 — VLM interface + mock backend.
+Schema decisions (Phase 1 step 1):
+  - Models validate only, never mutate input (whitespace etc. is Stage D's job, logged).
+  - Every node needs a non-blank label: "empty label where a visible label exists"
+    (§8 C) can't be checked at runtime, so all nodes are treated as labeled.
+  - node.type and edge.relation are closed enums; unknown values are rejected (repair
+    may map them to "unknown", logged). Unknown keys are rejected (extra="forbid").
+  - group_id must reference an existing node of type "group"; self-reference and
+    containment cycles are rejected. All structural problems are reported together.
+  - diagram_type is a free non-blank string for now — vocabulary TBD in step 3 (needed
+    for §20.8 scoring).
+  - edge.label/condition may be "" (normalization turns it into null, logged). Duplicate
+    edges are not a schema error (normalization dedups, logged).
+  - bbox/confidence (§7.3) are optional and omitted from output when unset.
 Open decisions made this session:
   - License: MIT (holder: asifuddin01).
   - Requirements split: requirements.txt (core, no torch) / requirements-dev.txt /
