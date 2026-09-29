@@ -23,9 +23,10 @@ Diagram image → VLM → structured JSON → validate / normalize / repair
              → topology-aware question answering
 ```
 
-> **Status:** Phases 1–2 complete — upload a diagram, get a validated, versioned JSON graph
-> (with retry/repair and run logging), edit it interactively, and export it as JSON,
-> Mermaid, SVG, PNG, or PDF. Question answering comes next. See
+> **Status:** Phases 1–3 complete (the usable product) — upload a diagram, get a validated,
+> versioned JSON graph (with retry/repair and run logging), edit it interactively, ask
+> topology questions with graph-grounded answers, and export JSON, Mermaid, SVG, PNG, or
+> PDF. The research track (dataset generator, evaluation, training) comes next. See
 > [`CLAUDE.md`](CLAUDE.md) for current status and [`docs/SPEC.md`](docs/SPEC.md) for the
 > full specification.
 
@@ -91,6 +92,8 @@ SVG/PNG/PDF export needs [Graphviz](https://graphviz.org/) (`apt install graphvi
 | `GET /api/analyses/{id}`   | A stored analysis (with its latest saved edit)                 |
 | `PUT /api/analyses/{id}/graph` | Save an edited graph as a new version                      |
 | `POST /api/export`         | `json`, `mermaid`, `svg`, `png`, `pdf` of an analysis or graph |
+| `POST /api/qa`             | Answer a question about an analysis, grounded in graph nodes   |
+| `GET /api/analyses/{id}/qa` | Questions asked about an analysis                             |
 | `GET /health`              | Liveness + active VLM backend                                  |
 
 Every analysis is logged to `$VIGRAPH_STORAGE_DIR/vigraph.sqlite3` with the model revision,

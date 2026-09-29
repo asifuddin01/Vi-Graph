@@ -24,3 +24,12 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
 }
+
+/* Nodes and edges an answer is grounded in (QA, spec §12). */
+.react-flow__node.vg-highlight > div {
+  box-shadow: 0 0 0 3px #f59e0b;
+}
+.react-flow__edge.vg-highlight .react-flow__edge-path {
+  stroke: #f59e0b;
+  stroke-width: 2.5;
+}

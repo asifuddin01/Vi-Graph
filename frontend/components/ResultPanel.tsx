@@ -4,7 +4,14 @@ import { useState } from "react";
 
 import GraphEditor from "@/components/editor/GraphEditor";
 import MermaidView from "@/components/MermaidView";
-import type { AnalyzeResponse, Change, EditedGraph, ExtractionStatus } from "@/lib/api";
+import QAPanel from "@/components/QAPanel";
+import type {
+  AnalyzeResponse,
+  Change,
+  EditedGraph,
+  ExtractionStatus,
+  Grounding,
+} from "@/lib/api";
 
 const STATUS: Record<ExtractionStatus, { text: string; tone: string }> = {
   valid_first_attempt: {
@@ -29,6 +36,7 @@ export default function ResultPanel({ result }: { result: AnalyzeResponse }) {
   const { metrics } = result;
   const status = STATUS[result.status];
   const [edited, setEdited] = useState<EditedGraph | null>(result.edited);
+  const [highlight, setHighlight] = useState<Grounding | null>(null);
   // Everything below the editor reflects the latest saved edit, if there is one.
   const graph = edited?.graph ?? result.graph;
   const mermaid = edited?.mermaid ?? result.mermaid;
@@ -68,7 +76,10 @@ export default function ResultPanel({ result }: { result: AnalyzeResponse }) {
         original={result.graph}
         edited={result.edited}
         onSaved={setEdited}
+        highlight={highlight}
       />
+
+      <QAPanel diagramId={result.diagram_id} onHighlight={setHighlight} />
 
       {mermaid && <MermaidView source={mermaid} />}
 

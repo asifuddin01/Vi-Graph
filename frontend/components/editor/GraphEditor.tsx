@@ -17,7 +17,7 @@ import {
   type NodeChange,
   type OnSelectionChangeParams,
 } from "@xyflow/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import DiagramNode from "@/components/editor/DiagramNode";
 import GroupNode from "@/components/editor/GroupNode";
@@ -31,6 +31,7 @@ import {
   type DiagramGraph,
   type EditedGraph,
   type ExportFormat,
+  type Grounding,
 } from "@/lib/api";
 import {
   DIAGRAM_TYPES,
@@ -57,6 +58,8 @@ type Props = {
   /** The latest saved edit, if any; the editor opens on it. */
   edited: EditedGraph | null;
   onSaved: (edited: EditedGraph) => void;
+  /** Nodes/edges to highlight, e.g. the grounding of a QA answer (§12). */
+  highlight?: Grounding | null;
 };
 
 type SaveState =
@@ -74,7 +77,7 @@ export default function GraphEditor(props: Props) {
   );
 }
 
-function Editor({ diagramId, original, edited, onSaved }: Props) {
+function Editor({ diagramId, original, edited, onSaved, highlight }: Props) {
   // Captured once: later prop changes must not wipe out the user's edits.
   const [start] = useState(() => ({
     graph: edited?.graph ?? original,
@@ -290,6 +293,20 @@ function Editor({ diagramId, original, edited, onSaved }: Props) {
     }
   }
 
+  // Highlighting only decorates what is rendered; it never touches the editor's state.
+  const shownNodes = useMemo(() => {
+    const lit = new Set(highlight?.nodes ?? []);
+    return lit.size ? nodes.map((n) => (lit.has(n.id) ? { ...n, className: "vg-highlight" } : n)) : nodes;
+  }, [nodes, highlight]);
+  const shownEdges = useMemo(() => {
+    const lit = new Set((highlight?.edges ?? []).map(([s, t]) => `${s}\u0000${t}`));
+    return lit.size
+      ? edges.map((e) =>
+          lit.has(`${e.source}\u0000${e.target}`) ? { ...e, className: "vg-highlight", animated: true } : e,
+        )
+      : edges;
+  }, [edges, highlight]);
+
   const singleNode = selectedNodes.length === 1 ? nodes.find((n) => n.id === selectedNodes[0]) : undefined;
   const edge = selectedEdge ? edges.find((e) => e.id === selectedEdge) : undefined;
 
@@ -353,8 +370,8 @@ function Editor({ diagramId, original, edited, onSaved }: Props) {
       <div className="flex h-[520px]">
         <div ref={canvasRef} className="min-w-0 flex-1" data-testid="graph-editor">
           <ReactFlow
-            nodes={nodes}
-            edges={edges}
+            nodes={shownNodes}
+            edges={shownEdges}
             nodeTypes={nodeTypes}
             onNodesChange={handleNodesChange}
             onEdgesChange={handleEdgesChange}

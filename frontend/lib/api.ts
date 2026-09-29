@@ -151,6 +151,41 @@ export async function saveGraph(
   return (await res.json()) as EditedGraph;
 }
 
+// --- Question answering (spec §12) ---------------------------------------------------
+
+export type Grounding = { nodes: string[]; edges: [string, string][] };
+
+export type QAResponse = {
+  id: string;
+  diagram_id: string;
+  question: string;
+  answer: string;
+  /** Where the answer came from. */
+  source: "graph" | "vlm" | "graph+vlm" | "none";
+  route: { category: string; intent: string; needs_image: boolean };
+  grounding: Grounding;
+  /** The saved edit the answer used; null = the model's original graph. */
+  graph_version: number | null;
+  model: { backend: string; model_id: string } | null;
+  created_at: string;
+};
+
+export async function askQuestion(diagramId: string, question: string): Promise<QAResponse> {
+  const res = await fetch(`${API_BASE_URL}/api/qa`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ diagram_id: diagramId, question }),
+  });
+  if (!res.ok) throw await apiError(res);
+  return (await res.json()) as QAResponse;
+}
+
+export async function getQAHistory(diagramId: string): Promise<QAResponse[]> {
+  const res = await fetch(`${API_BASE_URL}/api/analyses/${diagramId}/qa`, { cache: "no-store" });
+  if (!res.ok) throw await apiError(res);
+  return (await res.json()) as QAResponse[];
+}
+
 export type ExportFormat = "svg" | "png" | "pdf" | "json" | "mermaid";
 
 export const EXPORT_EXTENSIONS: Record<ExportFormat, string> = {

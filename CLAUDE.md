@@ -7,14 +7,16 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 3 — Multimodal QA (in progress, step 2 of 3 done). Phases 1–2 complete.
-Last completed: Phase 3 step 2 — QA engine (backend/app/qa/engine.py), visual_qa@1 prompt,
-  POST /api/qa + GET /api/analyses/{id}/qa, qa_log table (DB schema v3); 498 tests.
+Phase: 3 COMPLETE — Phases 1–3 (the usable product, §42 items 1–7) are done.
+  Phase 4 (synthetic dataset generator) starts next.
+Last completed: Phase 3 step 3 — QA panel (frontend/components/QAPanel.tsx) with §26 quick
+  buttons, answer history, source badges, and grounded highlighting in the editor;
+  verified end-to-end in Chromium (12 checks). 498 backend + 12 frontend tests.
 Phase 3 plan (in order):
   1. [done] Rule-based router (§12.1) + entity linking + grounded graph answers
   2. [done] VLM path for visual / "why" / unknown questions (versioned QA prompt, image from the
      ImageStore) + POST /api/qa + qa log (routing decision logged, §28)
-  3. Frontend: question box + §26 quick buttons (Explain / Find branches / Analyze
+  3. [done] Frontend: question box + §26 quick buttons (Explain / Find branches / Analyze
      topology) + highlight grounded nodes/edges in the editor
 Phase 2 plan (in order):
   1. [done] build_graph + §9 queries (predecessors/successors/sources/sinks/paths/parallel
@@ -37,7 +39,13 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 3 step 3 — frontend QA panel + grounded highlighting.
+Next up: Phase 4 step 1 — random graph generator (patterns + difficulty L1–L4, §13–14).
+QA UI decisions (Phase 3 step 3):
+  - QAPanel above the Mermaid view; answers newest first with source badge and
+    route; clicking an answer toggles highlighting of its grounding.
+  - Highlighting is derived at render time (useMemo className on nodes/edges) — never
+    written into editor state, so it can't mark the graph dirty.
+  - Answers use the last *saved* graph (stated in the UI); unsaved edits aren't seen.
 QA engine/API decisions (Phase 3 step 2):
   - Graph answers first; VLM only when the route needs the image (visual, "why") or the
     graph can't answer (unknown intent / no graph). "why" = graph part + VLM reason.
