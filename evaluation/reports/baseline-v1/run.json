@@ -1,0 +1,88 @@
+{
+  "name": "baseline-v1",
+  "created_at": "2026-09-29T16:20:08.997846Z",
+  "completed_at": "2026-09-29T16:45:53.766283Z",
+  "command": [
+    "/home/user/Vi-Graph/evaluation/__main__.py",
+    "run",
+    "--dataset",
+    "data/synthetic/synthetic-v1",
+    "--split",
+    "test",
+    "--backend",
+    "baseline",
+    "--out",
+    "evaluation/reports/baseline-v1",
+    "--quiet"
+  ],
+  "config": {
+    "dataset": "/home/user/Vi-Graph/data/synthetic/synthetic-v1",
+    "split": "test",
+    "limit": null,
+    "predictor": "baseline:v1",
+    "model_id": null,
+    "revision": null,
+    "adapter": null,
+    "dtype": null,
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "max_new_tokens": 4096,
+    "seed": 0,
+    "image_max_side": 2048,
+    "image_max_pixels": 40000000
+  },
+  "split": {
+    "dataset": "synthetic-v1",
+    "directory": "/home/user/Vi-Graph/data/synthetic/synthetic-v1",
+    "split": "test",
+    "samples": 500,
+    "split_hash": "2c67f24b3b83ae68c1df569d410e23292573c57f1f196659c76a8776696223b2",
+    "graph_hash": "8d4d2c69624c1a414c4c1d7073d3443736f5bb1e75e3abca2d1241a7989d6515",
+    "dataset_hash": "6edd5f6328c9fd9fce15d556e99cd544a0efa571bc5a2035936592f16dee32e6",
+    "generator_version": "1",
+    "graphviz_version": "dot - graphviz version 2.43.0 (0)"
+  },
+  "metadata": null,
+  "adapter_config": null,
+  "predictor_info": {
+    "baseline_version": "1",
+    "tesseract": "5.3.4",
+    "opencv": "5.0.0",
+    "pytesseract": "0.3.13",
+    "ink_window": 21,
+    "ink_contrast": 50,
+    "head_ratio": 1.5
+  },
+  "versions": {
+    "app": "0.1.0",
+    "schema": "2.0",
+    "matching": "1",
+    "scores": "1",
+    "qa_benchmark": "1",
+    "matching_config": {
+      "matching_version": "1",
+      "label_similarity": "rapidfuzz Levenshtein.normalized_similarity on NFC, whitespace-collapsed, casefolded labels",
+      "threshold": 0.7,
+      "type_bonus": 0.05,
+      "type_penalty": 0.05,
+      "context_weight": 0.01,
+      "rapidfuzz_version": "3.14.6",
+      "scipy_version": "1.17.1"
+    },
+    "git_commit": "f5849dde184776a37d34525e5faa2cd8a51e09a1",
+    "packages": {
+      "pydantic": "2.13.5",
+      "networkx": "3.6.1",
+      "rapidfuzz": "3.14.6",
+      "scipy": "1.17.1",
+      "opencv-python-headless": "5.0.0.93",
+      "pytesseract": "0.3.13"
+    }
+  },
+  "environment": {
+    "python": "3.11.15",
+    "platform": "Linux-6.18.44-fc-v49-x86_64-with-glibc2.39"
+  },
+  "samples_done": 500,
+  "errors": 0
+}

@@ -26,9 +26,11 @@ Diagram image → VLM → structured JSON → validate / normalize / repair
 > **Status:** Phases 1–3 complete (the usable product) — upload a diagram, get a validated,
 > versioned JSON graph (with retry/repair and run logging), edit it interactively, ask
 > topology questions with graph-grounded answers, and export JSON, Mermaid, SVG, PNG, or
-> PDF. Research track: the synthetic dataset generator is done (2,800 rendered diagrams with
-> exact ground truth and a held-out-layout test split, see [`data/`](data/README.md));
-> evaluation and training come next. See
+> PDF. Research track: synthetic dataset (2,800 rendered diagrams with exact ground truth
+> and a held-out-layout test split, see [`data/`](data/README.md)) and evaluation framework
+> ([`evaluation/`](evaluation/README.md)) are done, with a classical OCR + geometry baseline
+> measured ([results](research/experiment_matrix.md#measured-results)); VLM fine-tuning in
+> Colab comes next. See
 > [`CLAUDE.md`](CLAUDE.md) for current status and [`docs/SPEC.md`](docs/SPEC.md) for the
 > full specification.
 

@@ -7,10 +7,11 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 5 — Evaluation framework (in progress, step 4 of 5 done). Phases 1–4 complete
-  (usable product + synthetic dataset).
-Last completed: Phase 5 step 4 — seeds + paired significance (python -m evaluation
-  seeds | compare; evaluation/stats.py, compare.py); 677 tests passing.
+Phase: 6 — Colab T4 training hand-off (next). Phases 1–5 complete (usable product,
+  synthetic dataset, evaluation framework + classical baseline).
+Last completed: Phase 5 step 5 — non-VLM baseline, evaluated once on synthetic-v1 test
+  (evaluation/reports/baseline-v1: node F1 0.931, edge F1 0.635, graph sim 0.781, QA
+  0.462); 685 tests passing.
 Phase 5 plan (in order):
   1. [done] Per-sample scores v1: validity (first-attempt, bare JSON, post-repair), node/edge
      P/R/F1 (loose/strict), graph similarity, label accuracy/CER/WER, edge text,
@@ -22,8 +23,8 @@ Phase 5 plan (in order):
      (Colab); aggregates (macro + micro; by level / diagram type / layout), latency
   4. [done] Seeds + significance (§20.10–20.11): mean ± std across runs, paired bootstrap +
      paired t-test / Wilcoxon on per-sample scores, compare CLI, markdown report
-  5. [done, test-split run in progress] Non-VLM baseline (§19.1, §42 item 10): OCR +
-     OpenCV geometry → graph, scored by the same runner
+  5. [done] Non-VLM baseline (§19.1, §42 item 10): OCR + OpenCV geometry → graph, scored
+     by the same runner; one run on synthetic-v1 test (research/experiment_matrix.md)
 Phase 6 (Colab hand-off) — USER PREFERENCE (stated during Phase 4): deliver .ipynb, one
   notebook split into clearly separated sections, each with its own purpose, in order:
   library install/import → dataset import (build in Colab, verify against the committed
@@ -86,6 +87,12 @@ Baseline decisions (Phase 5 step 5):
     free-text OCR (lost labels). Known limitations: dashed group borders, text touching or
     crossed by strokes, ~5 px text, UML relation types.
   - val (56 samples): node F1 0.866, edge F1 0.617, graph similarity 0.726.
+  - test (500, one run at commit f5849dd, ~3 s/sample): node F1 0.931, edge F1 0.635,
+    strict 0.584, graph sim 0.781, labels 0.960, QA 0.462. Higher than val (node F1
+    0.866): val's wide layered_lr L4 renders shrink text to ~5 px (seen on val-000015);
+    by layout on test, circular is its best (edge F1 0.828) and radial its worst (0.344).
+  - The test run was interrupted at 107/500 and resumed (moved out of the repo) — the
+    resume path worked on a real interruption.
 Statistics decisions (Phase 5 step 4):
   - Primary significance test (§20.11, documented in evaluation/stats.py): paired
     bootstrap over test samples, 10,000 resamples (seed 0), 95% percentile CI of the mean
