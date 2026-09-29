@@ -21,6 +21,12 @@ from app.vlm.base import Message
 
 @dataclass(frozen=True)
 class PromptTemplate:
+    """A prompt; ``$placeholders`` in ``text`` are filled by ``render``.
+
+    The hash covers the template, placeholders included, so it identifies the wording
+    independently of per-call values.
+    """
+
     name: str
     version: str
     text: str
@@ -32,6 +38,9 @@ class PromptTemplate:
     @property
     def sha256(self) -> str:
         return hashlib.sha256(self.text.encode("utf-8")).hexdigest()
+
+    def render(self, **values: str) -> str:
+        return Template(self.text).substitute(values)
 
 
 def _choices(vocabulary: type[StrEnum]) -> str:
@@ -93,7 +102,22 @@ Requirements:
 
 GRAPH_EXTRACTION = PromptTemplate(name="graph_extraction", version="1", text=_GRAPH_EXTRACTION)
 
-PROMPTS: dict[str, PromptTemplate] = {prompt.id: prompt for prompt in [GRAPH_EXTRACTION]}
+# The corrective follow-up turn of §8 Stage C. $problems is a bullet list of the specific
+# validation errors in the previous answer.
+_GRAPH_CORRECTION = Template("""\
+Your previous response could not be accepted. Problems:
+$$problems
+
+Fix these problems and return the complete corrected JSON using schema_version \
+"$schema_version". Keep everything that was already correct.
+Return JSON only.
+""").substitute(schema_version=SCHEMA_VERSION)
+
+GRAPH_CORRECTION = PromptTemplate(name="graph_correction", version="1", text=_GRAPH_CORRECTION)
+
+PROMPTS: dict[str, PromptTemplate] = {
+    prompt.id: prompt for prompt in [GRAPH_EXTRACTION, GRAPH_CORRECTION]
+}
 
 
 def get_prompt(prompt_id: str) -> PromptTemplate:

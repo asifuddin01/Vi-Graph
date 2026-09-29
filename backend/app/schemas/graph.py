@@ -57,6 +57,14 @@ class Relation(StrEnum):
     UNKNOWN = "unknown"  # relation present but type unclear from the image
 
 
+class GraphStructureError(ValueError):
+    """Cross-reference problems in a graph; ``problems`` lists each one."""
+
+    def __init__(self, problems: list[str]) -> None:
+        self.problems = problems
+        super().__init__("invalid graph structure:\n" + "\n".join(f"- {p}" for p in problems))
+
+
 def _not_blank(value: str) -> str:
     if not value.strip():
         raise ValueError("must not be empty or whitespace-only")
@@ -124,9 +132,7 @@ class DiagramGraph(_StrictModel):
     def _structure_is_valid(self) -> Self:
         problems = _structural_problems(self.nodes, self.edges)
         if problems:
-            raise ValueError(
-                "invalid graph structure:\n" + "\n".join(f"- {problem}" for problem in problems)
-            )
+            raise GraphStructureError(problems)
         return self
 
 

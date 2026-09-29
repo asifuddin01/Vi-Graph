@@ -7,9 +7,9 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 1 — Working VLM prototype (in progress, step 5 of 9 done).
-Last completed: Phase 1 step 5 — Hugging Face backend (backend/app/vlm/hf.py) + smoke CLI
-  (python -m app.vlm <image>, from backend/); 137 tests passing.
+Phase: 1 — Working VLM prototype (in progress, step 6 of 9 done).
+Last completed: Phase 1 step 6 — Stage C (backend/app/pipeline/: json_extract, validation,
+  repair, extraction); 227 tests passing.
 Phase 1 plan (do in order, one at a time):
   1. [done] Schema v2 Pydantic models + validation tests (§7, §8 Stage C reject list)
   2. [done] Thin VLM interface + mock backend (backend/app/vlm/), single swap point (§33.3)
@@ -17,14 +17,29 @@ Phase 1 plan (do in order, one at a time):
   4. [done] Stage A image preprocessing (RGB, size checks, aspect-preserving resize)
   5. [done] Hugging Face backend (Qwen3-VL via transformers, lazy imports, optional
      adapter). NOT run against real weights (see Known issues).
-  6. Stage C: extract JSON from raw model text → validate → one corrective retry →
+  6. [done] Stage C: extract JSON from raw model text → validate → one corrective retry →
      programmatic repair (marked repaired, with a list of fixes) → structured failure;
      every outcome logged; first-attempt vs post-repair validity tracked
   7. Stage D normalization, every change logged
   8. Reproducibility metadata logging per inference call (§18.1), SQLite
   9. POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 1 step 6 — Stage C (JSON extraction → validate → retry → repair).
+Next up: Phase 1 step 7 — Stage D normalization.
+Stage C decisions (Phase 1 step 6):
+  - extract_graph(vlm, images, params) → ExtractionResult with status
+    valid_first_attempt | valid_after_retry | repaired | failed, every Attempt (raw output,
+    json_method, problems), repairs, repaired_from_attempt, failure_reason, prompt ids+hashes.
+    §20.2 first-attempt validity = status == valid_first_attempt; post-repair = != failed.
+  - JSON extraction order: direct → fenced → embedded; method recorded (a stricter
+    "bare JSON" validity can be computed from json_method == "direct").
+  - One retry: [user prompt+image, assistant raw output, user graph_correction@1 listing
+    ≤20 problems]. Same DecodingParams. Truncation (finish_reason=length) is reported first.
+  - Repair runs on attempt 2, else attempt 1 (whichever parsed). Conservative: drops
+    unusable nodes/edges/fields, maps case/spacing variants of vocabulary values, defaults
+    unknown values to unknown/other, retypes non-group containers to group, breaks group
+    cycles at the first node, never invents nodes/labels/edges. Each fix = RepairCode +
+    message. Empty result or non-list nodes → failed.
+  - Schema raises GraphStructureError(problems) so problems are listed without parsing text.
 HF backend decisions (Phase 1 step 5):
   - Generic AutoModelForImageTextToText + AutoProcessor.apply_chat_template, so any HF
     VLM works (§19). Checked against transformers 5.17 source (dtype= kwarg, image

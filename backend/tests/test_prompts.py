@@ -5,12 +5,19 @@ from PIL import Image
 
 from app.schemas import SCHEMA_VERSION, DiagramType, NodeType, Relation
 from app.vlm import validate_conversation
-from app.vlm.prompts import GRAPH_EXTRACTION, PROMPTS, build_extraction_messages, get_prompt
+from app.vlm.prompts import (
+    GRAPH_CORRECTION,
+    GRAPH_EXTRACTION,
+    PROMPTS,
+    build_extraction_messages,
+    get_prompt,
+)
 
 # Changing a prompt's text changes its hash. If this test fails, the prompt was edited:
 # bump its version and update the pinned hash here, deliberately (§18.1).
 PINNED_HASHES = {
     "graph_extraction@1": "d7097c8ad971e570ebacd9fa5c62d96fe0ee3293ff4bc593e5f8021da107d409",
+    "graph_correction@1": "e0f443ebad7d560db6e0a496b5431868c89b114a49177e11b2dce29e5554ae32",
 }
 
 
@@ -41,6 +48,23 @@ def test_extraction_prompt_states_schema_rules() -> None:
     assert "Every node must have a non-empty label." in text
     assert 'The\n  containing node must have type "group".' in text
     assert "Return JSON only." in text
+
+
+def test_extraction_prompt_has_no_placeholders() -> None:
+    assert GRAPH_EXTRACTION.render() == GRAPH_EXTRACTION.text
+
+
+def test_correction_prompt_renders_problems() -> None:
+    text = GRAPH_CORRECTION.render(problems="- edge #1 'n3->n9' references node id 'n9'")
+
+    assert "- edge #1 'n3->n9' references node id 'n9'" in text
+    assert f'schema_version "{SCHEMA_VERSION}"' in text
+    assert "$" not in text
+
+
+def test_correction_prompt_requires_its_placeholder() -> None:
+    with pytest.raises(KeyError, match="problems"):
+        GRAPH_CORRECTION.render()
 
 
 def test_get_prompt_by_id() -> None:
