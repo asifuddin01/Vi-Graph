@@ -1,5 +1,10 @@
+"use client";
+
+import { useState } from "react";
+
+import GraphEditor from "@/components/editor/GraphEditor";
 import MermaidView from "@/components/MermaidView";
-import type { AnalyzeResponse, Change, ExtractionStatus } from "@/lib/api";
+import type { AnalyzeResponse, Change, EditedGraph, ExtractionStatus } from "@/lib/api";
 
 const STATUS: Record<ExtractionStatus, { text: string; tone: string }> = {
   valid_first_attempt: {
@@ -21,8 +26,12 @@ const STATUS: Record<ExtractionStatus, { text: string; tone: string }> = {
 };
 
 export default function ResultPanel({ result }: { result: AnalyzeResponse }) {
-  const { graph, metrics } = result;
+  const { metrics } = result;
   const status = STATUS[result.status];
+  const [edited, setEdited] = useState<EditedGraph | null>(result.edited);
+  // Everything below the editor reflects the latest saved edit, if there is one.
+  const graph = edited?.graph ?? result.graph;
+  const mermaid = edited?.mermaid ?? result.mermaid;
 
   return (
     <div className="flex flex-col gap-5">
@@ -35,6 +44,7 @@ export default function ResultPanel({ result }: { result: AnalyzeResponse }) {
         </span>
         {graph && <Chip>{graph.diagram_type.replaceAll("_", " ")}</Chip>}
         {metrics.cached && <Chip>cached</Chip>}
+        {edited && <Chip>edited · v{edited.version}</Chip>}
         <span className="ml-auto text-xs text-zinc-500">
           {result.model.model_id} · {Math.round(metrics.latency_ms)} ms
         </span>
@@ -53,7 +63,14 @@ export default function ResultPanel({ result }: { result: AnalyzeResponse }) {
         </p>
       )}
 
-      {result.mermaid && <MermaidView source={result.mermaid} />}
+      <GraphEditor
+        diagramId={result.diagram_id}
+        original={result.graph}
+        edited={result.edited}
+        onSaved={setEdited}
+      />
+
+      {mermaid && <MermaidView source={mermaid} />}
 
       <div className="flex flex-col gap-2">
         {graph && (

@@ -89,7 +89,7 @@ prompt hashes, decoding parameters, and seed.
 cd frontend
 npm install
 npm run dev          # http://localhost:3000
-npm run lint && npm run typecheck
+npm run lint && npm run typecheck && npm test
 ```
 
 ### Docker

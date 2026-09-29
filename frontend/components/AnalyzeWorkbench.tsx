@@ -74,7 +74,7 @@ export default function AnalyzeWorkbench() {
   }
 
   return (
-    <div className="grid flex-1 gap-6 p-6 lg:grid-cols-2">
+    <div className="grid flex-1 gap-6 p-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
       <section aria-labelledby="input-heading" className="flex flex-col gap-4">
         <h2 id="input-heading" className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
           Input image
@@ -161,7 +161,9 @@ export default function AnalyzeWorkbench() {
             {state.message}
           </p>
         )}
-        {state.kind === "done" && <ResultPanel result={state.result} />}
+        {state.kind === "done" && (
+          <ResultPanel key={state.result.diagram_id} result={state.result} />
+        )}
       </section>
     </div>
   );

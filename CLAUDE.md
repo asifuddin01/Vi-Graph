@@ -7,14 +7,16 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 2 — Graph reconstruction (in progress, step 2 of 4 done). Phase 1 complete.
-Last completed: Phase 2 step 2 — Mermaid export (backend/app/exporters/mermaid.py), API
-  `mermaid` field, frontend MermaidView; 358 tests passing.
+Phase: 2 — Graph reconstruction (in progress, step 3 of 4 done). Phase 1 complete.
+Last completed: Phase 2 step 3 — React Flow editor (frontend/components/editor/) + graph
+  versions backend; 371 backend + 12 frontend (vitest) tests; editor verified end-to-end in
+  Chromium (19 checks: rename, retype, add, connect, edge edit, delete, group, save, server
+  validation, reset, persistence).
 Phase 2 plan (in order):
   1. [done] build_graph + §9 queries (predecessors/successors/sources/sinks/paths/parallel
      branches/group members/flatten) + validate_graph diagnostics
   2. [done] Mermaid generation (edge labels, subgraphs from group_id, escaping) + API field
-  3. React Flow editor (move/rename/add/delete nodes+edges, edge labels, types,
+  3. [done] React Flow editor (move/rename/add/delete nodes+edges, edge labels, types,
      group/ungroup, inspect, reset, save) + backend save endpoint
   4. Exports (§28 POST /api/export: json, mermaid, svg, png, pdf)
 Phase 1 plan (do in order, one at a time):
@@ -31,7 +33,20 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 2 step 3 — React Flow editor.
+Next up: Phase 2 step 4 — exports (§28 POST /api/export: json, mermaid, svg, png, pdf).
+Editor decisions (Phase 2 step 3):
+  - Edits saved via PUT /api/analyses/{id}/graph as numbered versions (graph_versions
+    table, DB schema v2) + editor layout; the model's reconstruction is never overwritten.
+    Responses carry the latest edit as `edited`. Phase 3 QA should answer from
+    edited.graph when present.
+  - frontend/lib/graph.ts (schema ⇄ React Flow, pure, tested) and lib/layout.ts (ELK
+    layered, top-down, groups as nested ELK nodes; grid fallback). Group membership =
+    React Flow parentId (parents ordered first). Node ids for new nodes: next n<k>.
+  - React Flow defaults kept for selection: Ctrl/⌘-click multi-select, Shift-drag box.
+    (Adding Shift to multiSelectionKeyCode left multi-select stuck on — don't.)
+    Deleting a group deletes its contents (React Flow default; stated in the hint).
+  - Frontend tests: `npm test` (vitest; config is vitest.config.mts). @types/node ^22
+    (vitest 5 peer requirement; runtime is Node 22).
 Mermaid decisions (Phase 2 step 2):
   - to_mermaid(graph, direction="TD"): ids n1..nk by node order; all labels quoted and
     entity-escaped (# " & < > | ; ` \ → #NN;, newlines → space). Verified with the real
