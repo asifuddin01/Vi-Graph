@@ -11,7 +11,7 @@ condition, mean ± std (§20.10), paired significance test for comparisons (§20
 | ID       | Model                             | Status      |
 | -------- | --------------------------------- | ----------- |
 | Baseline | OCR + rule-based geometry (§19.1) — `evaluation/baseline/` v1 | evaluated (synthetic test) |
-| A        | Compact VLM (tentative: Qwen3-VL-2B-Instruct) | not started |
+| A        | Compact VLM (tentative: Qwen3-VL-2B-Instruct) | QLoRA notebook ready (training/); awaiting the Colab run |
 | B        | Another compact VLM               | not chosen  |
 | C        | Medium VLM                        | not chosen  |
 | D        | Larger VLM, if resources permit   | not chosen  |
@@ -22,7 +22,7 @@ condition, mean ± std (§20.10), paired significance test for comparisons (§20
 | --- | ------------------------------------------------------- | ----- | ----------- |
 | E1  | Complexity robustness: all models × difficulty L1–L4    | §21   | not started |
 | E2  | Image perturbation: blur, compression, low-res, small text, occlusion, crowding | §22 | not started |
-| A-A | Zero-shot vs. QLoRA fine-tuned                          | §24A  | not started |
+| A-A | Zero-shot vs. QLoRA fine-tuned                          | §24A  | ready to run (notebook §6) |
 | A-B | Image resolution 512 / 768 / 1024                       | §24B  | not started |
 | A-C | Prompt variants: simple / structured / + constraints    | §24C  | not started |
 | A-D | Raw VLM output vs. validated/normalized/repaired output | §24D  | not started |
