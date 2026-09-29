@@ -1,0 +1,9 @@
+# Real VLM inference runtime (local GPU/CPU). Not needed for tests or the
+# mock backend. Training dependencies (peft, bitsandbytes, ...) are NOT here —
+# training runs in Colab only; see training/README.md.
+
+-r requirements.txt
+
+torch>=2.14,<3.0
+transformers>=5.17,<6.0
+accelerate>=1.15,<2.0

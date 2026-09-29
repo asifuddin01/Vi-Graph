@@ -1,0 +1,18 @@
+# Tool configuration only. Dependencies live in requirements*.txt.
+
+[tool.pytest.ini_options]
+# `backend` on the path so tests import the app as `app.*`, matching how
+# uvicorn runs it (`uvicorn app.main:app` from backend/).
+pythonpath = ["backend"]
+testpaths = ["backend/tests"]
+addopts = "-ra"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["backend"]
+# docs/SPEC.md is kept verbatim; ruff would otherwise reformat its code blocks.
+extend-exclude = ["frontend", "docs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]

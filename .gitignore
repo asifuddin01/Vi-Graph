@@ -1,0 +1,55 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# --- Node / Next.js ---
+node_modules/
+frontend/.next/
+frontend/out/
+frontend/next-env.d.ts
+*.tsbuildinfo
+
+# --- Environment / secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Runtime storage (uploads, results, SQLite) ---
+storage/
+*.sqlite
+*.sqlite3
+*.db
+
+# --- Model weights / adapters (produced in Colab, never committed) ---
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+training/outputs/
+training/checkpoints/
+adapters/
+
+# --- Generated datasets (regenerable; commit only split manifests + READMEs) ---
+data/raw/*
+data/synthetic/*
+data/real/*
+!data/**/.gitkeep
+!data/**/README.md
+
+# --- Notebooks ---
+.ipynb_checkpoints/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

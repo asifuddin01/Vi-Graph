@@ -1,0 +1,38 @@
+# Local stack: FastAPI backend (mock VLM) + Next.js frontend.
+#   docker compose up --build
+# Frontend: http://localhost:3000   Backend: http://localhost:8000/health
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      VIGRAPH_STORAGE_DIR: /data/storage
+    ports:
+      - "8000:8000"
+    volumes:
+      - vigraph-storage:/data/storage
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Called from the browser on the host, so this is the host-mapped port.
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  vigraph-storage:

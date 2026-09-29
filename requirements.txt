@@ -1,0 +1,17 @@
+# Core backend runtime — everything needed to run the API, graph layer,
+# QA, exporters, and evaluation metrics WITHOUT a GPU or model weights.
+#
+# The VLM runtime (torch/transformers) lives in requirements-vlm.txt so the
+# app, tests, and CI can run against the mock VLM backend (see CLAUDE.md).
+# Dev/test tooling lives in requirements-dev.txt.
+
+fastapi>=0.141,<1.0
+uvicorn[standard]>=0.54,<1.0
+pydantic>=2.13,<3.0
+pydantic-settings>=2.15,<3.0
+python-multipart>=0.0.32
+pillow>=12.3,<13.0
+numpy>=2.4,<3.0
+networkx>=3.6,<4.0
+scipy>=1.17,<2.0          # linear_sum_assignment for node matching (§20.1)
+rapidfuzz>=3.14,<4.0      # label similarity for node matching (§20.1)
