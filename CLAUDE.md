@@ -7,17 +7,17 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 5 — Evaluation framework (in progress, step 2 of 5 done). Phases 1–4 complete
+Phase: 5 — Evaluation framework (in progress, step 3 of 5 done). Phases 1–4 complete
   (usable product + synthetic dataset).
-Last completed: Phase 5 step 2 — structural QA benchmark (evaluation/metrics/
-  structural_qa.py) + QA routing fixes it exposed; 653 tests passing.
+Last completed: Phase 5 step 3 — evaluation runner (python -m evaluation run |
+  summarize | rescore; evaluation/README.md); 664 tests passing.
 Phase 5 plan (in order):
   1. [done] Per-sample scores v1: validity (first-attempt, bare JSON, post-repair), node/edge
      P/R/F1 (loose/strict), graph similarity, label accuracy/CER/WER, edge text,
      grouping, diagram type; automatic §23 taxonomy (all types but 9)
   2. [done] Structural QA benchmark (§20.7): questions generated from the ground truth,
      answered on the predicted graph
-  3. Evaluation runner: dataset split → pipeline (any VLM backend) → predictions +
+  3. [done] Evaluation runner: dataset split → pipeline (any VLM backend) → predictions +
      per-sample scores → run directory with §18.1 metadata + split hash; resumable
      (Colab); aggregates (macro + micro; by level / diagram type / layout), latency
   4. Seeds + significance (§20.10–20.11): mean ± std across runs, paired bootstrap +
@@ -65,7 +65,23 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 5 step 3 — evaluation runner.
+Next up: Phase 5 step 4 — seeds + significance.
+Runner decisions (Phase 5 step 3):
+  - Evaluation runs the app's own pipeline (analyze_image, Stages A–D) — scores are of the
+    system users get. Predictor ABC (VLMPredictor, OraclePredictor; the step-5 baseline
+    plugs in here). Oracle = ground truth through the full pipeline: must score 1.000
+    (verified on all 500 synthetic-v1 test samples).
+  - load_split re-hashes every image/GT file and checks the manifest split hash before a
+    run; RunMetadata.split_version = split hash.
+  - Per sample: prediction (AnalysisRecord with every raw attempt), scores, first-attempt
+    scores (attempt 1 as-is: no retry/repair/normalization — ablation §24D / H4), QA.
+  - Resumable: predictions.jsonl appended + fsynced per sample; torn last line dropped;
+    same RunConfig + same split hash required; predictor exceptions recorded as failures
+    (error field), --retry-errors re-runs them; 3 consecutive errors abort.
+  - Headline = macro mean over samples (failures = 0, undefined metrics skipped, n shown);
+    pooled micro numbers alongside. Breakdowns by level/diagram type/layout/theme.
+  - Committed per run: run.json, summary.json, report.md, predictions.jsonl.gz (~0.5 MB
+    per 500 samples); predictions.jsonl is gitignored.
 Structural QA decisions (Phase 5 step 2):
   - QA_BENCHMARK_VERSION = "1" (evaluation/metrics/structural_qa.py; definition in its
     docstring). ≤1 question per kind per graph, seeded by sample id, only about nodes with

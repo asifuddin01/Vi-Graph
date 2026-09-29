@@ -53,3 +53,7 @@ data/real/*
 Thumbs.db
 .idea/
 .vscode/
+
+# --- Evaluation runs: full per-sample predictions stay local / on Drive; the gzipped copy,
+#     run.json, summary.json and report.md are committed ---
+evaluation/reports/**/predictions.jsonl

@@ -23,10 +23,11 @@ from __future__ import annotations
 import hashlib
 import json
 import random
+from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Self
+from typing import Protocol, Self
 
 from pydantic import BaseModel, model_validator
 
@@ -187,12 +188,20 @@ def build_dataset(
     return manifest
 
 
-def split_hash(records: list[SampleRecord]) -> str:
+class HashedSample(Protocol):
+    id: str
+    image_sha256: str
+    graph_sha256: str
+
+
+def split_hash(records: Sequence[HashedSample]) -> str:
+    """The split version logged with evaluation runs (§18.1): ids + image + GT hashes."""
     lines = sorted(f"{r.id}\t{r.image_sha256}\t{r.graph_sha256}" for r in records)
     return hashlib.sha256("\n".join(lines).encode()).hexdigest()
 
 
-def graph_hash(records: list[SampleRecord]) -> str:
+def graph_hash(records: Sequence[HashedSample]) -> str:
+    """Like split_hash, over ids + ground truth only: independent of the renderer."""
     lines = sorted(f"{r.id}\t{r.graph_sha256}" for r in records)
     return hashlib.sha256("\n".join(lines).encode()).hexdigest()
 
