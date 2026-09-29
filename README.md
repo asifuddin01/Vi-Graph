@@ -69,8 +69,11 @@ Tests and lint (from the repo root):
 .venv/bin/ruff check . && .venv/bin/ruff format --check .
 ```
 
-`requirements.txt` holds the core runtime, `requirements-dev.txt` adds test tooling, and
-`requirements-vlm.txt` adds `torch`/`transformers`/`peft` for running a real model.
+`requirements.txt` holds the core runtime, `requirements-dev.txt` adds test tooling,
+`requirements-vlm.txt` adds `torch`/`transformers`/`peft` for running a real model, and
+`requirements-baseline.txt` adds OpenCV + pytesseract for the classical non-VLM baseline
+(plus `apt-get install tesseract-ocr`). Evaluation is documented in
+[`evaluation/README.md`](evaluation/README.md).
 
 The backend uses a mock VLM by default. To run a real model (needs a GPU and access to
 huggingface.co):

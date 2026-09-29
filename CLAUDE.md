@@ -22,8 +22,8 @@ Phase 5 plan (in order):
      (Colab); aggregates (macro + micro; by level / diagram type / layout), latency
   4. [done] Seeds + significance (§20.10–20.11): mean ± std across runs, paired bootstrap +
      paired t-test / Wilcoxon on per-sample scores, compare CLI, markdown report
-  5. Non-VLM baseline (§19.1, §42 item 10): OCR + OpenCV geometry → graph, scored by the
-     same runner
+  5. [done, test-split run in progress] Non-VLM baseline (§19.1, §42 item 10): OCR +
+     OpenCV geometry → graph, scored by the same runner
 Phase 6 (Colab hand-off) — USER PREFERENCE (stated during Phase 4): deliver .ipynb, one
   notebook split into clearly separated sections, each with its own purpose, in order:
   library install/import → dataset import (build in Colab, verify against the committed
@@ -65,7 +65,27 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 5 step 5 — non-VLM baseline (§19.1).
+Next up: Phase 6 — Colab T4 training hand-off (see USER PREFERENCE above).
+Baseline decisions (Phase 5 step 5):
+  - evaluation/baseline/, BASELINE_VERSION = "1". Generic: no generator themes, fonts or
+    vocabularies (only a short domain-keyword list to guess diagram_type).
+  - Ink = |gray − medianBlur(gray, 21)| > 50 (thin structures; fills of any colour are not
+    ink — a plain grey threshold failed on saturated fills). Nodes = enclosed background
+    regions with ink inside. Filled groups = painted mask (any channel > 4 from the
+    background) eroded 3 px, enclosing shapes with ≥ 6 px margin; interior pieces cut by
+    edges are dropped. Types: diamond → decision, hexagon → fusion, sources → input, sinks →
+    output, else module; relation always flows_to.
+  - OCR per shape: crop, mask outside the shape, normalize polarity, scale letters to
+    ~25 px, psm 6 (whole-page OCR was unreliable next to box outlines). Group label: top
+    band (2.5 × text height), band-spanning strokes removed, top row joined. One sparse
+    pass for free text (conf ≥ 60) → label of the nearest edge.
+  - Edges: strokes minus shapes (dilated) and text; per stroke, ends at nodes with ≥ 1.5×
+    the thinnest end's ink are arrowheads; no arrowhead → left→right / top→bottom.
+  - Tuned on val only (ink window 9 → 21 doubled edge F1; head ratio flat). Tried and
+    rejected: closing dashed borders (node F1 0.88 → 0.67), dropping long strokes before
+    free-text OCR (lost labels). Known limitations: dashed group borders, text touching or
+    crossed by strokes, ~5 px text, UML relation types.
+  - val (56 samples): node F1 0.866, edge F1 0.617, graph similarity 0.726.
 Statistics decisions (Phase 5 step 4):
   - Primary significance test (§20.11, documented in evaluation/stats.py): paired
     bootstrap over test samples, 10,000 resamples (seed 0), 95% percentile CI of the mean

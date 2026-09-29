@@ -11,6 +11,7 @@ Everything builds on the locked node/edge matching in `metrics/matching.py` (§2
 | `metrics/structural_qa.py`  | Structural QA benchmark v1 (§20.7)                              |
 | `samples.py`                | Load + verify a dataset split (hashes)                          |
 | `predictors.py`             | VLM pipeline predictor; oracle sanity check                     |
+| `baseline/`                 | Classical non-VLM baseline: OCR + geometry (§19.1)              |
 | `runner.py`, `aggregate.py`, `report.py` | Resumable runs, summaries, markdown reports        |
 | `stats.py`, `compare.py`    | Variance over seeds (§20.10), paired significance tests (§20.11) |
 | `reports/<run>/`            | One directory per run                                           |
@@ -87,3 +88,29 @@ t-test and Wilcoxon signed-rank test are shown for reference. Both commands requ
 same split build (split hash) and the same samples in every run. With greedy decoding,
 seeds only change the result through GPU nondeterminism; use sampling (`--temperature`)
 when measuring decoding variance.
+
+## Non-VLM baseline (§19.1)
+
+`evaluation/baseline/` reconstructs graphs with Tesseract OCR and OpenCV geometry, no VLM,
+so the VLM rows of the §19.1 table have a classical reference scored by the identical
+protocol. Install `requirements-baseline.txt` and the Tesseract binary
+(`apt-get install tesseract-ocr`), then:
+
+```bash
+PYTHONPATH=backend python -m evaluation run --dataset data/synthetic/synthetic-v1 \
+    --split test --backend baseline --out evaluation/reports/baseline-v1
+```
+
+How it works (details in `baseline/pipeline.py`): *ink* = thin structures (pixels far from
+their local median), so light, dark and colour-filled themes binarize alike; *nodes* =
+enclosed regions with ink inside; *filled groups* = painted areas enclosing shapes;
+*labels* = Tesseract per shape on a cleaned crop; *edges* = strokes left after removing
+shapes and text, directed by comparing the ink at each end (arrowhead vs bare line);
+free text next to a stroke becomes that edge's label. Types come from shape (diamond →
+decision, hexagon → fusion) and position (sources → input, sinks → output); every edge is
+`flows_to`; diagram type is a keyword vote.
+
+It is generic — it knows nothing about the generator's themes, fonts or vocabularies — and
+its two tuned constants were set on the **val** split only. Known v1 limitations: dashed
+group borders (not closed shapes), labels touching or crossed by strokes, text below
+~6 px, UML relation types.
