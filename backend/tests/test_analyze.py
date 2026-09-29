@@ -35,6 +35,7 @@ def test_successful_analysis_records_everything_needed_to_reproduce_it() -> None
     assert (meta.prompt_id, meta.prompt_sha256) == (GRAPH_EXTRACTION.id, GRAPH_EXTRACTION.sha256)
     assert meta.correction_prompt_sha256 == GRAPH_CORRECTION.sha256
     assert meta.split_version == "split-abc"
+    assert meta.image_max_side == 1024
     assert record.image.original_size == (1600, 800)
     assert record.image.size == (1024, 512)
     assert record.image.format == "PNG"

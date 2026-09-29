@@ -14,6 +14,7 @@ from app.pipeline.normalize import NormalizationResult, normalize_graph
 from app.schemas import SCHEMA_VERSION, DiagramGraph
 from app.utils.images import preprocess_image
 from app.vlm.base import DecodingParams, ModelInfo, VLMBackend
+from app.vlm.prompts import GRAPH_CORRECTION, GRAPH_EXTRACTION, PromptTemplate
 
 
 class ImageInfo(BaseModel):
@@ -34,6 +35,7 @@ class RunMetadata(BaseModel):
     prompt_sha256: str
     correction_prompt_id: str
     correction_prompt_sha256: str
+    image_max_side: int  # Stage A downscale limit; the resolution variable of §24B
     split_version: str | None = None  # dataset split hash, for evaluation runs
 
 
@@ -49,6 +51,29 @@ class AnalysisRecord(BaseModel):
     @property
     def graph(self) -> DiagramGraph | None:
         return self.normalization.graph if self.normalization else None
+
+
+def build_run_metadata(
+    model: ModelInfo,
+    params: DecodingParams,
+    *,
+    image_max_side: int,
+    split_version: str | None = None,
+    prompt: PromptTemplate = GRAPH_EXTRACTION,
+    correction: PromptTemplate = GRAPH_CORRECTION,
+) -> RunMetadata:
+    return RunMetadata(
+        app_version=__version__,
+        schema_version=SCHEMA_VERSION,
+        model=model,
+        params=params,
+        prompt_id=prompt.id,
+        prompt_sha256=prompt.sha256,
+        correction_prompt_id=correction.id,
+        correction_prompt_sha256=correction.sha256,
+        image_max_side=image_max_side,
+        split_version=split_version,
+    )
 
 
 def analyze_image(
@@ -70,16 +95,12 @@ def analyze_image(
     return AnalysisRecord(
         id=uuid.uuid4().hex,
         created_at=datetime.now(UTC),
-        metadata=RunMetadata(
-            app_version=__version__,
-            schema_version=SCHEMA_VERSION,
-            # Taken after generation, so a lazily loaded model reports its resolved revision.
-            model=extraction.attempts[-1].output.model,
-            params=params,
-            prompt_id=extraction.prompt_id,
-            prompt_sha256=extraction.prompt_sha256,
-            correction_prompt_id=extraction.correction_prompt_id,
-            correction_prompt_sha256=extraction.correction_prompt_sha256,
+        # Model info is taken after generation, so a lazily loaded model reports its
+        # resolved revision.
+        metadata=build_run_metadata(
+            extraction.attempts[-1].output.model,
+            params,
+            image_max_side=max_side,
             split_version=split_version,
         ),
         image=ImageInfo(

@@ -16,9 +16,10 @@ Diagram image → VLM → structured JSON → validate / normalize / repair
              → topology-aware question answering
 ```
 
-> **Status:** Phase 0 (project skeleton). Nothing below the skeleton is implemented yet;
-> see [`CLAUDE.md`](CLAUDE.md) for current status and [`docs/SPEC.md`](docs/SPEC.md) for
-> the full specification.
+> **Status:** Phase 1 complete — upload a diagram and get a validated, versioned JSON graph
+> (with retry/repair and full run logging). Graph editing, Mermaid, and QA come next. See
+> [`CLAUDE.md`](CLAUDE.md) for current status and [`docs/SPEC.md`](docs/SPEC.md) for the
+> full specification.
 
 ## Repository layout
 
@@ -58,7 +59,29 @@ Tests and lint (from the repo root):
 ```
 
 `requirements.txt` holds the core runtime, `requirements-dev.txt` adds test tooling, and
-`requirements-vlm.txt` adds `torch`/`transformers` for running a real model locally.
+`requirements-vlm.txt` adds `torch`/`transformers`/`peft` for running a real model.
+
+The backend uses a mock VLM by default. To run a real model (needs a GPU and access to
+huggingface.co):
+
+```bash
+.venv/bin/pip install -r requirements-vlm.txt
+cd backend
+VIGRAPH_VLM_BACKEND=hf VIGRAPH_VLM_DTYPE=float16 ../.venv/bin/python -m app.vlm diagram.png
+```
+
+`python -m app.vlm` prints the raw model output and its reproducibility metadata.
+
+### API
+
+| Endpoint                   | Purpose                                                        |
+| -------------------------- | -------------------------------------------------------------- |
+| `POST /api/analyze`        | Multipart `file` (PNG/JPEG/WebP) → graph, status, raw outputs  |
+| `GET /api/analyses/{id}`   | A stored analysis                                              |
+| `GET /health`              | Liveness + active VLM backend                                  |
+
+Every analysis is logged to `$VIGRAPH_STORAGE_DIR/vigraph.sqlite3` with the model revision,
+prompt hashes, decoding parameters, and seed.
 
 ### Frontend
 

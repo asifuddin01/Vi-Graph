@@ -7,9 +7,13 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 1 — Working VLM prototype (in progress, step 8 of 9 done).
-Last completed: Phase 1 step 8 — analyze_image() pipeline (backend/app/pipeline/analyze.py)
-  + SQLite RunStore (backend/app/storage/runs.py); 260 tests passing.
+Phase: 1 COMPLETE (milestone met: image → valid graph JSON incl. retry/repair, shown in
+  the UI). Next: node/edge matching (§20.1), then Phase 2.
+Last completed: Phase 1 step 9 — POST /api/analyze + GET /api/analyses/{id}
+  (backend/app/api/analyze.py), upload limits + rate limit (api/limits.py), image store,
+  frontend upload workbench (components/AnalyzeWorkbench.tsx, ResultPanel.tsx). 295 tests
+  passing; verified end-to-end in headless Chromium (upload → Valid, cache hit on repeat,
+  server rejects disguised non-image, client rejects .txt).
 Phase 1 plan (do in order, one at a time):
   1. [done] Schema v2 Pydantic models + validation tests (§7, §8 Stage C reject list)
   2. [done] Thin VLM interface + mock backend (backend/app/vlm/), single swap point (§33.3)
@@ -22,9 +26,28 @@ Phase 1 plan (do in order, one at a time):
      every outcome logged; first-attempt vs post-repair validity tracked
   7. [done] Stage D normalization, every change logged
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
-  9. POST /api/analyze + frontend upload + raw output display (milestone: one image →
+  9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 1 step 9 — POST /api/analyze + frontend upload (Phase 1 milestone).
+Next up: node/edge matching algorithm (evaluation/metrics/matching.py, §20.1). §42 puts
+  it (item 4) before Mermaid (item 5) and says not to reverse that order; it is small and
+  self-contained, so it goes at the Phase 1/2 boundary. Then Phase 2: NetworkX graph layer
+  (§9 functions incl. group support) → Mermaid (edge labels, subgraphs, escaping) → React
+  Flow editor → exports (§28).
+API decisions (Phase 1 step 9):
+  - POST /api/analyze: multipart "file" (+ optional "model", must equal the served model
+    id). Response = §28 shape {diagram_id, graph, mermaid (null until Phase 2), metrics,
+    schema_version} + status, attempts (raw_output, problems), repairs, normalization
+    changes, failure_reason, model, image. Extraction failure → 200 with status "failed".
+    ImageError → 422; oversized → 413; rate limited → 429 + Retry-After; backend
+    RuntimeError → 503 with a generic message (details only in server logs).
+  - Limits (§29): BodySizeLimitMiddleware (Content-Length check + streaming byte count,
+    max_upload_mb + 64 KiB); endpoint re-checks the file size. SlidingWindowLimiter per
+    client IP (VIGRAPH_ANALYZE_RATE_LIMIT_PER_MINUTE, default 10, 0 = off).
+  - Cache (§30): only with greedy decoding; key includes image_max_side (added to
+    RunMetadata + DB: it is the §24B resolution variable).
+  - Uploads saved as $STORAGE/images/<sha256>.<ext from detected format>; filenames ignored.
+  - create_app(settings=None) so tests can configure middleware; tests override
+    get_settings/get_vlm_backend/get_run_store/get_image_store/get_analyze_limiter.
 Run logging decisions (Phase 1 step 8):
   - analyze_image(vlm, bytes, max_side, max_pixels, params, split_version) runs Stages A–D
     and returns AnalysisRecord(id, created_at, metadata: RunMetadata, image: ImageInfo,
@@ -130,6 +153,9 @@ Known issues / TODOs:
   - §44.2 badge text says "node 18+"; Next 16 requires Node >= 20.9 — use that when badges
     are added (Phase 2).
   - frontend/app/favicon.ico is still the Next.js default.
+  - Public demo: uploads/runs are kept indefinitely; add temporary storage + cleanup
+    before a public deployment (§29).
+  - Rate limiting is in-process (per worker); fine for a single-process demo.
 ```
 
 ## Static conventions

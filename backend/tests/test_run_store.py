@@ -101,8 +101,18 @@ def test_cache_hits_on_identical_inputs(store: RunStore) -> None:
         },
         {"prompt_sha256": "0" * 64},
         {"app_version": "9.9.9"},
+        {"image_max_side": 1024},
     ],
-    ids=["seed", "max-tokens", "backend", "revision", "adapter", "prompt", "app-version"],
+    ids=[
+        "seed",
+        "max-tokens",
+        "backend",
+        "revision",
+        "adapter",
+        "prompt",
+        "app-version",
+        "image-max-side",
+    ],
 )
 def test_cache_misses_when_any_input_differs(store: RunStore, change: dict) -> None:
     record = run()
