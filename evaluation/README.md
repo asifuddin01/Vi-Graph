@@ -12,6 +12,7 @@ Everything builds on the locked node/edge matching in `metrics/matching.py` (§2
 | `samples.py`                | Load + verify a dataset split (hashes)                          |
 | `predictors.py`             | VLM pipeline predictor; oracle sanity check                     |
 | `runner.py`, `aggregate.py`, `report.py` | Resumable runs, summaries, markdown reports        |
+| `stats.py`, `compare.py`    | Variance over seeds (§20.10), paired significance tests (§20.11) |
 | `reports/<run>/`            | One directory per run                                           |
 
 Every definition is in the module docstrings, pinned by a version constant
@@ -61,3 +62,28 @@ them. Three errors in a row stop the run.
 
 Headline numbers are means over samples in which failed predictions score 0 (so validity
 failures are never hidden); pooled numbers sum counts over the run first.
+
+## Across runs: variance and significance
+
+```bash
+# Run-to-run variance (§20.10): runs of one condition that differ only in --seed.
+PYTHONPATH=backend python -m evaluation seeds evaluation/reports/zeroshot-s{0,1,2} \
+    --out evaluation/reports/zeroshot-seeds.md
+
+# Paired comparison (§20.11): condition A vs B, each one run or several seeds.
+PYTHONPATH=backend python -m evaluation compare \
+    --a evaluation/reports/zeroshot-s{0,1,2} --b evaluation/reports/qlora-s{0,1,2} \
+    --out evaluation/reports/qlora-vs-zeroshot.md
+```
+
+`seeds` reports each metric as mean ± std of the per-run means, overall and per difficulty
+level (the §21 complexity curves). It refuses runs that differ in anything but the seed.
+
+`compare` pairs the conditions per test sample (a condition's value for a sample is the
+mean over its runs) and reports, per metric: both means, Δ = B − A, a 95% bootstrap CI,
+and p-values. **Primary test: paired bootstrap** over test samples (10,000 resamples,
+two-sided, null-centered); Holm–Bonferroni adjusted across the metrics compared. The paired
+t-test and Wilcoxon signed-rank test are shown for reference. Both commands require the
+same split build (split hash) and the same samples in every run. With greedy decoding,
+seeds only change the result through GPU nondeterminism; use sampling (`--temperature`)
+when measuring decoding variance.

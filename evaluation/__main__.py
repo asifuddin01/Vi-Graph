@@ -4,6 +4,9 @@
         --split test --backend hf --dtype float16 --out evaluation/reports/zero-shot-seed0
     PYTHONPATH=backend python -m evaluation summarize evaluation/reports/zero-shot-seed0
     PYTHONPATH=backend python -m evaluation rescore evaluation/reports/zero-shot-seed0
+    PYTHONPATH=backend python -m evaluation seeds evaluation/reports/zero-shot-seed{0,1,2}
+    PYTHONPATH=backend python -m evaluation compare --a evaluation/reports/zero-shot-seed* \\
+        --b evaluation/reports/qlora-seed* --out evaluation/reports/qlora-vs-zero-shot.md
 
 ``run`` resumes when pointed at an unfinished run directory with the same arguments.
 ``--backend oracle`` answers with the ground truth — a sanity check of the evaluation path
@@ -20,6 +23,15 @@ from pathlib import Path
 from app.config import Settings
 from app.vlm.base import DecodingParams
 from app.vlm.factory import create_vlm_backend
+from evaluation.aggregate import SAMPLE_METRICS
+from evaluation.compare import (
+    DEFAULT_METRICS,
+    compare_conditions,
+    load_runs,
+    render_comparison,
+    render_seeds,
+    seed_summary,
+)
 from evaluation.predictors import OraclePredictor, Predictor, VLMPredictor
 from evaluation.report import fmt
 from evaluation.results import RunConfig, read_results, read_run
@@ -61,7 +73,19 @@ def main(argv: list[str] | None = None) -> int:
     rescore_cmd = commands.add_parser("rescore", help="re-score stored predictions (no model)")
     rescore_cmd.add_argument("run_dir", type=Path)
 
+    seeds = commands.add_parser("seeds", help="mean ± std over runs that differ only in seed")
+    seeds.add_argument("run_dirs", type=Path, nargs="+")
+    seeds.add_argument("--out", type=Path, help="write markdown (+ .json alongside)")
+
+    compare = commands.add_parser("compare", help="paired significance tests, A vs B")
+    compare.add_argument("--a", type=Path, nargs="+", required=True, help="run(s) of condition A")
+    compare.add_argument("--b", type=Path, nargs="+", required=True, help="run(s) of condition B")
+    compare.add_argument("--metrics", nargs="+", choices=sorted(SAMPLE_METRICS))
+    compare.add_argument("--out", type=Path, help="write markdown (+ .json alongside)")
+
     args = parser.parse_args(argv)
+    if args.command in {"seeds", "compare"}:
+        return _across_runs(args)
     if args.command == "run":
         summary = _run(args, sys.argv if argv is None else ["python -m evaluation", *argv])
     elif args.command == "summarize":
@@ -71,6 +95,22 @@ def main(argv: list[str] | None = None) -> int:
         _, samples = load_split(Path(run_info.split.directory), run_info.split.split)
         summary = rescore(args.run_dir, samples[: run_info.config.limit])
     _print_headline(summary)
+    return 0
+
+
+def _across_runs(args: argparse.Namespace) -> int:
+    if args.command == "seeds":
+        result = seed_summary(load_runs(args.run_dirs))
+        text = render_seeds(result)
+    else:
+        metrics = tuple(args.metrics) if args.metrics else DEFAULT_METRICS
+        result = compare_conditions(load_runs(args.a), load_runs(args.b), metrics)
+        text = render_comparison(result)
+    print(text)
+    if args.out:
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(text)
+        args.out.with_suffix(".json").write_text(result.model_dump_json(indent=2) + "\n")
     return 0
 
 

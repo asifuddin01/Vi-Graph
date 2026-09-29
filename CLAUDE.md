@@ -7,10 +7,10 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 5 — Evaluation framework (in progress, step 3 of 5 done). Phases 1–4 complete
+Phase: 5 — Evaluation framework (in progress, step 4 of 5 done). Phases 1–4 complete
   (usable product + synthetic dataset).
-Last completed: Phase 5 step 3 — evaluation runner (python -m evaluation run |
-  summarize | rescore; evaluation/README.md); 664 tests passing.
+Last completed: Phase 5 step 4 — seeds + paired significance (python -m evaluation
+  seeds | compare; evaluation/stats.py, compare.py); 677 tests passing.
 Phase 5 plan (in order):
   1. [done] Per-sample scores v1: validity (first-attempt, bare JSON, post-repair), node/edge
      P/R/F1 (loose/strict), graph similarity, label accuracy/CER/WER, edge text,
@@ -20,7 +20,7 @@ Phase 5 plan (in order):
   3. [done] Evaluation runner: dataset split → pipeline (any VLM backend) → predictions +
      per-sample scores → run directory with §18.1 metadata + split hash; resumable
      (Colab); aggregates (macro + micro; by level / diagram type / layout), latency
-  4. Seeds + significance (§20.10–20.11): mean ± std across runs, paired bootstrap +
+  4. [done] Seeds + significance (§20.10–20.11): mean ± std across runs, paired bootstrap +
      paired t-test / Wilcoxon on per-sample scores, compare CLI, markdown report
   5. Non-VLM baseline (§19.1, §42 item 10): OCR + OpenCV geometry → graph, scored by the
      same runner
@@ -65,7 +65,15 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 5 step 4 — seeds + significance.
+Next up: Phase 5 step 5 — non-VLM baseline (§19.1).
+Statistics decisions (Phase 5 step 4):
+  - Primary significance test (§20.11, documented in evaluation/stats.py): paired
+    bootstrap over test samples, 10,000 resamples (seed 0), 95% percentile CI of the mean
+    difference, two-sided null-centered p with +1 correction; Holm–Bonferroni across the
+    metrics in one comparison. Paired t-test + Wilcoxon reported alongside.
+  - Multi-seed conditions: per-sample value = mean over the condition's runs, then paired.
+    seeds = mean ± std of per-run macro means, overall and per level; refuses runs that
+    differ in anything but seed. Both require identical split hash + sample ids.
 Runner decisions (Phase 5 step 3):
   - Evaluation runs the app's own pipeline (analyze_image, Stages A–D) — scores are of the
     system users get. Predictor ABC (VLMPredictor, OraclePredictor; the step-5 baseline
