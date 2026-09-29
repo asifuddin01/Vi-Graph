@@ -18,6 +18,7 @@ from app.api.deps import (
     VLMDep,
     enforce_analyze_rate_limit,
 )
+from app.exporters.mermaid import to_mermaid
 from app.pipeline.analyze import AnalysisRecord, ImageInfo, analyze_image, build_run_metadata
 from app.pipeline.extraction import ExtractionStatus
 from app.pipeline.normalize import NormalizationChange
@@ -58,7 +59,7 @@ class AnalyzeResponse(BaseModel):
     schema_version: str
     status: ExtractionStatus
     graph: DiagramGraph | None
-    mermaid: str | None = None  # generated from the graph in Phase 2
+    mermaid: str | None  # Mermaid flowchart of the graph (§10); None when there is none
     metrics: AnalyzeMetrics
     attempts: list[AttemptView]
     repairs: list[RepairFix]
@@ -78,6 +79,7 @@ def to_response(record: AnalysisRecord, *, cached: bool) -> AnalyzeResponse:
         schema_version=record.metadata.schema_version,
         status=extraction.status,
         graph=graph,
+        mermaid=to_mermaid(graph) if graph else None,
         metrics=AnalyzeMetrics(
             latency_ms=record.latency_ms,
             attempts=len(extraction.attempts),

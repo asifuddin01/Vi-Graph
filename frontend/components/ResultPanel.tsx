@@ -1,3 +1,4 @@
+import MermaidView from "@/components/MermaidView";
 import type { AnalyzeResponse, Change, ExtractionStatus } from "@/lib/api";
 
 const STATUS: Record<ExtractionStatus, { text: string; tone: string }> = {
@@ -52,22 +53,23 @@ export default function ResultPanel({ result }: { result: AnalyzeResponse }) {
         </p>
       )}
 
-      {graph && (
-        <section className="flex flex-col gap-3">
-          <h3 className="text-sm font-semibold">Nodes</h3>
-          <Table
-            head={["id", "label", "type", "group"]}
-            rows={graph.nodes.map((n) => [n.id, n.label, n.type, n.group_id ?? ""])}
-          />
-          <h3 className="text-sm font-semibold">Edges</h3>
-          <Table
-            head={["from", "to", "relation", "label"]}
-            rows={graph.edges.map((e) => [e.source, e.target, e.relation, e.label ?? ""])}
-          />
-        </section>
-      )}
+      {result.mermaid && <MermaidView source={result.mermaid} />}
 
       <div className="flex flex-col gap-2">
+        {graph && (
+          <Collapsible title={`Nodes (${graph.nodes.length}) & edges (${graph.edges.length})`}>
+            <div className="flex flex-col gap-3">
+              <Table
+                head={["id", "label", "type", "group"]}
+                rows={graph.nodes.map((n) => [n.id, n.label, n.type, n.group_id ?? ""])}
+              />
+              <Table
+                head={["from", "to", "relation", "label"]}
+                rows={graph.edges.map((e) => [e.source, e.target, e.relation, e.label ?? ""])}
+              />
+            </div>
+          </Collapsible>
+        )}
         {result.repairs.length > 0 && (
           <ChangeList title={`Repairs (${result.repairs.length})`} changes={result.repairs} />
         )}

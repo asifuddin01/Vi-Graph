@@ -83,7 +83,8 @@ def test_analyze_returns_the_graph_and_raw_output(env: Env) -> None:
     assert body["status"] == "valid_first_attempt"
     assert body["schema_version"] == "2.0"
     assert [n["label"] for n in body["graph"]["nodes"]][:2] == ["Input Image", "CNN Encoder"]
-    assert body["mermaid"] is None
+    assert body["mermaid"].startswith("flowchart TD\n")
+    assert 'n4{{"Feature Fusion"}}' in body["mermaid"]
     assert body["attempts"][0]["raw_output"] == DEFAULT_RESPONSE
     assert body["metrics"] == {
         "latency_ms": body["metrics"]["latency_ms"],
@@ -149,6 +150,7 @@ def test_failed_extraction_is_a_structured_failure_and_is_not_cached(tmp_path: P
     assert body["status"] == "failed"
     assert body["graph"] is None
     assert body["failure_reason"] == "no attempt contained a JSON object"
+    assert body["mermaid"] is None
     assert body["metrics"]["nodes"] is None
     assert env.runs.get(body["diagram_id"]) is not None  # failures are logged too
     assert env.vlm.call_count == 4  # the second upload ran again: failures are not cached

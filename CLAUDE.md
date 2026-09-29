@@ -7,13 +7,13 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 2 — Graph reconstruction (in progress, step 1 of 4 done). Phase 1 complete.
-Last completed: Phase 2 step 1 — NetworkX graph layer (backend/app/graph/topology.py);
-  339 tests passing.
+Phase: 2 — Graph reconstruction (in progress, step 2 of 4 done). Phase 1 complete.
+Last completed: Phase 2 step 2 — Mermaid export (backend/app/exporters/mermaid.py), API
+  `mermaid` field, frontend MermaidView; 358 tests passing.
 Phase 2 plan (in order):
   1. [done] build_graph + §9 queries (predecessors/successors/sources/sinks/paths/parallel
      branches/group members/flatten) + validate_graph diagnostics
-  2. Mermaid generation (edge labels, subgraphs from group_id, escaping) + API field
+  2. [done] Mermaid generation (edge labels, subgraphs from group_id, escaping) + API field
   3. React Flow editor (move/rename/add/delete nodes+edges, edge labels, types,
      group/ungroup, inspect, reset, save) + backend save endpoint
   4. Exports (§28 POST /api/export: json, mermaid, svg, png, pdf)
@@ -31,7 +31,18 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 2 step 2 — Mermaid generation.
+Next up: Phase 2 step 3 — React Flow editor.
+Mermaid decisions (Phase 2 step 2):
+  - to_mermaid(graph, direction="TD"): ids n1..nk by node order; all labels quoted and
+    entity-escaped (# " & < > | ; ` \ → #NN;, newlines → space). Verified with the real
+    Mermaid 12 parser/renderer in Chromium via scripts/verify_mermaid/ — RE-RUN IT WHEN
+    UPGRADING mermaid.
+  - Shapes: input/output stadium, module/unknown rect, operation rounded, decision rhombus,
+    fusion hexagon. Groups with members → nested subgraphs; empty groups → plain node.
+  - Edge text = label, else condition; non-flow relations append their name ("owns
+    (composes)"); depends_on is dotted. Every edge emitted (parallel edges, self-loops).
+  - frontend: mermaid@12 with npm override lodash-es ^4.18.1 (mermaid 12 → chevrotain 11 →
+    vulnerable lodash-es ≤4.17.23; audit's own fix was a downgrade to mermaid 11).
 Graph layer decisions (Phase 2 step 1):
   - build_graph → nx.MultiDiGraph (parallel edges kept, key = edge index); node attrs
     label/type/group_id/bbox/confidence/order; all relations count for topology.
