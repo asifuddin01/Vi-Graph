@@ -42,7 +42,12 @@ class Settings(BaseSettings):
     # VLM backend selection — the single swap point (§33.3).
     vlm_backend: Literal["mock", "hf"] = "mock"
     vlm_model_id: str = "Qwen/Qwen3-VL-2B-Instruct"
+    # Hub revision (branch, tag, or commit) to pin; None means the default branch. The
+    # resolved commit hash is logged either way (§18.1).
+    vlm_revision: str | None = None
     vlm_adapter_path: Path | None = None
+    vlm_dtype: Literal["auto", "float16", "bfloat16", "float32"] = "auto"
+    vlm_device_map: str = "auto"
 
     @field_validator("cors_origins", mode="before")
     @classmethod
@@ -51,9 +56,9 @@ class Settings(BaseSettings):
             return [origin.strip() for origin in value.split(",") if origin.strip()]
         return value
 
-    @field_validator("vlm_adapter_path", mode="before")
+    @field_validator("vlm_adapter_path", "vlm_revision", mode="before")
     @classmethod
-    def _empty_path_is_none(cls, value: object) -> object:
+    def _empty_is_none(cls, value: object) -> object:
         if isinstance(value, str) and not value.strip():
             return None
         return value

@@ -10,11 +10,13 @@ from app.vlm.base import (
     validate_conversation,
 )
 from app.vlm.factory import create_vlm_backend, get_vlm_backend
+from app.vlm.hf import HuggingFaceVLM
 from app.vlm.mock import MockVLM
 
 __all__ = [
     "Completion",
     "DecodingParams",
+    "HuggingFaceVLM",
     "Message",
     "MockVLM",
     "ModelInfo",

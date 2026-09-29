@@ -10,6 +10,7 @@ from app.config import Settings, get_settings
 from app.schemas import DiagramGraph
 from app.vlm import (
     DecodingParams,
+    HuggingFaceVLM,
     Message,
     MockVLM,
     create_vlm_backend,
@@ -177,9 +178,23 @@ def test_factory_builds_mock_backend() -> None:
     assert isinstance(backend, MockVLM)
 
 
-def test_factory_reports_hf_backend_as_not_implemented_yet() -> None:
-    with pytest.raises(NotImplementedError, match="VIGRAPH_VLM_BACKEND=mock"):
-        create_vlm_backend(Settings(_env_file=None, vlm_backend="hf"))
+def test_factory_builds_hf_backend_without_loading_weights() -> None:
+    settings = Settings(
+        _env_file=None,
+        vlm_backend="hf",
+        vlm_model_id="org/some-vlm",
+        vlm_revision="v1.0",
+        vlm_adapter_path="adapters/run-3",
+        vlm_dtype="float16",
+    )
+
+    backend = create_vlm_backend(settings)
+
+    assert isinstance(backend, HuggingFaceVLM)
+    assert not backend.loaded
+    assert backend.model_id == "org/some-vlm"
+    assert (backend.revision, backend.dtype) == ("v1.0", "float16")
+    assert backend.info.adapter_path == "adapters/run-3"
 
 
 @pytest.fixture

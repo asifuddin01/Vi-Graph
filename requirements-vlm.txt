@@ -6,4 +6,5 @@
 
 torch>=2.14,<3.0
 transformers>=5.17,<6.0
-accelerate>=1.15,<2.0
+accelerate>=1.15,<2.0     # device_map="auto"
+peft>=0.21,<1.0           # loading LoRA adapters trained in Colab

@@ -7,17 +7,16 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 1 — Working VLM prototype (in progress, step 4 of 9 done).
-Last completed: Phase 1 step 4 — Stage A preprocessing (backend/app/utils/images.py);
-  127 tests passing.
+Phase: 1 — Working VLM prototype (in progress, step 5 of 9 done).
+Last completed: Phase 1 step 5 — Hugging Face backend (backend/app/vlm/hf.py) + smoke CLI
+  (python -m app.vlm <image>, from backend/); 137 tests passing.
 Phase 1 plan (do in order, one at a time):
   1. [done] Schema v2 Pydantic models + validation tests (§7, §8 Stage C reject list)
   2. [done] Thin VLM interface + mock backend (backend/app/vlm/), single swap point (§33.3)
   3. [done] Prompt template (§8 Stage B) with version hash; diagram_type vocabulary
   4. [done] Stage A image preprocessing (RGB, size checks, aspect-preserving resize)
-  5. Hugging Face backend (Qwen3-VL via transformers, lazy imports, optional adapter).
-     Cannot be run in this cloud env (huggingface.co blocked) — test what is testable
-     without weights, and say so.
+  5. [done] Hugging Face backend (Qwen3-VL via transformers, lazy imports, optional
+     adapter). NOT run against real weights (see Known issues).
   6. Stage C: extract JSON from raw model text → validate → one corrective retry →
      programmatic repair (marked repaired, with a list of fixes) → structured failure;
      every outcome logged; first-attempt vs post-repair validity tracked
@@ -25,7 +24,18 @@ Phase 1 plan (do in order, one at a time):
   8. Reproducibility metadata logging per inference call (§18.1), SQLite
   9. POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 1 step 5 — Hugging Face backend.
+Next up: Phase 1 step 6 — Stage C (JSON extraction → validate → retry → repair).
+HF backend decisions (Phase 1 step 5):
+  - Generic AutoModelForImageTextToText + AutoProcessor.apply_chat_template, so any HF
+    VLM works (§19). Checked against transformers 5.17 source (dtype= kwarg, image
+    content blocks {"type": "image", "image": PIL}, generate kwarg precedence).
+  - DecodingParams fully determine decoding: repetition_penalty forced to 1.0, and when
+    sampling top_k=0 — model generation_config defaults can't silently apply.
+  - Weights load lazily on first generate (or .load()); one generation at a time (lock).
+  - Logged revision = resolved commit hash (config._commit_hash) when available.
+  - finish_reason "length" when completion_tokens >= max_new_tokens.
+  - Visual-token budget is controlled via VIGRAPH_IMAGE_MAX_SIDE (Stage A), not
+    processor-specific kwargs.
 Preprocessing decisions (Phase 1 step 4):
   - Accepted formats: PNG, JPEG, WebP, detected from content. Rejected: everything else
     (incl. GIF, BMP, TIFF, SVG, PDF).
@@ -74,6 +84,11 @@ Open decisions made this session:
   - Frontend uses a system font stack (no next/font/google) so builds need no font download.
   - Test client dep is httpx2 (Starlette >= 1.7 deprecates httpx for TestClient).
 Known issues / TODOs:
+  - UNVERIFIED: the hf backend has never run against real weights (huggingface.co and
+    download.pytorch.org are blocked here; torch not installed). Verify where HF is
+    reachable: `pip install -r requirements-vlm.txt`, then from backend/
+    `VIGRAPH_VLM_BACKEND=hf VIGRAPH_VLM_DTYPE=float16 python -m app.vlm some_diagram.png`.
+    Also unverified: Qwen3-VL numerical stability in float16 on T4.
   - This cloud environment's network policy blocks huggingface.co, so real model
     weights cannot be downloaded here. Develop against the mock backend; test real
     inference where HF is reachable (or allow huggingface.co in the environment settings).
