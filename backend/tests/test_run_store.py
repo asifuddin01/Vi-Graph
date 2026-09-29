@@ -31,7 +31,7 @@ def store(tmp_path: Path) -> RunStore:
 def test_database_is_created_with_a_schema_version(store: RunStore) -> None:
     assert store.path.exists()
     with sqlite3.connect(store.path) as conn:
-        assert conn.execute("PRAGMA user_version").fetchone()[0] == 1
+        assert conn.execute("PRAGMA user_version").fetchone()[0] == 2
 
 
 def test_reopening_an_existing_database_keeps_its_runs(store: RunStore) -> None:
@@ -135,3 +135,78 @@ def test_failed_runs_are_never_served_from_cache(store: RunStore) -> None:
 
     assert record.extraction.status == "failed"
     assert store.find_cached(record.image.sha256, record.metadata) is None
+
+
+# --- graph versions (editor saves) ----------------------------------------------------
+
+
+def test_version_1_database_gains_the_graph_versions_table(tmp_path: Path) -> None:
+    path = tmp_path / "old.sqlite3"
+    RunStore(path)
+    with sqlite3.connect(path) as conn:  # turn it back into a version 1 database
+        conn.execute("DROP TABLE graph_versions")
+        conn.execute("PRAGMA user_version=1")
+
+    RunStore(path)
+
+    with sqlite3.connect(path) as conn:
+        tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master")}
+        assert "graph_versions" in tables
+        assert conn.execute("PRAGMA user_version").fetchone()[0] == 2
+
+
+def test_no_edits_means_no_version(store: RunStore) -> None:
+    record = run()
+    store.save(record)
+
+    assert store.latest_graph_version(record.id) is None
+
+
+def test_saved_versions_count_up_and_the_latest_wins(store: RunStore) -> None:
+    record = run()
+    store.save(record)
+    graph = record.graph
+    renamed = graph.model_copy(
+        update={"nodes": [graph.nodes[0].model_copy(update={"label": "Edited"}), *graph.nodes[1:]]}
+    )
+
+    first = store.save_graph_version(record.id, graph, {"n1": (0.0, 0.0)})
+    second = store.save_graph_version(record.id, renamed)
+
+    assert (first.version, second.version) == (1, 2)
+    latest = store.latest_graph_version(record.id)
+    assert latest == second
+    assert latest.graph.nodes[0].label == "Edited"
+    assert latest.layout is None
+
+
+def test_layout_round_trips(store: RunStore) -> None:
+    record = run()
+    store.save(record)
+
+    store.save_graph_version(record.id, record.graph, {"n1": (10.5, -3.0), "n2": (200, 40)})
+
+    assert store.latest_graph_version(record.id).layout == {"n1": (10.5, -3.0), "n2": (200.0, 40.0)}
+
+
+def test_versions_are_kept_per_analysis(store: RunStore) -> None:
+    a, b = run(), run(png("black"))
+    store.save(a)
+    store.save(b)
+
+    store.save_graph_version(a.id, a.graph)
+    store.save_graph_version(a.id, a.graph)
+    store.save_graph_version(b.id, b.graph)
+
+    assert store.latest_graph_version(a.id).version == 2
+    assert store.latest_graph_version(b.id).version == 1
+
+
+def test_the_models_reconstruction_is_never_overwritten(store: RunStore) -> None:
+    record = run()
+    store.save(record)
+    edited = record.graph.model_copy(update={"nodes": record.graph.nodes[:1], "edges": []})
+
+    store.save_graph_version(record.id, edited)
+
+    assert store.get(record.id) == record

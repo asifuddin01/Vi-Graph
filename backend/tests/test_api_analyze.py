@@ -1,3 +1,4 @@
+import copy
 import io
 import json
 from collections.abc import Sequence
@@ -255,3 +256,97 @@ def test_model_failure_is_503_without_leaking_details(tmp_path: Path) -> None:
 
     assert response.status_code == 503
     assert "secret" not in response.text
+
+
+# --- saving edited graphs (§11) --------------------------------------------------------
+
+
+def edited_graph(body: dict) -> dict:
+    graph = copy.deepcopy(body["graph"])
+    graph["nodes"][1]["label"] = "Edited Encoder"
+    graph["nodes"].append({"id": "n6", "label": "Softmax", "type": "operation", "group_id": None})
+    graph["edges"].append(
+        {"source": "n5", "target": "n6", "relation": "flows_to", "label": None, "condition": None}
+    )
+    return graph
+
+
+def test_new_analysis_has_no_edits(env: Env) -> None:
+    assert upload(env, png()).json()["edited"] is None
+
+
+def test_saving_an_edited_graph_creates_a_version(env: Env) -> None:
+    body = upload(env, png()).json()
+
+    response = env.client.put(
+        f"/api/analyses/{body['diagram_id']}/graph",
+        json={"graph": edited_graph(body), "layout": {"n1": [0, 0], "n6": [120, 300]}},
+    )
+
+    assert response.status_code == 200
+    saved = response.json()
+    assert saved["version"] == 1
+    assert saved["graph"]["nodes"][1]["label"] == "Edited Encoder"
+    assert 'n6("Softmax")' in saved["mermaid"]
+    assert saved["layout"] == {"n1": [0.0, 0.0], "n6": [120.0, 300.0]}
+
+
+def test_fetched_analysis_includes_the_latest_edit_and_keeps_the_original(env: Env) -> None:
+    body = upload(env, png()).json()
+    url = f"/api/analyses/{body['diagram_id']}/graph"
+    env.client.put(url, json={"graph": edited_graph(body)})
+    env.client.put(url, json={"graph": edited_graph(body)})
+
+    fetched = env.client.get(f"/api/analyses/{body['diagram_id']}").json()
+
+    assert fetched["edited"]["version"] == 2
+    assert fetched["graph"] == body["graph"]  # the model's reconstruction is untouched
+
+
+def test_cached_analysis_includes_edits(env: Env) -> None:
+    body = upload(env, png()).json()
+    env.client.put(f"/api/analyses/{body['diagram_id']}/graph", json={"graph": edited_graph(body)})
+
+    again = upload(env, png()).json()
+
+    assert again["metrics"]["cached"] is True
+    assert again["edited"]["version"] == 1
+
+
+def test_invalid_edit_is_rejected_with_specific_problems(env: Env) -> None:
+    body = upload(env, png()).json()
+    graph = body["graph"]
+    graph["edges"].append({"source": "n1", "target": "ghost", "relation": "flows_to"})
+    graph["nodes"][0]["label"] = "  "
+
+    response = env.client.put(f"/api/analyses/{body['diagram_id']}/graph", json={"graph": graph})
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == [
+        "nodes[0].label: must not be empty or whitespace-only (got '  ')"
+    ]
+    graph["nodes"][0]["label"] = "Input"
+    response = env.client.put(f"/api/analyses/{body['diagram_id']}/graph", json={"graph": graph})
+    assert response.json()["detail"] == [
+        "edge #5 'n1->ghost' references node id 'ghost', which does not exist"
+    ]
+    assert env.runs.latest_graph_version(body["diagram_id"]) is None
+
+
+def test_layout_for_unknown_nodes_is_dropped(env: Env) -> None:
+    body = upload(env, png()).json()
+
+    saved = env.client.put(
+        f"/api/analyses/{body['diagram_id']}/graph",
+        json={"graph": body["graph"], "layout": {"n1": [1, 2], "gone": [3, 4]}},
+    ).json()
+
+    assert saved["layout"] == {"n1": [1.0, 2.0]}
+
+
+def test_saving_for_an_unknown_analysis_is_404(env: Env) -> None:
+    body = upload(env, png()).json()
+
+    response = env.client.put(f"/api/analyses/{'0' * 32}/graph", json={"graph": body["graph"]})
+
+    assert response.status_code == 404

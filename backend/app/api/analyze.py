@@ -1,4 +1,4 @@
-"""POST /api/analyze and GET /api/analyses/{diagram_id} (spec §28)."""
+"""Analysis endpoints (spec §28): analyze an image, fetch an analysis, save graph edits."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import hashlib
 import logging
 import re
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
@@ -23,7 +23,9 @@ from app.pipeline.analyze import AnalysisRecord, ImageInfo, analyze_image, build
 from app.pipeline.extraction import ExtractionStatus
 from app.pipeline.normalize import NormalizationChange
 from app.pipeline.repair import RepairFix
+from app.pipeline.validation import validate_graph
 from app.schemas import DiagramGraph
+from app.storage.runs import GraphVersion, Layout
 from app.utils.images import ImageError
 from app.vlm.base import DecodingParams, ModelInfo
 
@@ -54,6 +56,16 @@ class AnalyzeMetrics(BaseModel):
     cached: bool
 
 
+class EditedGraphView(BaseModel):
+    """The latest user-edited version of an analysis's graph (§11)."""
+
+    version: int
+    saved_at: datetime
+    graph: DiagramGraph
+    mermaid: str
+    layout: Layout | None
+
+
 class AnalyzeResponse(BaseModel):
     diagram_id: str
     schema_version: str
@@ -68,9 +80,22 @@ class AnalyzeResponse(BaseModel):
     model: ModelInfo
     image: ImageInfo
     created_at: datetime
+    edited: EditedGraphView | None  # None until the graph has been edited and saved
 
 
-def to_response(record: AnalysisRecord, *, cached: bool) -> AnalyzeResponse:
+def to_edited_view(version: GraphVersion) -> EditedGraphView:
+    return EditedGraphView(
+        version=version.version,
+        saved_at=version.saved_at,
+        graph=version.graph,
+        mermaid=to_mermaid(version.graph),
+        layout=version.layout,
+    )
+
+
+def to_response(
+    record: AnalysisRecord, *, cached: bool, edited: GraphVersion | None = None
+) -> AnalyzeResponse:
     extraction = record.extraction
     graph = record.graph
     changes = record.normalization.changes if record.normalization else []
@@ -107,6 +132,7 @@ def to_response(record: AnalysisRecord, *, cached: bool) -> AnalyzeResponse:
         model=record.metadata.model,
         image=record.image,
         created_at=record.created_at,
+        edited=to_edited_view(edited) if edited else None,
     )
 
 
@@ -142,7 +168,7 @@ def analyze(
         metadata = build_run_metadata(vlm.info, params, image_max_side=settings.image_max_side)
         cached = runs.find_cached(hashlib.sha256(data).hexdigest(), metadata)
         if cached is not None:
-            return to_response(cached, cached=True)
+            return to_response(cached, cached=True, edited=runs.latest_graph_version(cached.id))
 
     try:
         record = analyze_image(
@@ -167,7 +193,33 @@ def analyze(
 
 @router.get("/analyses/{diagram_id}", response_model=AnalyzeResponse)
 def get_analysis(diagram_id: str, runs: RunStoreDep) -> AnalyzeResponse:
+    record = _find(runs, diagram_id)
+    return to_response(record, cached=False, edited=runs.latest_graph_version(record.id))
+
+
+class SaveGraphRequest(BaseModel):
+    graph: dict[str, Any]  # validated below, to report problems like Stage C does
+    layout: Layout | None = None
+
+
+@router.put("/analyses/{diagram_id}/graph", response_model=EditedGraphView)
+def save_graph(diagram_id: str, body: SaveGraphRequest, runs: RunStoreDep) -> EditedGraphView:
+    """Save an edited graph as the analysis's next version (§11 "save edited structure")."""
+    record = _find(runs, diagram_id)
+    graph, problems = validate_graph(body.graph)
+    if graph is None:
+        raise HTTPException(status_code=422, detail=problems)
+    node_ids = {node.id for node in graph.nodes}
+    layout = (
+        {node_id: xy for node_id, xy in body.layout.items() if node_id in node_ids}
+        if body.layout is not None
+        else None
+    )
+    return to_edited_view(runs.save_graph_version(record.id, graph, layout))
+
+
+def _find(runs: RunStoreDep, diagram_id: str) -> AnalysisRecord:
     record = runs.get(diagram_id) if _DIAGRAM_ID.fullmatch(diagram_id) else None
     if record is None:
         raise HTTPException(status_code=404, detail="analysis not found")
-    return to_response(record, cached=False)
+    return record
