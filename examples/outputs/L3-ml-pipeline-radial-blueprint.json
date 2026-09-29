@@ -1,0 +1,302 @@
+{
+  "schema_version": "2.0",
+  "diagram_type": "ml_pipeline",
+  "nodes": [
+    {
+      "id": "n1",
+      "label": "Training Data",
+      "type": "input",
+      "group_id": null
+    },
+    {
+      "id": "n2",
+      "label": "Accuracy > 90%?",
+      "type": "decision",
+      "group_id": null
+    },
+    {
+      "id": "n3",
+      "label": "Train",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n4",
+      "label": "Split",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n5",
+      "label": "Shuffle",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n6",
+      "label": "Tune",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n7",
+      "label": "Preprocess",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n8",
+      "label": "Fine-tune",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n9",
+      "label": "Augment",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n10",
+      "label": "Drift?",
+      "type": "decision",
+      "group_id": null
+    },
+    {
+      "id": "n11",
+      "label": "Train Model 1",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n12",
+      "label": "Normalize",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n13",
+      "label": "Feature Extraction",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n14",
+      "label": "Model Selection",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n15",
+      "label": "Export ONNX",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n16",
+      "label": "Combine Features",
+      "type": "fusion",
+      "group_id": null
+    },
+    {
+      "id": "n17",
+      "label": "Merge Splits",
+      "type": "fusion",
+      "group_id": null
+    },
+    {
+      "id": "n18",
+      "label": "Dataset",
+      "type": "input",
+      "group_id": null
+    },
+    {
+      "id": "n19",
+      "label": "Dataset 1",
+      "type": "input",
+      "group_id": null
+    },
+    {
+      "id": "n20",
+      "label": "Resize",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n21",
+      "label": "Deploy",
+      "type": "output",
+      "group_id": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "n1",
+      "target": "n2",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n2",
+      "target": "n3",
+      "relation": "flows_to",
+      "label": "Yes",
+      "condition": null
+    },
+    {
+      "source": "n3",
+      "target": "n4",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n2",
+      "target": "n5",
+      "relation": "flows_to",
+      "label": "No",
+      "condition": null
+    },
+    {
+      "source": "n4",
+      "target": "n6",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n5",
+      "target": "n6",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n6",
+      "target": "n7",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n7",
+      "target": "n8",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n8",
+      "target": "n9",
+      "relation": "flows_to",
+      "label": "train",
+      "condition": null
+    },
+    {
+      "source": "n9",
+      "target": "n10",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n10",
+      "target": "n9",
+      "relation": "flows_to",
+      "label": "No",
+      "condition": null
+    },
+    {
+      "source": "n10",
+      "target": "n11",
+      "relation": "flows_to",
+      "label": "Yes",
+      "condition": null
+    },
+    {
+      "source": "n11",
+      "target": "n12",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n12",
+      "target": "n13",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n11",
+      "target": "n14",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n14",
+      "target": "n15",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n13",
+      "target": "n16",
+      "relation": "flows_to",
+      "label": "train",
+      "condition": null
+    },
+    {
+      "source": "n15",
+      "target": "n16",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n16",
+      "target": "n17",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n18",
+      "target": "n17",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n19",
+      "target": "n17",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n17",
+      "target": "n20",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n20",
+      "target": "n21",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n2",
+      "target": "n15",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    }
+  ]
+}

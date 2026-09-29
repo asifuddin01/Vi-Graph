@@ -1,0 +1,131 @@
+{
+  "schema_version": "2.0",
+  "diagram_type": "uml",
+  "nodes": [
+    {
+      "id": "n1",
+      "label": "Product",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n2",
+      "label": "Engine",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n3",
+      "label": "Coupon",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n4",
+      "label": "Manager",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n5",
+      "label": "Review",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n6",
+      "label": "Shipment",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n7",
+      "label": "Customer",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n8",
+      "label": "Invoice",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n9",
+      "label": "OrderItem",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n10",
+      "label": "Employee",
+      "type": "module",
+      "group_id": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "n2",
+      "target": "n1",
+      "relation": "inherits_from",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n4",
+      "target": "n2",
+      "relation": "inherits_from",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n6",
+      "target": "n1",
+      "relation": "inherits_from",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n8",
+      "target": "n1",
+      "relation": "inherits_from",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n9",
+      "target": "n2",
+      "relation": "inherits_from",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n8",
+      "target": "n9",
+      "relation": "composes",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n5",
+      "target": "n8",
+      "relation": "aggregates",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n4",
+      "target": "n8",
+      "relation": "depends_on",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n7",
+      "target": "n6",
+      "relation": "composes",
+      "label": null,
+      "condition": null
+    }
+  ]
+}

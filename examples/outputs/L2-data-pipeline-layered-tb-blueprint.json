@@ -1,0 +1,105 @@
+{
+  "schema_version": "2.0",
+  "diagram_type": "data_pipeline",
+  "nodes": [
+    {
+      "id": "n1",
+      "label": "Kafka Topic",
+      "type": "input",
+      "group_id": null
+    },
+    {
+      "id": "n2",
+      "label": "Drop Nulls",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n3",
+      "label": "Cast Types",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n4",
+      "label": "dbt Model",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n5",
+      "label": "Sessionize",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n6",
+      "label": "Clean",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n7",
+      "label": "Aggregate",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n8",
+      "label": "Dashboard",
+      "type": "output",
+      "group_id": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "n1",
+      "target": "n2",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n2",
+      "target": "n3",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n3",
+      "target": "n4",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n4",
+      "target": "n5",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n5",
+      "target": "n6",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n6",
+      "target": "n7",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n7",
+      "target": "n8",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    }
+  ]
+}

@@ -1,0 +1,353 @@
+{
+  "schema_version": "2.0",
+  "diagram_type": "scientific_workflow",
+  "nodes": [
+    {
+      "id": "n1",
+      "label": "Sensor Data",
+      "type": "input",
+      "group_id": null
+    },
+    {
+      "id": "n2",
+      "label": "Statistical Analysis",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n3",
+      "label": "Meta-analysis",
+      "type": "fusion",
+      "group_id": null
+    },
+    {
+      "id": "n4",
+      "label": "Survey Data",
+      "type": "input",
+      "group_id": null
+    },
+    {
+      "id": "n5",
+      "label": "Analysis 1",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n6",
+      "label": "Replicate 2",
+      "type": "module",
+      "group_id": "n26"
+    },
+    {
+      "id": "n7",
+      "label": "Filter Low Quality",
+      "type": "operation",
+      "group_id": "n26"
+    },
+    {
+      "id": "n8",
+      "label": "Simulation",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n9",
+      "label": "Log Transform",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n10",
+      "label": "Annotation",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n11",
+      "label": "Segmentation",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n12",
+      "label": "Pool 1",
+      "type": "fusion",
+      "group_id": null
+    },
+    {
+      "id": "n13",
+      "label": "Sequencing",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n14",
+      "label": "Imputation",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n15",
+      "label": "Peak Detection",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n16",
+      "label": "Clustering",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n17",
+      "label": "Merge Replicates",
+      "type": "fusion",
+      "group_id": null
+    },
+    {
+      "id": "n18",
+      "label": "Analysis 3",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n19",
+      "label": "p < 0.05?",
+      "type": "decision",
+      "group_id": null
+    },
+    {
+      "id": "n20",
+      "label": "Quality Control",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n21",
+      "label": "Variant Calling",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n22",
+      "label": "Run 4",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n23",
+      "label": "Visualization",
+      "type": "output",
+      "group_id": null
+    },
+    {
+      "id": "n24",
+      "label": "Report",
+      "type": "output",
+      "group_id": null
+    },
+    {
+      "id": "n25",
+      "label": "Results Table",
+      "type": "output",
+      "group_id": null
+    },
+    {
+      "id": "n26",
+      "label": "Analysis",
+      "type": "group",
+      "group_id": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "n1",
+      "target": "n2",
+      "relation": "flows_to",
+      "label": "BAM",
+      "condition": null
+    },
+    {
+      "source": "n2",
+      "target": "n3",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n4",
+      "target": "n3",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n3",
+      "target": "n5",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n5",
+      "target": "n6",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n6",
+      "target": "n7",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n7",
+      "target": "n8",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n8",
+      "target": "n9",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n9",
+      "target": "n10",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n7",
+      "target": "n11",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n10",
+      "target": "n12",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n11",
+      "target": "n12",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n12",
+      "target": "n13",
+      "relation": "flows_to",
+      "label": "FASTQ",
+      "condition": null
+    },
+    {
+      "source": "n13",
+      "target": "n14",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n12",
+      "target": "n15",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n15",
+      "target": "n16",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n14",
+      "target": "n17",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n16",
+      "target": "n17",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n17",
+      "target": "n18",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n18",
+      "target": "n19",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n19",
+      "target": "n18",
+      "relation": "flows_to",
+      "label": "No",
+      "condition": null
+    },
+    {
+      "source": "n19",
+      "target": "n20",
+      "relation": "flows_to",
+      "label": "Yes",
+      "condition": null
+    },
+    {
+      "source": "n20",
+      "target": "n21",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n21",
+      "target": "n22",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n22",
+      "target": "n23",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n22",
+      "target": "n24",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n22",
+      "target": "n25",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    }
+  ]
+}

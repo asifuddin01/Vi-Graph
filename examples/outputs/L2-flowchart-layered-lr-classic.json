@@ -1,0 +1,99 @@
+{
+  "schema_version": "2.0",
+  "diagram_type": "flowchart",
+  "nodes": [
+    {
+      "id": "n1",
+      "label": "Start",
+      "type": "input",
+      "group_id": null
+    },
+    {
+      "id": "n2",
+      "label": "Retry?",
+      "type": "decision",
+      "group_id": null
+    },
+    {
+      "id": "n3",
+      "label": "Notify User",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n4",
+      "label": "Reset Flag",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n5",
+      "label": "Apply Discount",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n6",
+      "label": "Send Email",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n7",
+      "label": "End",
+      "type": "output",
+      "group_id": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "n1",
+      "target": "n2",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n2",
+      "target": "n3",
+      "relation": "flows_to",
+      "label": "Yes",
+      "condition": null
+    },
+    {
+      "source": "n2",
+      "target": "n4",
+      "relation": "flows_to",
+      "label": "No",
+      "condition": null
+    },
+    {
+      "source": "n4",
+      "target": "n5",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n3",
+      "target": "n6",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n5",
+      "target": "n6",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n6",
+      "target": "n7",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    }
+  ]
+}

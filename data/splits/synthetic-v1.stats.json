@@ -1,0 +1,235 @@
+{
+  "train": {
+    "samples": 2000,
+    "levels": {
+      "L1": {
+        "samples": 500,
+        "mean_nodes": 4.54,
+        "mean_edges": 3.71,
+        "cyclic": 0,
+        "with_groups": 0
+      },
+      "L2": {
+        "samples": 500,
+        "mean_nodes": 8.95,
+        "mean_edges": 8.63,
+        "cyclic": 0,
+        "with_groups": 175
+      },
+      "L3": {
+        "samples": 500,
+        "mean_nodes": 18.26,
+        "mean_edges": 20.26,
+        "cyclic": 123,
+        "with_groups": 335
+      },
+      "L4": {
+        "samples": 500,
+        "mean_nodes": 32.48,
+        "mean_edges": 36.63,
+        "cyclic": 194,
+        "with_groups": 405
+      }
+    },
+    "diagram_types": {
+      "neural_network": 288,
+      "flowchart": 288,
+      "data_pipeline": 288,
+      "ml_pipeline": 284,
+      "scientific_workflow": 284,
+      "system_architecture": 284,
+      "uml": 284
+    },
+    "layouts": {
+      "layered_lr": 1447,
+      "force": 553
+    },
+    "themes": {
+      "vivid": 438,
+      "corporate": 419,
+      "pastel": 393,
+      "classic": 388,
+      "sketch": 362
+    },
+    "patterns": {
+      "linear": 1480,
+      "merging": 1285,
+      "branching": 1170,
+      "nested": 915,
+      "labeled_edges": 787,
+      "decision": 591,
+      "multi_branch": 580,
+      "fan_in": 528,
+      "dependency": 448,
+      "long_range": 425,
+      "fan_out": 331,
+      "cycle": 275,
+      "inheritance": 269,
+      "nested_deep": 259,
+      "aggregation": 235,
+      "composition": 230,
+      "skip": 174,
+      "residual": 141,
+      "repeated_labels": 136
+    },
+    "mean_image_size": [
+      1441.99,
+      441.58
+    ]
+  },
+  "val": {
+    "samples": 300,
+    "levels": {
+      "L1": {
+        "samples": 75,
+        "mean_nodes": 4.44,
+        "mean_edges": 3.63,
+        "cyclic": 0,
+        "with_groups": 0
+      },
+      "L2": {
+        "samples": 75,
+        "mean_nodes": 9.07,
+        "mean_edges": 8.84,
+        "cyclic": 0,
+        "with_groups": 24
+      },
+      "L3": {
+        "samples": 75,
+        "mean_nodes": 19.21,
+        "mean_edges": 21.05,
+        "cyclic": 24,
+        "with_groups": 53
+      },
+      "L4": {
+        "samples": 75,
+        "mean_nodes": 32.69,
+        "mean_edges": 37.32,
+        "cyclic": 25,
+        "with_groups": 64
+      }
+    },
+    "diagram_types": {
+      "neural_network": 44,
+      "flowchart": 44,
+      "data_pipeline": 44,
+      "ml_pipeline": 44,
+      "scientific_workflow": 44,
+      "system_architecture": 40,
+      "uml": 40
+    },
+    "layouts": {
+      "layered_lr": 224,
+      "force": 76
+    },
+    "themes": {
+      "classic": 66,
+      "vivid": 63,
+      "pastel": 62,
+      "corporate": 60,
+      "sketch": 49
+    },
+    "patterns": {
+      "linear": 222,
+      "merging": 193,
+      "branching": 170,
+      "nested": 141,
+      "labeled_edges": 116,
+      "fan_in": 92,
+      "decision": 92,
+      "multi_branch": 76,
+      "dependency": 69,
+      "long_range": 67,
+      "fan_out": 55,
+      "cycle": 43,
+      "inheritance": 39,
+      "nested_deep": 37,
+      "aggregation": 33,
+      "skip": 29,
+      "composition": 28,
+      "repeated_labels": 23,
+      "residual": 22
+    },
+    "mean_image_size": [
+      1456.41,
+      393.73
+    ]
+  },
+  "test": {
+    "samples": 500,
+    "levels": {
+      "L1": {
+        "samples": 125,
+        "mean_nodes": 4.41,
+        "mean_edges": 3.58,
+        "cyclic": 0,
+        "with_groups": 0
+      },
+      "L2": {
+        "samples": 125,
+        "mean_nodes": 9.17,
+        "mean_edges": 8.83,
+        "cyclic": 0,
+        "with_groups": 45
+      },
+      "L3": {
+        "samples": 125,
+        "mean_nodes": 19.06,
+        "mean_edges": 20.93,
+        "cyclic": 30,
+        "with_groups": 92
+      },
+      "L4": {
+        "samples": 125,
+        "mean_nodes": 33.2,
+        "mean_edges": 37.77,
+        "cyclic": 51,
+        "with_groups": 102
+      }
+    },
+    "diagram_types": {
+      "neural_network": 72,
+      "flowchart": 72,
+      "data_pipeline": 72,
+      "ml_pipeline": 72,
+      "scientific_workflow": 72,
+      "system_architecture": 72,
+      "uml": 68
+    },
+    "layouts": {
+      "layered_tb": 325,
+      "radial": 103,
+      "circular": 72
+    },
+    "themes": {
+      "paper": 174,
+      "blueprint": 168,
+      "dark": 158
+    },
+    "patterns": {
+      "linear": 376,
+      "merging": 326,
+      "branching": 302,
+      "nested": 239,
+      "labeled_edges": 205,
+      "decision": 153,
+      "multi_branch": 138,
+      "fan_in": 132,
+      "dependency": 116,
+      "long_range": 110,
+      "fan_out": 83,
+      "cycle": 68,
+      "nested_deep": 67,
+      "inheritance": 64,
+      "aggregation": 58,
+      "composition": 54,
+      "skip": 37,
+      "repeated_labels": 33,
+      "residual": 31
+    },
+    "mean_image_size": [
+      799.23,
+      1081.03
+    ]
+  }
+}

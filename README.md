@@ -26,7 +26,9 @@ Diagram image → VLM → structured JSON → validate / normalize / repair
 > **Status:** Phases 1–3 complete (the usable product) — upload a diagram, get a validated,
 > versioned JSON graph (with retry/repair and run logging), edit it interactively, ask
 > topology questions with graph-grounded answers, and export JSON, Mermaid, SVG, PNG, or
-> PDF. The research track (dataset generator, evaluation, training) comes next. See
+> PDF. Research track: the synthetic dataset generator is done (2,800 rendered diagrams with
+> exact ground truth and a held-out-layout test split, see [`data/`](data/README.md));
+> evaluation and training come next. See
 > [`CLAUDE.md`](CLAUDE.md) for current status and [`docs/SPEC.md`](docs/SPEC.md) for the
 > full specification.
 
@@ -36,11 +38,11 @@ Diagram image → VLM → structured JSON → validate / normalize / repair
 | ------------- | --------------------------------------------------------------------- |
 | `backend/`    | FastAPI app: schemas, VLM interface, graph layer, QA, exporters       |
 | `frontend/`   | Next.js + TypeScript + Tailwind UI                                    |
-| `data/`       | Synthetic + real diagram datasets, annotations, split manifests       |
+| `data/`       | Synthetic dataset generator, datasets, annotations, split manifests   |
 | `training/`   | Colab (T4) LoRA/QLoRA notebooks and configs — training runs in Colab only |
 | `evaluation/` | Metrics (incl. node/edge matching), evaluation scripts, reports       |
 | `research/`   | Experiment matrix, error taxonomy, paper drafts                       |
-| `examples/`   | Example diagrams and outputs                                          |
+| `examples/`   | Example synthetic diagrams with their ground-truth graphs             |
 | `docs/`       | Project specification                                                 |
 
 ## Getting started

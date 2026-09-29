@@ -1,0 +1,66 @@
+{
+  "schema_version": "2.0",
+  "diagram_type": "neural_network",
+  "nodes": [
+    {
+      "id": "n1",
+      "label": "Input",
+      "type": "input",
+      "group_id": null
+    },
+    {
+      "id": "n2",
+      "label": "Residual Block",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n3",
+      "label": "GELU",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n4",
+      "label": "Downsample",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n5",
+      "label": "Logits",
+      "type": "output",
+      "group_id": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "n1",
+      "target": "n2",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n2",
+      "target": "n3",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n3",
+      "target": "n4",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n4",
+      "target": "n5",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    }
+  ]
+}

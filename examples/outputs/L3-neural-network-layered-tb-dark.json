@@ -1,0 +1,371 @@
+{
+  "schema_version": "2.0",
+  "diagram_type": "neural_network",
+  "nodes": [
+    {
+      "id": "n1",
+      "label": "Text",
+      "type": "input",
+      "group_id": null
+    },
+    {
+      "id": "n2",
+      "label": "Conv 3x3",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n3",
+      "label": "Global Avg Pool",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n4",
+      "label": "ReLU",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n5",
+      "label": "Cross-Attention",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n6",
+      "label": "Pool 7x7",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n7",
+      "label": "Softmax",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n8",
+      "label": "Flatten",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n9",
+      "label": "Residual Block",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n10",
+      "label": "Depthwise Conv",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n11",
+      "label": "Add",
+      "type": "fusion",
+      "group_id": null
+    },
+    {
+      "id": "n12",
+      "label": "Dropout 0.2",
+      "type": "operation",
+      "group_id": "n26"
+    },
+    {
+      "id": "n13",
+      "label": "Decoder",
+      "type": "module",
+      "group_id": "n26"
+    },
+    {
+      "id": "n14",
+      "label": "Avg Pool",
+      "type": "operation",
+      "group_id": "n26"
+    },
+    {
+      "id": "n15",
+      "label": "+",
+      "type": "fusion",
+      "group_id": "n26"
+    },
+    {
+      "id": "n16",
+      "label": "Decoder",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n17",
+      "label": "Tanh",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n18",
+      "label": "Softmax",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n19",
+      "label": "Concat",
+      "type": "fusion",
+      "group_id": "n27"
+    },
+    {
+      "id": "n20",
+      "label": "Input",
+      "type": "input",
+      "group_id": "n27"
+    },
+    {
+      "id": "n21",
+      "label": "Projection Head",
+      "type": "module",
+      "group_id": "n28"
+    },
+    {
+      "id": "n22",
+      "label": "Encoder",
+      "type": "module",
+      "group_id": "n28"
+    },
+    {
+      "id": "n23",
+      "label": "GRU",
+      "type": "module",
+      "group_id": "n28"
+    },
+    {
+      "id": "n24",
+      "label": "LSTM",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n25",
+      "label": "Classifier",
+      "type": "output",
+      "group_id": null
+    },
+    {
+      "id": "n26",
+      "label": "Backbone",
+      "type": "group",
+      "group_id": null
+    },
+    {
+      "id": "n27",
+      "label": "Decoder Block",
+      "type": "group",
+      "group_id": "n29"
+    },
+    {
+      "id": "n28",
+      "label": "Attention Module",
+      "type": "group",
+      "group_id": "n29"
+    },
+    {
+      "id": "n29",
+      "label": "Encoder Block",
+      "type": "group",
+      "group_id": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "n1",
+      "target": "n2",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n2",
+      "target": "n3",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n3",
+      "target": "n4",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n4",
+      "target": "n5",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n5",
+      "target": "n6",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n6",
+      "target": "n7",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n7",
+      "target": "n8",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n5",
+      "target": "n9",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n9",
+      "target": "n10",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n8",
+      "target": "n11",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n10",
+      "target": "n11",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n11",
+      "target": "n12",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n12",
+      "target": "n13",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n13",
+      "target": "n14",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n14",
+      "target": "n15",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n11",
+      "target": "n15",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n15",
+      "target": "n16",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n16",
+      "target": "n17",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n17",
+      "target": "n18",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n18",
+      "target": "n19",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n20",
+      "target": "n19",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n19",
+      "target": "n21",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n21",
+      "target": "n22",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n22",
+      "target": "n23",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n19",
+      "target": "n23",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n23",
+      "target": "n24",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n24",
+      "target": "n25",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    }
+  ]
+}

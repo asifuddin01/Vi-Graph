@@ -7,17 +7,27 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 4 — Synthetic dataset generator (in progress, step 2 of 3 done). Phases 1–3
-  complete (usable product).
-Last completed: Phase 4 step 2 — renderer with randomized themes/layouts
-  (data/generator/render.py); 561 tests passing.
+Phase: 5 — Evaluation framework (next). Phases 1–4 complete (usable product + synthetic
+  dataset).
+Last completed: Phase 4 step 3 — dataset builder CLI, held-out splits, manifest
+  (data/generator/dataset.py, __main__.py); 572 tests passing.
+Phase 5 plan (in order): to be written at the start of Phase 5 (§20: JSON validity,
+  node/edge P/R/F1 via matching v1, label accuracy, graph similarity, structural QA,
+  diagram-type accuracy, latency, run metadata + split hash, variance/significance).
+Phase 6 (Colab hand-off) — USER PREFERENCE (stated during Phase 4): deliver .ipynb, one
+  notebook split into clearly separated sections, each with its own purpose, in order:
+  library install/import → dataset import (build in Colab, verify against the committed
+  manifest) → preprocess → model load → train (resumable after interruption:
+  checkpoints on Drive, auto-resume) → evaluation → save, ending with the exact list of
+  files the user should give back to Claude (adapter, eval reports, run metadata, logs).
 Phase 4 plan (in order):
   1. [done] Pattern-operator graph generator, difficulty L1–L4, 7 diagram types, spec per
      sample (patterns, sizes, depth, cycles, groups)
   2. [done] Renderer: Graphviz with randomized visual themes + layout families
      (layered_tb, layered_lr, radial, circular, force)
-  3. Dataset builder CLI: images + GT JSON + metadata.jsonl, stratified splits with
-     held-out layouts/themes for test (§16), split hash (§18.1); a few committed examples
+  3. [done] Dataset builder CLI (build/verify/stats): images + GT JSON + metadata.jsonl,
+     stratified splits with held-out layouts/themes for test (§16), split hashes
+     (§18.1); committed manifest/stats in data/splits/, 8 examples in examples/
 Phase 3 plan (in order):
   1. [done] Rule-based router (§12.1) + entity linking + grounded graph answers
   2. [done] VLM path for visual / "why" / unknown questions (versioned QA prompt, image from the
@@ -45,11 +55,25 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 4 step 3 — dataset builder CLI + splits.
+Next up: Phase 5 — evaluation framework (§20).
+Dataset decisions (Phase 4 step 3):
+  - synthetic-v1 = seed 0, 2000 train / 300 val / 500 test (§32). Stratified: levels cycle
+    fastest, then diagram types. Per-sample seed "{seed}:{split}:{index}".
+  - Held-out test (§16): train/val use layered_lr + force and themes classic, pastel,
+    corporate, vivid, sketch; test uses layered_tb, radial, circular and themes dark,
+    blueprint, paper. Optional --iid-test split to measure the shift.
+  - Manifest pins split_hashes (ids + image + GT hashes; the §18.1 split version) and
+    graph_hashes (ids + GT only). Images depend on the Graphviz version; GT must not —
+    `verify --reference data/splits/synthetic-v1.manifest.json` checks rebuilds (Colab).
+  - Committed build: Graphviz 2.43.0, dataset hash 6edd5f63…32e6 (identical across
+    rebuilds and thread counts). Datasets themselves are gitignored (data/synthetic/).
+  - Determinism: fdp is not reproducible (esp. with clusters), neato with overlap=false
+    neither → force layout = neato, start=<layout_seed>, overlap=scale.
 Renderer decisions (Phase 4 step 2):
   - Themes: classic, pastel, dark, blueprint, sketch, corporate, paper, vivid. Layouts:
-    layered_tb/layered_lr (dot), radial (twopi), circular (circo), force (fdp).
-  - Faithfulness rules: graphs with groups only get cluster-capable layouts (dot/fdp);
+    layered_tb/layered_lr (dot), radial (twopi), circular (circo), force (neato; was fdp,
+    changed in step 3 for determinism).
+  - Faithfulness rules: graphs with groups only get cluster layouts (dot, CLUSTER_LAYOUTS);
     graphs with edge labels never get splines=ortho (can drop labels); decisions are
     always diamonds; UML relations drawn in UML notation; depends_on dashed.
   - Font size by level (L1 14–18 pt … L4 7–10 pt); denser spacing at L3+; size ≤16 in.

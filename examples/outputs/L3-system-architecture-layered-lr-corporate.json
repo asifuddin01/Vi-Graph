@@ -1,0 +1,321 @@
+{
+  "schema_version": "2.0",
+  "diagram_type": "system_architecture",
+  "nodes": [
+    {
+      "id": "n1",
+      "label": "Client 1",
+      "type": "input",
+      "group_id": null
+    },
+    {
+      "id": "n2",
+      "label": "Authorized?",
+      "type": "decision",
+      "group_id": "n22"
+    },
+    {
+      "id": "n3",
+      "label": "Queue",
+      "type": "operation",
+      "group_id": "n22"
+    },
+    {
+      "id": "n4",
+      "label": "Cache",
+      "type": "operation",
+      "group_id": "n22"
+    },
+    {
+      "id": "n5",
+      "label": "User Service",
+      "type": "module",
+      "group_id": "n22"
+    },
+    {
+      "id": "n6",
+      "label": "Cache Hit?",
+      "type": "decision",
+      "group_id": null
+    },
+    {
+      "id": "n7",
+      "label": "API Gateway",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n8",
+      "label": "Circuit Breaker",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n9",
+      "label": "Shard 1",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n10",
+      "label": "Scheduler",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n11",
+      "label": "Search Service",
+      "type": "module",
+      "group_id": "n23"
+    },
+    {
+      "id": "n12",
+      "label": "Reverse Proxy",
+      "type": "module",
+      "group_id": "n23"
+    },
+    {
+      "id": "n13",
+      "label": "Rate Limiter",
+      "type": "module",
+      "group_id": "n23"
+    },
+    {
+      "id": "n14",
+      "label": "Shard 2",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n15",
+      "label": "Worker",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n16",
+      "label": "Worker 1",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n17",
+      "label": "Payment Service",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n18",
+      "label": "Shard 3",
+      "type": "operation",
+      "group_id": null
+    },
+    {
+      "id": "n19",
+      "label": "Notification Service",
+      "type": "module",
+      "group_id": null
+    },
+    {
+      "id": "n20",
+      "label": "Message Bus",
+      "type": "fusion",
+      "group_id": null
+    },
+    {
+      "id": "n21",
+      "label": "Logs",
+      "type": "output",
+      "group_id": null
+    },
+    {
+      "id": "n22",
+      "label": "Zone 1",
+      "type": "group",
+      "group_id": null
+    },
+    {
+      "id": "n23",
+      "label": "Kubernetes Cluster",
+      "type": "group",
+      "group_id": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "n1",
+      "target": "n2",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n2",
+      "target": "n3",
+      "relation": "flows_to",
+      "label": "Yes",
+      "condition": null
+    },
+    {
+      "source": "n2",
+      "target": "n4",
+      "relation": "flows_to",
+      "label": "No",
+      "condition": null
+    },
+    {
+      "source": "n3",
+      "target": "n5",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n4",
+      "target": "n5",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n5",
+      "target": "n6",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n6",
+      "target": "n7",
+      "relation": "flows_to",
+      "label": "Yes",
+      "condition": null
+    },
+    {
+      "source": "n6",
+      "target": "n8",
+      "relation": "flows_to",
+      "label": "No",
+      "condition": null
+    },
+    {
+      "source": "n8",
+      "target": "n9",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n7",
+      "target": "n10",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n9",
+      "target": "n10",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n10",
+      "target": "n11",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n11",
+      "target": "n12",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n12",
+      "target": "n13",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n13",
+      "target": "n14",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n14",
+      "target": "n15",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n14",
+      "target": "n16",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n14",
+      "target": "n17",
+      "relation": "depends_on",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n14",
+      "target": "n18",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n18",
+      "target": "n19",
+      "relation": "depends_on",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n15",
+      "target": "n20",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n16",
+      "target": "n20",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n17",
+      "target": "n20",
+      "relation": "depends_on",
+      "label": null,
+      "condition": null
+    },
+    {
+      "source": "n19",
+      "target": "n20",
+      "relation": "flows_to",
+      "label": "REST",
+      "condition": null
+    },
+    {
+      "source": "n20",
+      "target": "n21",
+      "relation": "flows_to",
+      "label": null,
+      "condition": null
+    }
+  ]
+}

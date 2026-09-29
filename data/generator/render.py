@@ -4,12 +4,15 @@ Rendering uses Graphviz. Per sample it varies the theme (background, fills, colo
 font), node shapes, arrowheads, line width, edge routing, spacing, resolution, and the
 layout family. Two rules keep the image faithful to its ground truth:
 
-- Groups need a layout that draws clusters, so graphs with groups only get the layered or
-  force layouts (twopi/circo ignore clusters and would hide the nesting).
+- Groups need a layout that draws clusters, so graphs with groups only get the layered
+  layouts (neato/twopi/circo ignore clusters and would hide the nesting).
 - UML relations get their UML arrowheads, since that is the only visual evidence for them.
 
 Only DejaVu fonts are used, and every parameter is recorded (``RenderParams``), so a
-sample can be re-rendered exactly on a machine with the same Graphviz version.
+sample can be re-rendered exactly on a machine with the same Graphviz version. Every engine
+used here was checked to be deterministic: fdp is not (in any overlap mode), and neato is
+not with prism overlap removal (overlap=false), so the force layout is seeded neato with
+overlap=scale.
 """
 
 from __future__ import annotations
@@ -29,13 +32,13 @@ from app.exporters.graphviz import quote
 from app.schemas import DiagramGraph, Node, NodeType, Relation
 
 LAYOUTS = ["layered_tb", "layered_lr", "radial", "circular", "force"]
-CLUSTER_LAYOUTS = {"layered_tb", "layered_lr", "force"}
+CLUSTER_LAYOUTS = {"layered_tb", "layered_lr"}
 _ENGINES = {
     "layered_tb": "dot",
     "layered_lr": "dot",
     "radial": "twopi",
     "circular": "circo",
-    "force": "fdp",
+    "force": "neato",
 }
 FONTS = ["DejaVu Sans", "DejaVu Serif", "DejaVu Sans Mono"]
 RENDER_TIMEOUT_SECONDS = 60
@@ -146,6 +149,7 @@ class RenderParams(BaseModel):
     penwidth: float
     node_sep: float
     rank_sep: float
+    layout_seed: int  # seeds neato's initial placement (the force layout)
     shapes: dict[str, str]  # node type → Graphviz shape
     type_fills: dict[str, str]  # node type → fill colour ("" = unfilled)
 
@@ -194,6 +198,7 @@ def sample_params(
         penwidth=round(rng.uniform(*theme.penwidth), 2),
         node_sep=round(rng.uniform(0.15, 0.35) if dense else rng.uniform(0.3, 0.7), 2),
         rank_sep=round(rng.uniform(0.25, 0.45) if dense else rng.uniform(0.4, 0.9), 2),
+        layout_seed=rng.randrange(1, 2**31),
         shapes={t.value: rng.choice(_SHAPES[t]) for t in types},
         type_fills={t.value: fills[i % len(fills)] if fills else "" for i, t in enumerate(types)},
     )
@@ -215,7 +220,6 @@ def to_styled_dot(graph: DiagramGraph, params: RenderParams) -> str:
         f"nodesep={params.node_sep}",
         'size="16,16"',
         "pad=0.25",
-        "overlap=false",
         "sep=0.3",
     ]
     if params.engine == "dot":
@@ -223,6 +227,11 @@ def to_styled_dot(graph: DiagramGraph, params: RenderParams) -> str:
             f"rankdir={'TB' if params.layout == 'layered_tb' else 'LR'}",
             f"ranksep={params.rank_sep}",
         ]
+    if params.engine == "neato":
+        # overlap=scale: prism overlap removal (overlap=false) is not deterministic.
+        graph_attrs += [f"start={params.layout_seed}", "overlap=scale"]
+    elif params.engine in {"twopi", "circo"}:
+        graph_attrs.append("overlap=false")
     if params.engine == "twopi":
         sources = {n.id for n in graph.nodes} - {e.target for e in graph.edges}
         root = next(
