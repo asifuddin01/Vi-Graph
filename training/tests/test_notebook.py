@@ -57,3 +57,21 @@ def test_notebook_paths_exist_in_the_repo() -> None:
         "data/splits/synthetic-v1.manifest.json",
     ):
         assert (root / relative).exists(), relative
+
+
+def test_training_requirements_never_upgrade_colabs_scientific_stack() -> None:
+    root = Path(__file__).resolve().parents[2]
+    lines = [
+        line.split("#")[0].strip()
+        for line in (root / "requirements-train.txt").read_text().splitlines()
+    ]
+    requirements = [line for line in lines if line]
+
+    # requirements.txt has numpy/scipy/pillow minimums that would replace Colab's builds.
+    assert not any(line.startswith("-r") for line in requirements)
+    for package in ("numpy", "scipy", "pillow", "torch"):
+        pinned = [r for r in requirements if re.split(r"[<>=!~\[ ]", r)[0].lower() == package]
+        assert all(r.lower() == package for r in pinned), pinned  # no version bounds
+    # And the notebook pins Colab's versions as constraints for the install.
+    text = "".join(source for kind, source in CELLS if kind == "code")
+    assert "-c /content/colab-constraints.txt" in text

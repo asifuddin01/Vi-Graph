@@ -59,6 +59,7 @@ the full error output of the failing cell instead (or as well).
 
 | Symptom | Try |
 | --- | --- |
+| pip warns `numba … requires numpy<2.3, but you have numpy 2.5.x` | An older notebook upgraded Colab's numpy. *Runtime → Disconnect and delete runtime*, then run from section 1 (it now pins Colab's numpy/scipy/pillow/torch) |
 | CUDA out of memory | `data.image_max_side: 768` in the config (fewer image tokens); keep micro-batch 1 |
 | Loss is `nan` / explodes | Lower `learning_rate` to `5e-5`; fp16 overflow is the usual cause on a T4 |
 | Smoke-run label check fails | The model's chat template differs from what the collator expects — send the output |

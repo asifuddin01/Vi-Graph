@@ -93,8 +93,13 @@ Training decisions (Phase 6):
     (with_prompt minus without), found by last occurrence; the notebook asserts the trained
     text starts with {"schema_version":"2.0".
   - micro-batch 1 (variable image sizes); prepare_model_for_kbit_training with
-    non-reentrant checkpointing; use_cache off; fp16 (T4). Colab's own torch is kept
-    (requirements-train.txt doesn't pin torch).
+    non-reentrant checkpointing; use_cache off; fp16 (T4).
+  - Colab install (fixed after the user's first run): requirements-train.txt must NOT
+    `-r requirements.txt` — its numpy>=2.4 upgraded Colab's numpy 2.2 → 2.5.3 (breaks
+    numba; mixed versions in a live session). It now lists only what training/eval need,
+    with no bounds on numpy/scipy/pillow/torch, and the install cell pins Colab's
+    numpy/scipy/pillow/torch(+vision/audio) via `pip freeze` → `-c` constraints. Test
+    guards both. Colab (Ubuntu 24.04) ships Graphviz 2.43.0 — same as the committed build.
   - Resume: run_config.json = config + split infos (minus directory); mismatch refuses.
     The notebook's train cell skips when training_run.json + adapter exist.
   - Evaluation in Colab: zero-shot, fine-tuned and baseline on the SAME Colab data build and

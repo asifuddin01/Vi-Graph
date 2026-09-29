@@ -124,10 +124,19 @@ print(subprocess.run(["git", "log", "-1", "--oneline"], capture_output=True, tex
 
 code(r"""
 # Libraries: Graphviz (dataset rendering), Tesseract (baseline), Python packages.
-# Colab's preinstalled torch is kept on purpose (requirements-train.txt doesn't pin it).
-!apt-get -qq update > /dev/null && apt-get -qq install -y graphviz fonts-dejavu-core tesseract-ocr > /dev/null
-!pip install -q -r requirements-train.txt
+# Colab's own numpy / scipy / pillow / torch are pinned as pip constraints so nothing can
+# replace them (a replaced numpy breaks preinstalled packages and needs a runtime restart).
+!apt-get -qq update > /dev/null 2>&1
+!apt-get -qq install -y graphviz fonts-dejavu-core tesseract-ocr > /dev/null
+!pip freeze | grep -iE "^(numpy|scipy|pillow|torch|torchvision|torchaudio)==" > /content/colab-constraints.txt
+!pip install -q -r requirements-train.txt -c /content/colab-constraints.txt
 !dot -V
+!tesseract --version | head -n 1
+from importlib.metadata import version as installed
+
+print("kept from Colab:", open("/content/colab-constraints.txt").read().split())
+print("numpy", installed("numpy"), "| torch", installed("torch"),
+      "| transformers", installed("transformers"))
 """)
 
 code(r"""

@@ -1,11 +1,26 @@
-# Colab T4 training (QLoRA). Installed by training/notebooks/vigraph_qlora_t4.ipynb.
-# Uses Colab's preinstalled, CUDA-matched torch on purpose: re-pinning torch in Colab can
-# break its GPU stack. The app never needs this file.
--r requirements.txt
+# Colab T4 training + evaluation. Installed by training/notebooks/vigraph_qlora_t4.ipynb.
+#
+# Deliberately NOT `-r requirements.txt`: its numpy/scipy/pillow minimums would upgrade
+# Colab's preinstalled scientific stack (numpy 2.5 breaks Colab's numba, and swapping numpy
+# in a running session needs a restart). The notebook also pins Colab's numpy, scipy,
+# pillow and torch as pip constraints, so nothing here can replace them.
+
+# App code used by training/evaluation (pure Python or wheels that don't touch numpy)
+pydantic>=2.13,<3.0
+pydantic-settings>=2.15,<3.0
+networkx>=3.6,<4.0
+rapidfuzz>=3.14,<4.0
+pyyaml>=6.0,<7.0
+numpy          # Colab's build (constrained by the notebook)
+scipy          # linear_sum_assignment — any recent version
+pillow         # Colab's build
+
+# Model runtime (Colab's own CUDA-matched torch is kept)
 transformers>=5.17,<6.0
 accelerate>=1.15,<2.0
 peft>=0.21,<1.0
 bitsandbytes>=0.50,<1.0   # 4-bit NF4 weights + paged 8-bit AdamW
-pyyaml>=6.0,<7.0
-opencv-python-headless>=4.10  # the classical baseline, run on the same Colab data build
+
+# The classical baseline, run on the same Colab data build (+ apt tesseract-ocr)
+opencv-python-headless>=4.10
 pytesseract>=0.3.13
