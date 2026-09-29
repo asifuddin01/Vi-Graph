@@ -7,9 +7,16 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 1 COMPLETE; node/edge matching (§20.1, §42 item 4) done. Phase 2 starts next.
-Last completed: evaluation/metrics/matching.py — matching v1 (see Static conventions);
-  320 tests passing (evaluation/tests/ now collected too).
+Phase: 2 — Graph reconstruction (in progress, step 1 of 4 done). Phase 1 complete.
+Last completed: Phase 2 step 1 — NetworkX graph layer (backend/app/graph/topology.py);
+  339 tests passing.
+Phase 2 plan (in order):
+  1. [done] build_graph + §9 queries (predecessors/successors/sources/sinks/paths/parallel
+     branches/group members/flatten) + validate_graph diagnostics
+  2. Mermaid generation (edge labels, subgraphs from group_id, escaping) + API field
+  3. React Flow editor (move/rename/add/delete nodes+edges, edge labels, types,
+     group/ungroup, inspect, reset, save) + backend save endpoint
+  4. Exports (§28 POST /api/export: json, mermaid, svg, png, pdf)
 Phase 1 plan (do in order, one at a time):
   1. [done] Schema v2 Pydantic models + validation tests (§7, §8 Stage C reject list)
   2. [done] Thin VLM interface + mock backend (backend/app/vlm/), single swap point (§33.3)
@@ -24,9 +31,20 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 2 — step 1 NetworkX graph layer (backend/app/graph/, §9 functions incl.
-  group support) → step 2 Mermaid (edge labels, subgraphs, escaping) → step 3 React Flow
-  editor → step 4 exports (§28: json, mermaid, svg, png, pdf).
+Next up: Phase 2 step 2 — Mermaid generation.
+Graph layer decisions (Phase 2 step 1):
+  - build_graph → nx.MultiDiGraph (parallel edges kept, key = edge index); node attrs
+    label/type/group_id/bbox/confidence/order; all relations count for topology.
+  - Outputs sorted by diagram node order (branches by flow/topological order) — deterministic.
+  - Pure group containers (type group, no edges) are never sources/sinks/isolated.
+  - find_parallel_branches: per fork, earliest merge points reachable from ≥2 successors;
+    branch = nodes strictly between fork and merge; empty branch = skip connection;
+    merge=None when branches never rejoin (then branches are each start's exclusive
+    descendants).
+  - validate_graph = diagnostics only (is_dag, ≤20 cycles, self loops, isolated nodes,
+    weak components, sources, sinks); schema already guarantees integrity.
+  - flatten_groups clears group_ids and drops pure containers; group nodes that are edge
+    endpoints stay.
 API decisions (Phase 1 step 9):
   - POST /api/analyze: multipart "file" (+ optional "model", must equal the served model
     id). Response = §28 shape {diagram_id, graph, mermaid (null until Phase 2), metrics,
