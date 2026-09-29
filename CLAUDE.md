@@ -7,9 +7,9 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 1 — Working VLM prototype (in progress, step 7 of 9 done).
-Last completed: Phase 1 step 7 — Stage D normalization (backend/app/pipeline/normalize.py);
-  239 tests passing.
+Phase: 1 — Working VLM prototype (in progress, step 8 of 9 done).
+Last completed: Phase 1 step 8 — analyze_image() pipeline (backend/app/pipeline/analyze.py)
+  + SQLite RunStore (backend/app/storage/runs.py); 260 tests passing.
 Phase 1 plan (do in order, one at a time):
   1. [done] Schema v2 Pydantic models + validation tests (§7, §8 Stage C reject list)
   2. [done] Thin VLM interface + mock backend (backend/app/vlm/), single swap point (§33.3)
@@ -21,10 +21,21 @@ Phase 1 plan (do in order, one at a time):
      programmatic repair (marked repaired, with a list of fixes) → structured failure;
      every outcome logged; first-attempt vs post-repair validity tracked
   7. [done] Stage D normalization, every change logged
-  8. Reproducibility metadata logging per inference call (§18.1), SQLite
+  8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 1 step 8 — reproducibility logging (SQLite).
+Next up: Phase 1 step 9 — POST /api/analyze + frontend upload (Phase 1 milestone).
+Run logging decisions (Phase 1 step 8):
+  - analyze_image(vlm, bytes, max_side, max_pixels, params, split_version) runs Stages A–D
+    and returns AnalysisRecord(id, created_at, metadata: RunMetadata, image: ImageInfo,
+    extraction, normalization, latency_ms); .graph is the normalized graph.
+  - RunMetadata = the §18.1 set: app_version, schema_version, model (backend, id, resolved
+    revision, adapter), DecodingParams (incl. seed), prompt + correction ids/hashes,
+    split_version (None for app runs). Reused by evaluation runs later.
+  - RunStore (stdlib sqlite3, WAL, connection per operation, PRAGMA user_version=1):
+    reproducibility fields as columns + full record JSON. find_cached() = exact match on
+    image sha, app/schema version, model, prompts, decoding params; never serves failures.
+    DB path: $VIGRAPH_STORAGE_DIR/vigraph.sqlite3 (wired up in step 9).
 Stage D decisions (Phase 1 step 7):
   - normalize_graph(validated graph) → NormalizationResult(graph, changes, id_map).
   - Text: NFC + whitespace collapse for node labels, edge labels, conditions; blank edge
