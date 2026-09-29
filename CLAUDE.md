@@ -7,23 +7,36 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 1 — Working VLM prototype (in progress, step 1 of 8 done).
-Last completed: Phase 1 step 1 — canonical graph schema v2 (backend/app/schemas/graph.py)
-  + 56 passing tests (backend/tests/test_schema_graph.py; §7 example is a fixture and
-  round-trips byte-for-byte as JSON).
+Phase: 1 — Working VLM prototype (in progress, step 2 of 9 done).
+Last completed: Phase 1 step 2 — VLM interface (backend/app/vlm/base.py), deterministic
+  mock backend (mock.py), cached factory (factory.py); 81 tests passing.
 Phase 1 plan (do in order, one at a time):
   1. [done] Schema v2 Pydantic models + validation tests (§7, §8 Stage C reject list)
-  2. Thin VLM interface + mock backend (backend/app/vlm/), single swap point (§33.3)
+  2. [done] Thin VLM interface + mock backend (backend/app/vlm/), single swap point (§33.3)
   3. Prompt template (§8 Stage B) with version hash; fix the diagram_type vocabulary
   4. Stage A image preprocessing (RGB, size checks, aspect-preserving resize)
-  5. Stage C: extract JSON from raw model text → validate → one corrective retry →
+  5. Hugging Face backend (Qwen3-VL via transformers, lazy imports, optional adapter).
+     Cannot be run in this cloud env (huggingface.co blocked) — test what is testable
+     without weights, and say so.
+  6. Stage C: extract JSON from raw model text → validate → one corrective retry →
      programmatic repair (marked repaired, with a list of fixes) → structured failure;
      every outcome logged; first-attempt vs post-repair validity tracked
-  6. Stage D normalization, every change logged
-  7. Reproducibility metadata logging per inference call (§18.1), SQLite
-  8. POST /api/analyze + frontend upload + raw output display (milestone: one image →
+  7. Stage D normalization, every change logged
+  8. Reproducibility metadata logging per inference call (§18.1), SQLite
+  9. POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 1 step 2 — VLM interface + mock backend.
+Next up: Phase 1 step 3 — prompt template + version hash + diagram_type vocabulary.
+VLM interface decisions (Phase 1 step 2):
+  - Backends implement _generate(messages, params) -> Completion; the base generate()
+    validates the conversation, times the call, and returns VLMOutput carrying
+    ModelInfo (backend, model_id, revision, adapter) + DecodingParams — every output is
+    self-describing for §18.1 logging.
+  - Input is a conversation (alternating user/assistant, starting and ending with user;
+    images only on user turns, several allowed) so the Stage C retry is a follow-up turn.
+  - Default decoding is greedy (temperature 0.0, top_p 1.0, max_new_tokens 4096, seed 0).
+    Research runs needing variance (§20.10) must pass sampling params explicitly.
+  - MockVLM returns the §7 example by default, or scripted responses in order (last one
+    repeats). get_vlm_backend() is a per-process singleton (§30).
 Schema decisions (Phase 1 step 1):
   - Models validate only, never mutate input (whitespace etc. is Stage D's job, logged).
   - Every node needs a non-blank label: "empty label where a visible label exists"
