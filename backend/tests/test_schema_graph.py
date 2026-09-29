@@ -5,7 +5,7 @@ from typing import Any, get_args
 import pytest
 from pydantic import ValidationError
 
-from app.schemas import SCHEMA_VERSION, DiagramGraph, NodeType, Relation
+from app.schemas import SCHEMA_VERSION, DiagramGraph, DiagramType, NodeType, Relation
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -96,6 +96,13 @@ def test_edge_label_and_condition_are_kept() -> None:
 @pytest.mark.parametrize("relation", list(Relation))
 def test_every_relation_in_vocabulary_is_accepted(relation: Relation) -> None:
     DiagramGraph.model_validate(graph([node("a"), node("b")], [edge("a", "b", relation.value)]))
+
+
+@pytest.mark.parametrize("diagram_type", list(DiagramType))
+def test_every_diagram_type_in_vocabulary_is_accepted(diagram_type: DiagramType) -> None:
+    parsed = DiagramGraph.model_validate(graph([node("a")], diagram_type=diagram_type.value))
+
+    assert parsed.diagram_type is diagram_type
 
 
 def test_nested_groups_are_valid() -> None:
@@ -205,6 +212,11 @@ def test_non_string_node_id_is_rejected() -> None:
 
 def test_unknown_node_type_is_rejected() -> None:
     assert "type" in rejection(graph([node("n1", type="layer")]))
+
+
+@pytest.mark.parametrize("diagram_type", ["cnn", "Neural Network", ""])
+def test_unknown_diagram_type_is_rejected(diagram_type: str) -> None:
+    assert "diagram_type" in rejection(graph([node("n1")], diagram_type=diagram_type))
 
 
 def test_unknown_relation_is_rejected() -> None:

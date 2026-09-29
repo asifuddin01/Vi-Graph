@@ -19,6 +19,19 @@ SCHEMA_VERSION = "2.0"
 SUPPORTED_SCHEMA_VERSIONS = frozenset({SCHEMA_VERSION})
 
 
+class DiagramType(StrEnum):
+    """Diagram kinds in scope (spec §1); scored by diagram-type accuracy (§20.8)."""
+
+    NEURAL_NETWORK = "neural_network"
+    ML_PIPELINE = "ml_pipeline"
+    FLOWCHART = "flowchart"
+    SYSTEM_ARCHITECTURE = "system_architecture"
+    DATA_PIPELINE = "data_pipeline"
+    SCIENTIFIC_WORKFLOW = "scientific_workflow"
+    UML = "uml"
+    OTHER = "other"
+
+
 class NodeType(StrEnum):
     INPUT = "input"
     MODULE = "module"
@@ -95,7 +108,7 @@ class Edge(_StrictModel):
 
 class DiagramGraph(_StrictModel):
     schema_version: Literal["2.0"]
-    diagram_type: NonBlankStr
+    diagram_type: DiagramType
     nodes: list[Node] = Field(min_length=1)
     edges: list[Edge]
 

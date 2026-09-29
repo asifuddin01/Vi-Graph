@@ -7,13 +7,14 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 1 — Working VLM prototype (in progress, step 2 of 9 done).
-Last completed: Phase 1 step 2 — VLM interface (backend/app/vlm/base.py), deterministic
-  mock backend (mock.py), cached factory (factory.py); 81 tests passing.
+Phase: 1 — Working VLM prototype (in progress, step 3 of 9 done).
+Last completed: Phase 1 step 3 — versioned extraction prompt (backend/app/vlm/prompts.py,
+  graph_extraction@1, SHA-256 pinned in tests/test_prompts.py) + closed DiagramType
+  vocabulary in the schema; 103 tests passing.
 Phase 1 plan (do in order, one at a time):
   1. [done] Schema v2 Pydantic models + validation tests (§7, §8 Stage C reject list)
   2. [done] Thin VLM interface + mock backend (backend/app/vlm/), single swap point (§33.3)
-  3. Prompt template (§8 Stage B) with version hash; fix the diagram_type vocabulary
+  3. [done] Prompt template (§8 Stage B) with version hash; diagram_type vocabulary
   4. Stage A image preprocessing (RGB, size checks, aspect-preserving resize)
   5. Hugging Face backend (Qwen3-VL via transformers, lazy imports, optional adapter).
      Cannot be run in this cloud env (huggingface.co blocked) — test what is testable
@@ -25,7 +26,15 @@ Phase 1 plan (do in order, one at a time):
   8. Reproducibility metadata logging per inference call (§18.1), SQLite
   9. POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 1 step 3 — prompt template + version hash + diagram_type vocabulary.
+Next up: Phase 1 step 4 — Stage A image preprocessing.
+Prompt decisions (Phase 1 step 3):
+  - Prompts are PromptTemplate(name, version, text); id "name@version"; sha256 of the exact
+    text is logged. Editing a prompt requires bumping its version and the pinned hash.
+  - graph_extraction@1 = spec §8 Stage B text, allowed values filled from the schema enums,
+    plus two added requirements the schema enforces: non-empty node labels, and containers
+    must have type "group".
+  - diagram_type vocabulary (closed enum): neural_network, ml_pipeline, flowchart,
+    system_architecture, data_pipeline, scientific_workflow, uml, other (from spec §1).
 VLM interface decisions (Phase 1 step 2):
   - Backends implement _generate(messages, params) -> Completion; the base generate()
     validates the conversation, times the call, and returns VLMOutput carrying
@@ -45,8 +54,6 @@ Schema decisions (Phase 1 step 1):
     may map them to "unknown", logged). Unknown keys are rejected (extra="forbid").
   - group_id must reference an existing node of type "group"; self-reference and
     containment cycles are rejected. All structural problems are reported together.
-  - diagram_type is a free non-blank string for now — vocabulary TBD in step 3 (needed
-    for §20.8 scoring).
   - edge.label/condition may be "" (normalization turns it into null, logged). Duplicate
     edges are not a schema error (normalization dedups, logged).
   - bbox/confidence (§7.3) are optional and omitted from output when unset.
