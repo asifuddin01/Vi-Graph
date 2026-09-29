@@ -7,11 +7,16 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 2 COMPLETE (milestone met: image → editable graph, with Mermaid + exports).
-  Phase 3 (multimodal QA) starts next.
-Last completed: Phase 2 step 4 — exports: POST /api/export (json, mermaid, svg, png, pdf)
-  via Graphviz (backend/app/exporters/graphviz.py) + editor Export menu. 398 backend + 12
-  frontend tests; all 5 formats verified as real downloads in Chromium.
+Phase: 3 — Multimodal QA (in progress, step 1 of 3 done). Phases 1–2 complete.
+Last completed: Phase 3 step 1 — question router (backend/app/qa/router.py), entity
+  linking (qa/entities.py), graph answerers for every §12.2 question type (qa/answers.py);
+  475 tests passing (golden answers on the §7 example).
+Phase 3 plan (in order):
+  1. [done] Rule-based router (§12.1) + entity linking + grounded graph answers
+  2. VLM path for visual / "why" / unknown questions (versioned QA prompt, image from the
+     ImageStore) + POST /api/qa + qa log (routing decision logged, §28)
+  3. Frontend: question box + §26 quick buttons (Explain / Find branches / Analyze
+     topology) + highlight grounded nodes/edges in the editor
 Phase 2 plan (in order):
   1. [done] build_graph + §9 queries (predecessors/successors/sources/sinks/paths/parallel
      branches/group members/flatten) + validate_graph diagnostics
@@ -33,7 +38,19 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 3 — step 1 question router (§12.1, rule-based) + graph query answers.
+Next up: Phase 3 step 2 — VLM answers + POST /api/qa.
+QA decisions (Phase 3 step 1):
+  - route_question → Route(category, intent, rule). Categories: direct, structural,
+    comparative, explanation (graph-only); visual (VLM); mixed = "why" (graph part +
+    image); unknown. Ordered regex rules, first match wins — order matters (visual first,
+    specific before generic, "feeds into X" before "input").
+  - Entities: exact normalized label on word boundaries; fuzzy only for labels ≥6 chars,
+    rapidfuzz ratio ≥88 over whole-word windows; node ids ("n3"); generic "the input" /
+    "the output" → sources/sinks only when nothing is named. Longest span wins overlaps;
+    repeated labels return every node; question order kept (paths from A to B).
+  - answer_from_graph(intent, …) → GraphAnswer(text, grounding{nodes, edges}, complete).
+    complete=False only for "why" (graph says that, not why). Shared labels are shown
+    with their id, e.g. "Conv 3x3 (c1)". Node-needing intents without a node ask which.
 Export decisions (Phase 2 step 4):
   - POST /api/export {format, diagram_id | graph, source: latest|original}. A posted graph
     is validated (422 lists problems) — the editor exports the canvas as-is, unsaved edits
