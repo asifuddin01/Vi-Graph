@@ -7,11 +7,17 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 3 COMPLETE — Phases 1–3 (the usable product, §42 items 1–7) are done.
-  Phase 4 (synthetic dataset generator) starts next.
-Last completed: Phase 3 step 3 — QA panel (frontend/components/QAPanel.tsx) with §26 quick
-  buttons, answer history, source badges, and grounded highlighting in the editor;
-  verified end-to-end in Chromium (12 checks). 498 backend + 12 frontend tests.
+Phase: 4 — Synthetic dataset generator (in progress, step 1 of 3 done). Phases 1–3
+  complete (usable product).
+Last completed: Phase 4 step 1 — random graph generator (data/generator/graphs.py, vocab.py);
+  574 tests (incl. data/tests).
+Phase 4 plan (in order):
+  1. [done] Pattern-operator graph generator, difficulty L1–L4, 7 diagram types, spec per
+     sample (patterns, sizes, depth, cycles, groups)
+  2. Renderer: Graphviz with randomized visual themes + layout families
+     (layered_tb, layered_lr, radial, circular, force)
+  3. Dataset builder CLI: images + GT JSON + metadata.jsonl, stratified splits with
+     held-out layouts/themes for test (§16), split hash (§18.1); a few committed examples
 Phase 3 plan (in order):
   1. [done] Rule-based router (§12.1) + entity linking + grounded graph answers
   2. [done] VLM path for visual / "why" / unknown questions (versioned QA prompt, image from the
@@ -39,7 +45,20 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 4 step 1 — random graph generator (patterns + difficulty L1–L4, §13–14).
+Next up: Phase 4 step 2 — renderer with randomized visual variation.
+Generator decisions (Phase 4 step 1):
+  - Code in data/generator/ (package `data`, importable from repo root; tests in data/tests).
+    GENERATOR_VERSION = "1" — bump when output for a seed changes.
+  - Levels (component nodes): L1 3–6, L2 6–12, L3 12–25, L4 25–40 (spec: "25+", capped for
+    legibility). Node budget fixed up front, so counts always land in range.
+  - Operators: chain, parallel (branch+merge, multi-branch at L3+), residual (+Add),
+    skip, decision (Yes/No labeled edges → join), loop (cycle via "No" back edge, L3+),
+    fan_in; passes: groups (L2+, nested depth 2 at L3+), long-range edge (L3+), edge
+    labels (L3+ pipelines/systems), depends_on (system architecture). UML: inheritance
+    forest + composes/aggregates/depends_on.
+  - L1–L2 are acyclic, L1 has no groups. Repeated labels only in neural networks (L2+).
+  - GT relations are visually grounded: plain arrows = flows_to (decision branches carry
+    Yes/No as edge.label, not a special relation).
 QA UI decisions (Phase 3 step 3):
   - QAPanel above the Mermaid view; answers newest first with source badge and
     route; clicking an answer toggles highlighting of its grounding.

@@ -4,7 +4,7 @@
 # `backend` on the path so code imports the app as `app.*`, matching how uvicorn runs
 # it (`uvicorn app.main:app` from backend/); the repo root for `evaluation.*`.
 pythonpath = ["backend", "."]
-testpaths = ["backend/tests", "evaluation/tests"]
+testpaths = ["backend/tests", "evaluation/tests", "data/tests"]
 addopts = "-ra"
 
 [tool.ruff]
