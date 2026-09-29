@@ -7,15 +7,14 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 1 — Working VLM prototype (in progress, step 3 of 9 done).
-Last completed: Phase 1 step 3 — versioned extraction prompt (backend/app/vlm/prompts.py,
-  graph_extraction@1, SHA-256 pinned in tests/test_prompts.py) + closed DiagramType
-  vocabulary in the schema; 103 tests passing.
+Phase: 1 — Working VLM prototype (in progress, step 4 of 9 done).
+Last completed: Phase 1 step 4 — Stage A preprocessing (backend/app/utils/images.py);
+  127 tests passing.
 Phase 1 plan (do in order, one at a time):
   1. [done] Schema v2 Pydantic models + validation tests (§7, §8 Stage C reject list)
   2. [done] Thin VLM interface + mock backend (backend/app/vlm/), single swap point (§33.3)
   3. [done] Prompt template (§8 Stage B) with version hash; diagram_type vocabulary
-  4. Stage A image preprocessing (RGB, size checks, aspect-preserving resize)
+  4. [done] Stage A image preprocessing (RGB, size checks, aspect-preserving resize)
   5. Hugging Face backend (Qwen3-VL via transformers, lazy imports, optional adapter).
      Cannot be run in this cloud env (huggingface.co blocked) — test what is testable
      without weights, and say so.
@@ -26,7 +25,16 @@ Phase 1 plan (do in order, one at a time):
   8. Reproducibility metadata logging per inference call (§18.1), SQLite
   9. POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 1 step 4 — Stage A image preprocessing.
+Next up: Phase 1 step 5 — Hugging Face backend.
+Preprocessing decisions (Phase 1 step 4):
+  - Accepted formats: PNG, JPEG, WebP, detected from content. Rejected: everything else
+    (incl. GIF, BMP, TIFF, SVG, PDF).
+  - Pixel limit (VIGRAPH_IMAGE_MAX_PIXELS, 40M) is checked from the header before decoding.
+  - EXIF orientation applied; transparency flattened onto white (not black).
+  - Downscale only when longest side > VIGRAPH_IMAGE_MAX_SIDE (2048), LANCZOS, aspect kept;
+    never upscale. The model's own processor applies its pixel budget on top (step 5).
+  - sha256 of original bytes kept for caching/logging.
+  - Deferred: the optional high-res crop for dense diagrams (§8 A.6).
 Prompt decisions (Phase 1 step 3):
   - Prompts are PromptTemplate(name, version, text); id "name@version"; sha256 of the exact
     text is logged. Editing a prompt requires bumping its version and the pinned hash.

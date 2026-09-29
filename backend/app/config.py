@@ -10,7 +10,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Literal
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -32,6 +32,12 @@ class Settings(BaseSettings):
     # Uploads, results, and the SQLite DB. Kept outside any executable/static path (§29).
     storage_dir: Path = REPO_ROOT / "storage"
     max_upload_mb: int = 10
+
+    # Stage A preprocessing (§8). Images are only ever downscaled, and only when the
+    # longest side exceeds image_max_side. image_max_pixels guards against
+    # decompression bombs and is checked before the image is decoded.
+    image_max_side: int = Field(default=2048, ge=64)
+    image_max_pixels: int = Field(default=40_000_000, ge=1)
 
     # VLM backend selection — the single swap point (§33.3).
     vlm_backend: Literal["mock", "hf"] = "mock"
