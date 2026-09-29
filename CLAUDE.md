@@ -7,9 +7,9 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 1 — Working VLM prototype (in progress, step 6 of 9 done).
-Last completed: Phase 1 step 6 — Stage C (backend/app/pipeline/: json_extract, validation,
-  repair, extraction); 227 tests passing.
+Phase: 1 — Working VLM prototype (in progress, step 7 of 9 done).
+Last completed: Phase 1 step 7 — Stage D normalization (backend/app/pipeline/normalize.py);
+  239 tests passing.
 Phase 1 plan (do in order, one at a time):
   1. [done] Schema v2 Pydantic models + validation tests (§7, §8 Stage C reject list)
   2. [done] Thin VLM interface + mock backend (backend/app/vlm/), single swap point (§33.3)
@@ -20,11 +20,18 @@ Phase 1 plan (do in order, one at a time):
   6. [done] Stage C: extract JSON from raw model text → validate → one corrective retry →
      programmatic repair (marked repaired, with a list of fixes) → structured failure;
      every outcome logged; first-attempt vs post-repair validity tracked
-  7. Stage D normalization, every change logged
+  7. [done] Stage D normalization, every change logged
   8. Reproducibility metadata logging per inference call (§18.1), SQLite
   9. POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 1 step 7 — Stage D normalization.
+Next up: Phase 1 step 8 — reproducibility logging (SQLite).
+Stage D decisions (Phase 1 step 7):
+  - normalize_graph(validated graph) → NormalizationResult(graph, changes, id_map).
+  - Text: NFC + whitespace collapse for node labels, edge labels, conditions; blank edge
+    text → null. Exact duplicate edges removed (first kept).
+  - Node ids renumbered n1..nk in node order when not already; id_map covers every node.
+  - Duplicate labels flagged only (never merged). Edge direction and relations untouched
+    (vocabulary has no inverse forms; topology preserved exactly).
 Stage C decisions (Phase 1 step 6):
   - extract_graph(vlm, images, params) → ExtractionResult with status
     valid_first_attempt | valid_after_retry | repaired | failed, every Attempt (raw output,
