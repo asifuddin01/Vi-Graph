@@ -15,6 +15,7 @@ from app.api.analyze import router as analyze_router
 from app.api.export import router as export_router
 from app.api.health import router as health_router
 from app.api.limits import BodySizeLimitMiddleware
+from app.api.qa import router as qa_router
 from app.config import Settings, get_settings
 
 # Room for multipart framing around an upload of the maximum allowed size.
@@ -40,6 +41,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health_router)
     app.include_router(analyze_router)
     app.include_router(export_router)
+    app.include_router(qa_router)
     return app
 
 

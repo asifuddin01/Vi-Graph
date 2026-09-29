@@ -10,6 +10,7 @@ from app.vlm.prompts import (
     GRAPH_EXTRACTION,
     PROMPTS,
     build_extraction_messages,
+    build_visual_qa_messages,
     get_prompt,
 )
 
@@ -18,6 +19,7 @@ from app.vlm.prompts import (
 PINNED_HASHES = {
     "graph_extraction@1": "d7097c8ad971e570ebacd9fa5c62d96fe0ee3293ff4bc593e5f8021da107d409",
     "graph_correction@1": "e0f443ebad7d560db6e0a496b5431868c89b114a49177e11b2dce29e5554ae32",
+    "visual_qa@1": "ca163a0851f3519be9499cc51b654046371b73f479e50eff6b5efe6986f972d2",
 }
 
 
@@ -91,3 +93,19 @@ def test_extraction_messages_are_one_user_turn_with_images() -> None:
 def test_extraction_messages_require_an_image() -> None:
     with pytest.raises(ValueError, match="at least one image"):
         build_extraction_messages([])
+
+
+def test_visual_qa_messages_carry_image_graph_and_question() -> None:
+    image = Image.new("RGB", (32, 32), "white")
+
+    [message] = build_visual_qa_messages(image, '{"nodes": []}', "What colour is $x?")
+
+    assert message.images == (image,)
+    assert '{"nodes": []}' in message.text
+    assert message.text.endswith("Question: What colour is $x?\n")
+
+
+def test_visual_qa_without_a_graph_says_so() -> None:
+    [message] = build_visual_qa_messages(Image.new("RGB", (8, 8)), None, "Q?")
+
+    assert "(no graph could be extracted from this diagram)" in message.text

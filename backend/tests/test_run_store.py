@@ -31,7 +31,7 @@ def store(tmp_path: Path) -> RunStore:
 def test_database_is_created_with_a_schema_version(store: RunStore) -> None:
     assert store.path.exists()
     with sqlite3.connect(store.path) as conn:
-        assert conn.execute("PRAGMA user_version").fetchone()[0] == 2
+        assert conn.execute("PRAGMA user_version").fetchone()[0] == 3
 
 
 def test_reopening_an_existing_database_keeps_its_runs(store: RunStore) -> None:
@@ -140,19 +140,20 @@ def test_failed_runs_are_never_served_from_cache(store: RunStore) -> None:
 # --- graph versions (editor saves) ----------------------------------------------------
 
 
-def test_version_1_database_gains_the_graph_versions_table(tmp_path: Path) -> None:
+def test_version_1_database_gains_the_newer_tables(tmp_path: Path) -> None:
     path = tmp_path / "old.sqlite3"
     RunStore(path)
     with sqlite3.connect(path) as conn:  # turn it back into a version 1 database
         conn.execute("DROP TABLE graph_versions")
+        conn.execute("DROP TABLE qa_log")
         conn.execute("PRAGMA user_version=1")
 
     RunStore(path)
 
     with sqlite3.connect(path) as conn:
         tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master")}
-        assert "graph_versions" in tables
-        assert conn.execute("PRAGMA user_version").fetchone()[0] == 2
+        assert {"graph_versions", "qa_log"} <= tables
+        assert conn.execute("PRAGMA user_version").fetchone()[0] == 3
 
 
 def test_no_edits_means_no_version(store: RunStore) -> None:

@@ -115,8 +115,27 @@ Return JSON only.
 
 GRAPH_CORRECTION = PromptTemplate(name="graph_correction", version="1", text=_GRAPH_CORRECTION)
 
+# Visual / "why" questions (§12.1 steps 3–4): the image answers what the graph can't.
+# $graph is the extracted graph as compact JSON (or a note that there is none).
+VISUAL_QA = PromptTemplate(
+    name="visual_qa",
+    version="1",
+    text="""\
+You are answering a question about the attached diagram.
+
+Its structure has already been extracted as this graph:
+$graph
+
+Use the image for anything the graph does not capture, such as appearance, visible text,
+or the purpose of a connection. Answer in one to three sentences. If the image does not
+show the answer, say so instead of guessing.
+
+Question: $question
+""",
+)
+
 PROMPTS: dict[str, PromptTemplate] = {
-    prompt.id: prompt for prompt in [GRAPH_EXTRACTION, GRAPH_CORRECTION]
+    prompt.id: prompt for prompt in [GRAPH_EXTRACTION, GRAPH_CORRECTION, VISUAL_QA]
 }
 
 
@@ -135,3 +154,16 @@ def build_extraction_messages(
     if not images:
         raise ValueError("graph extraction needs at least one image")
     return [Message(role="user", text=prompt.text, images=tuple(images))]
+
+
+def build_visual_qa_messages(
+    image: Image, graph_json: str | None, question: str, prompt: PromptTemplate = VISUAL_QA
+) -> list[Message]:
+    graph_text = graph_json if graph_json else "(no graph could be extracted from this diagram)"
+    return [
+        Message(
+            role="user",
+            text=prompt.render(graph=graph_text, question=question),
+            images=(image,),
+        )
+    ]

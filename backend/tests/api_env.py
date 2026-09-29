@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from app.api.deps import get_analyze_limiter, get_image_store, get_run_store
+from app.api.deps import get_analyze_limiter, get_image_store, get_qa_limiter, get_run_store
 from app.api.limits import SlidingWindowLimiter
 from app.config import Settings, get_settings
 from app.main import create_app
@@ -29,7 +29,12 @@ class Env:
 
 
 def make_env(
-    tmp_path: Path, vlm: VLMBackend | None = None, *, rate_limit: int = 0, max_upload_mb: int = 1
+    tmp_path: Path,
+    vlm: VLMBackend | None = None,
+    *,
+    rate_limit: int = 0,
+    qa_rate_limit: int = 0,
+    max_upload_mb: int = 1,
 ) -> Env:
     settings = Settings(
         _env_file=None,
@@ -42,6 +47,7 @@ def make_env(
     runs = RunStore(tmp_path / "runs.sqlite3")
     images = ImageStore(tmp_path / "images")
     limiter = SlidingWindowLimiter(rate_limit)
+    qa_limiter = SlidingWindowLimiter(qa_rate_limit)
     app = create_app(settings)
     app.dependency_overrides.update(
         {
@@ -50,6 +56,7 @@ def make_env(
             get_run_store: lambda: runs,
             get_image_store: lambda: images,
             get_analyze_limiter: lambda: limiter,
+            get_qa_limiter: lambda: qa_limiter,
         }
     )
     return Env(app=app, client=TestClient(app), vlm=vlm, runs=runs, images=images)

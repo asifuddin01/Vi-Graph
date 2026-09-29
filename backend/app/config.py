@@ -32,8 +32,9 @@ class Settings(BaseSettings):
     # Uploads, results, and the SQLite DB. Kept outside any executable/static path (§29).
     storage_dir: Path = REPO_ROOT / "storage"
     max_upload_mb: int = Field(default=10, ge=1)
-    # Per-client limit on POST /api/analyze (§29); 0 disables it.
+    # Per-client limits on the expensive endpoints (§29); 0 disables a limit.
     analyze_rate_limit_per_minute: int = Field(default=10, ge=0)
+    qa_rate_limit_per_minute: int = Field(default=30, ge=0)
 
     # Stage A preprocessing (§8). Images are only ever downscaled, and only when the
     # longest side exceeds image_max_side. image_max_pixels guards against

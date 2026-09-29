@@ -7,13 +7,12 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 3 — Multimodal QA (in progress, step 1 of 3 done). Phases 1–2 complete.
-Last completed: Phase 3 step 1 — question router (backend/app/qa/router.py), entity
-  linking (qa/entities.py), graph answerers for every §12.2 question type (qa/answers.py);
-  475 tests passing (golden answers on the §7 example).
+Phase: 3 — Multimodal QA (in progress, step 2 of 3 done). Phases 1–2 complete.
+Last completed: Phase 3 step 2 — QA engine (backend/app/qa/engine.py), visual_qa@1 prompt,
+  POST /api/qa + GET /api/analyses/{id}/qa, qa_log table (DB schema v3); 498 tests.
 Phase 3 plan (in order):
   1. [done] Rule-based router (§12.1) + entity linking + grounded graph answers
-  2. VLM path for visual / "why" / unknown questions (versioned QA prompt, image from the
+  2. [done] VLM path for visual / "why" / unknown questions (versioned QA prompt, image from the
      ImageStore) + POST /api/qa + qa log (routing decision logged, §28)
   3. Frontend: question box + §26 quick buttons (Explain / Find branches / Analyze
      topology) + highlight grounded nodes/edges in the editor
@@ -38,7 +37,18 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 3 step 2 — VLM answers + POST /api/qa.
+Next up: Phase 3 step 3 — frontend QA panel + grounded highlighting.
+QA engine/API decisions (Phase 3 step 2):
+  - Graph answers first; VLM only when the route needs the image (visual, "why") or the
+    graph can't answer (unknown intent / no graph). "why" = graph part + VLM reason.
+  - The mock backend is never used to answer questions (it only emits canned graph JSON);
+    in mock mode the answer says a vision model is needed. Tests use tests/vlm_doubles.py.
+  - visual_qa@1 prompt: image + compact graph JSON + question, 1–3 sentences, say so if
+    the image doesn't show it. QA decoding: max_new_tokens 256, greedy.
+  - QA answers from the latest saved edit (graph_version in the response), else original.
+    Stored upload is re-preprocessed only when the question can use the image.
+  - Every question logged in qa_log (route incl. matched rule, mentions, source,
+    grounding, VLM output). Separate rate limit VIGRAPH_QA_RATE_LIMIT_PER_MINUTE (30).
 QA decisions (Phase 3 step 1):
   - route_question → Route(category, intent, rule). Categories: direct, structural,
     comparative, explanation (graph-only); visual (VLM); mixed = "why" (graph part +
