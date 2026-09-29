@@ -11,6 +11,8 @@
 ``run`` resumes when pointed at an unfinished run directory with the same arguments.
 ``--backend oracle`` answers with the ground truth — a sanity check of the evaluation path
 (every score must be perfect), never a result. ``--backend mock`` returns the spec example.
+``--backend baseline`` is the classical OCR + geometry baseline (§19.1; needs
+requirements-baseline.txt and the tesseract binary).
 """
 
 from __future__ import annotations
@@ -49,7 +51,7 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--out", type=Path, required=True, help="run directory (resumable)")
     run.add_argument("--name", help="run name (default: the directory name)")
     run.add_argument("--limit", type=int, help="only the first N samples (stratified prefix)")
-    run.add_argument("--backend", choices=["hf", "mock", "oracle"], default="hf")
+    run.add_argument("--backend", choices=["hf", "mock", "oracle", "baseline"], default="hf")
     defaults = Settings()
     run.add_argument("--model-id", default=defaults.vlm_model_id)
     run.add_argument("--revision", default=defaults.vlm_revision)
@@ -124,11 +126,14 @@ def _run(args: argparse.Namespace, command: list[str]) -> dict[str, object]:
         seed=args.seed,
     )
     uses_model = args.backend == "hf"
+    predictor = _predictor(args, params, split)
     config = RunConfig(
         dataset=str(args.dataset.resolve()),
         split=args.split,
         limit=args.limit,
-        predictor="oracle" if args.backend == "oracle" else f"vlm:{args.backend}",
+        predictor=predictor.name
+        if args.backend in {"oracle", "baseline"}
+        else f"vlm:{args.backend}",
         model_id=args.model_id if uses_model else None,
         revision=args.revision if uses_model else None,
         adapter=str(args.adapter) if uses_model and args.adapter else None,
@@ -140,7 +145,6 @@ def _run(args: argparse.Namespace, command: list[str]) -> dict[str, object]:
         image_max_side=args.image_max_side,
         image_max_pixels=args.image_max_pixels,
     )
-    predictor = _predictor(args, params, split)
     return run_evaluation(
         predictor,
         samples,
@@ -164,6 +168,10 @@ def _predictor(args: argparse.Namespace, params: DecodingParams, split: SplitInf
     }
     if args.backend == "oracle":
         return OraclePredictor(params, **limits)
+    if args.backend == "baseline":
+        from evaluation.baseline import BaselinePredictor  # optional deps: OpenCV, Tesseract
+
+        return BaselinePredictor()
     settings = Settings(
         vlm_backend=args.backend,
         vlm_model_id=args.model_id,

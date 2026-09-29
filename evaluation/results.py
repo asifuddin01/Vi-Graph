@@ -49,6 +49,7 @@ class RunInfo(BaseModel):
     split: SplitInfo
     metadata: RunMetadata | None = None  # §18.1, from the pipeline (VLM predictors)
     adapter_config: dict[str, object] | None = None  # LoRA rank, alpha, target modules …
+    predictor_info: dict[str, object] = {}  # non-VLM predictors: version, settings, tools
     versions: dict[str, object]  # app, schema, matching, scores, QA benchmark, git, packages
     environment: dict[str, object]  # python, platform, GPU
     samples_done: int = 0

@@ -31,6 +31,7 @@ class Prediction(BaseModel):
     analysis: AnalysisRecord | None  # VLM predictors: every attempt's raw output, repairs, …
     latency_ms: float
     error: str | None = None  # the predictor raised; the sample counts as failed
+    notes: list[str] = []  # predictor diagnostics, e.g. why no graph was produced
 
 
 class Predictor(ABC):
@@ -42,6 +43,10 @@ class Predictor(ABC):
     def run_metadata(self) -> RunMetadata | None:
         """§18.1 metadata, once known (after the first prediction for lazily loaded models)."""
         return None
+
+    def describe(self) -> dict[str, object]:
+        """Predictor settings and versions for run.json (non-VLM predictors)."""
+        return {}
 
 
 class VLMPredictor(Predictor):
@@ -125,6 +130,7 @@ class OraclePredictor(VLMPredictor):
             image_max_pixels=image_max_pixels,
             split_version=split_version,
         )
+        self.name = "oracle"
 
     def predict(self, sample: EvalSample) -> Prediction:
         self.oracle.next_response = sample.graph.read_text()

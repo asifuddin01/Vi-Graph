@@ -95,6 +95,7 @@ def run_evaluation(
             config=config,
             split=split,
             adapter_config=adapter_config,
+            predictor_info=predictor.describe(),
             versions=_versions(),
             environment=_environment(),
         )
@@ -235,7 +236,17 @@ def _write(path: Path, text: str) -> None:
 
 def _versions() -> dict[str, object]:
     packages = {}
-    for package in ("pydantic", "networkx", "rapidfuzz", "scipy", "torch", "transformers", "peft"):
+    for package in (
+        "pydantic",
+        "networkx",
+        "rapidfuzz",
+        "scipy",
+        "torch",
+        "transformers",
+        "peft",
+        "opencv-python-headless",
+        "pytesseract",
+    ):
         with contextlib.suppress(PackageNotFoundError):
             packages[package] = version(package)
     return {

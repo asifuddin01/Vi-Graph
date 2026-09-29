@@ -1,0 +1,5 @@
+# Classical non-VLM baseline (spec §19.1): OCR + OpenCV geometry.
+# Also needs the Tesseract binary: apt-get install tesseract-ocr
+-r requirements.txt
+opencv-python-headless>=4.10
+pytesseract>=0.3.13

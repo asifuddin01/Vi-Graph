@@ -166,6 +166,8 @@ def render_report(run: RunInfo, summary: dict) -> str:
             f"max_new_tokens {meta.params.max_new_tokens}, seed {meta.params.seed}; "
             f"image max side {meta.image_max_side}",
         ]
+    if run.predictor_info:
+        lines.append("- Predictor: " + ", ".join(f"{k} {v}" for k, v in run.predictor_info.items()))
     if run.adapter_config:
         lines.append(
             "- Adapter: "
