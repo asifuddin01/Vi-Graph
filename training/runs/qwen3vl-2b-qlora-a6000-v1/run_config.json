@@ -1,0 +1,76 @@
+{
+  "config": {
+    "run_name": "qwen3vl-2b-qlora-a6000-v1",
+    "seed": 0,
+    "model": {
+      "id": "Qwen/Qwen3-VL-2B-Instruct",
+      "revision": null
+    },
+    "data": {
+      "dataset": "synthetic-v1",
+      "train_split": "train",
+      "eval_split": "val",
+      "eval_samples": 48,
+      "image_max_side": 896,
+      "train_limit": null
+    },
+    "quantization": {
+      "load_in_4bit": true,
+      "quant_type": "nf4",
+      "double_quant": true,
+      "compute_dtype": "bfloat16"
+    },
+    "lora": {
+      "r": 16,
+      "alpha": 32,
+      "dropout": 0.05,
+      "target_modules": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj"
+      ]
+    },
+    "optimization": {
+      "epochs": 2.0,
+      "micro_batch_size": 1,
+      "gradient_accumulation_steps": 16,
+      "learning_rate": 0.0001,
+      "lr_scheduler": "cosine",
+      "warmup": 0.03,
+      "weight_decay": 0.0,
+      "max_grad_norm": 1.0,
+      "optimizer": "paged_adamw_8bit",
+      "max_steps": null
+    },
+    "checkpointing": {
+      "save_steps": 20,
+      "save_total_limit": 3,
+      "eval_steps": 40,
+      "logging_steps": 5
+    }
+  },
+  "train_split": {
+    "dataset": "synthetic-v1",
+    "split": "train",
+    "samples": 2000,
+    "split_hash": "16861766ab803a0e3ae95cc7e05760e8b04aba65a42ae872d74bc71f999ded01",
+    "graph_hash": "fbce4b92edddb8deace800c946b5f2d00b26aa2e4ce49e2a4fcc61dd7700bcfb",
+    "dataset_hash": "45e37fa428b193c10dc8f71520f067b156016978c0ec1b0afe9b96109bfaef4f",
+    "generator_version": "1",
+    "graphviz_version": "dot - graphviz version 16.1.0 (20260904.0139)"
+  },
+  "eval_split": {
+    "dataset": "synthetic-v1",
+    "split": "val",
+    "samples": 300,
+    "split_hash": "cb7973c366002fd064d8dff660efaa4609908b3c13872865b8b388871fd167da",
+    "graph_hash": "e7ddbbd99bde91091741309bb0cb6d3b3d6ab78cfc373f9d7bc7f41733d60828",
+    "dataset_hash": "45e37fa428b193c10dc8f71520f067b156016978c0ec1b0afe9b96109bfaef4f",
+    "generator_version": "1",
+    "graphviz_version": "dot - graphviz version 16.1.0 (20260904.0139)"
+  }
+}

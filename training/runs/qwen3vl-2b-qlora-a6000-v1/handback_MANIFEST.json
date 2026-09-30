@@ -1,0 +1,146 @@
+{
+  "files": [
+    {
+      "path": "training/qwen3vl-2b-qlora-a6000-v1/training_run.json",
+      "bytes": 3795,
+      "sha256": "c7ed458df7f1d9a9ceaa5dd130cbf0e073bbfa4aa18cc44897020f78fdcb4907"
+    },
+    {
+      "path": "training/qwen3vl-2b-qlora-a6000-v1/run_config.json",
+      "bytes": 2120,
+      "sha256": "425d47c6fb308050752e4a9ff7ed31651f836135ea5b417305deccdfce42601f"
+    },
+    {
+      "path": "training/qwen3vl-2b-qlora-a6000-v1/train_log.jsonl",
+      "bytes": 10596,
+      "sha256": "06f83db6d1eb53853e2560381d3e69894b00b4773c8f43d07748b60d9da2e7e7"
+    },
+    {
+      "path": "training/qwen3vl-2b-qlora-a6000-v1/adapter/adapter_config.json",
+      "bytes": 1231,
+      "sha256": "9ab63c9f4d5191134011b7de48800c45a9b785b5fdef35dd455d207c28a684a0"
+    },
+    {
+      "path": "training/qwen3vl-2b-qlora-a6000-v1/adapter/adapter_model.safetensors",
+      "bytes": 69788264,
+      "sha256": "7a0d034fe3c680536540352a9419be6f91b759cfccbe101fda421b2e59247165"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-s0/run.json",
+      "bytes": 3310,
+      "sha256": "9964dce87bf1aad1cccd0b7c063d49ef05fa32da1f79fa715994de9079dc76ae"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-s0/summary.json",
+      "bytes": 12943,
+      "sha256": "b3f6c2f33f7763653e809f4bcd577fdaeda73300db79f1b0d98d0c79f463c302"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-s0/report.md",
+      "bytes": 5205,
+      "sha256": "61741f2413fc4583bd8c26d28df07dbe90bdec4fd84c40d270c7af4c04ffce1d"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-s0/predictions.jsonl.gz",
+      "bytes": 120237,
+      "sha256": "f5e944d5d48778b5a2e0aa36f3731cdbbd5aaad23414d721157cee8e147ada37"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-s0/run.json",
+      "bytes": 3801,
+      "sha256": "08c2fa9f685c137d1165a9e413c6a8713f0b9acd15766926ef12e2db867e5613"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-s0/summary.json",
+      "bytes": 12782,
+      "sha256": "2d8b446a8b93c6d6780cad2694c20fc7519eb2b5e7251123401cb63f77e652bb"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-s0/report.md",
+      "bytes": 5544,
+      "sha256": "44339f86849ae6054e8ecb2d7297719f8989607e106e5be05d901984cbad6567"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-s0/predictions.jsonl.gz",
+      "bytes": 114639,
+      "sha256": "aae0abfaac91388cd94e04fb4f81d6431b23fad745cdd2289c852ab231d39eb2"
+    },
+    {
+      "path": "evaluation/baseline-v1-windows/run.json",
+      "bytes": 2554,
+      "sha256": "ffd4251139d8fd7b3603c012d2060440090364024f0462e7c18d0bd1ba1814c8"
+    },
+    {
+      "path": "evaluation/baseline-v1-windows/summary.json",
+      "bytes": 12662,
+      "sha256": "2c3c60d27101bc6079e8803b0c7932183981513ce6d47d8cd14f82f6b0ae4109"
+    },
+    {
+      "path": "evaluation/baseline-v1-windows/report.md",
+      "bytes": 4714,
+      "sha256": "8523303d662885ee38c96c0649495724c6f597089a3406a5f9749231ae6fa6df"
+    },
+    {
+      "path": "evaluation/baseline-v1-windows/predictions.jsonl.gz",
+      "bytes": 47364,
+      "sha256": "6463bd1baefe3e36af561a42f1402008a1fe565cb7778b33d1ce75e199c77235"
+    },
+    {
+      "path": "extra/qlora-vs-baseline.json",
+      "bytes": 3795,
+      "sha256": "0100b6a546485333089be559e62c7cd71860160b8613bd2200eb6e31521248b8"
+    },
+    {
+      "path": "extra/qlora-vs-baseline.md",
+      "bytes": 1379,
+      "sha256": "72a2c645b9f526f1c0834b5b84f28c0e2d6da9270a871fccda10a63c1ae2ae92"
+    },
+    {
+      "path": "extra/qlora-vs-zeroshot.json",
+      "bytes": 4290,
+      "sha256": "c73a2d7d9a22e24cf5dece13b21036d900d29d6c21fc6fb42f4e30d3b4d6ad44"
+    },
+    {
+      "path": "extra/qlora-vs-zeroshot.md",
+      "bytes": 1426,
+      "sha256": "4b5dc58350b699f518473ea4cfad5fb2735db60211c670f2d7b1774debb46c17"
+    },
+    {
+      "path": "extra/zeroshot-vs-baseline.json",
+      "bytes": 3912,
+      "sha256": "841f0659a4571bd003e6d13d39743825d1d9e18307d89454f54f71d44be81a02"
+    },
+    {
+      "path": "extra/zeroshot-vs-baseline.md",
+      "bytes": 1383,
+      "sha256": "a302925fecc0c1bcb2444deebffb5efab5be4cb22c42d728489a9467efe84b7b"
+    },
+    {
+      "path": "extra/manifest.json",
+      "bytes": 2079,
+      "sha256": "b13a5387be08096064788718a11cb25f93555f51e94035d41f3766e579d00bc6"
+    },
+    {
+      "path": "extra/memory_probe.json",
+      "bytes": 369,
+      "sha256": "09e278c1bc920853eba728885b569a0b636ffbe45f94986d83bc717b18337f8f"
+    }
+  ],
+  "missing": [],
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "packages": {
+      "torch": "2.11.0+cu128",
+      "transformers": "5.17.0",
+      "peft": "0.21.1",
+      "bitsandbytes": "0.50.2",
+      "accelerate": "1.15.0",
+      "pillow": "12.3.0"
+    },
+    "git_commit": null,
+    "torch_cuda": "12.8",
+    "gpu": "NVIDIA RTX A6000",
+    "gpu_memory_gb": 48.0
+  }
+}

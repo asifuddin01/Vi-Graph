@@ -1,0 +1,23 @@
+{
+  "chosen_image_max_side": 896,
+  "cap_gb": 10.5,
+  "results": [
+    {
+      "image_max_side": 1024,
+      "peak_reserved_gb": 9.9140625,
+      "fits": false,
+      "error": null
+    },
+    {
+      "image_max_side": 896,
+      "peak_reserved_gb": 9.28515625,
+      "fits": true,
+      "error": null
+    }
+  ],
+  "longest_tokens": [
+    2612,
+    2485,
+    2484
+  ]
+}

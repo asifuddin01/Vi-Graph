@@ -1,0 +1,91 @@
+{
+  "name": "synthetic-v1",
+  "created_at": "2026-09-30T00:56:58.175075Z",
+  "generator_version": "1",
+  "schema_version": "2.0",
+  "graphviz_version": "dot - graphviz version 16.1.0 (20260904.0139)",
+  "config": {
+    "name": "synthetic-v1",
+    "seed": 0,
+    "levels": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "diagram_types": [
+      "neural_network",
+      "flowchart",
+      "data_pipeline",
+      "ml_pipeline",
+      "scientific_workflow",
+      "system_architecture",
+      "uml"
+    ],
+    "splits": [
+      {
+        "name": "train",
+        "size": 2000,
+        "layouts": [
+          "layered_lr",
+          "force"
+        ],
+        "themes": [
+          "classic",
+          "pastel",
+          "corporate",
+          "vivid",
+          "sketch"
+        ],
+        "held_out": false
+      },
+      {
+        "name": "val",
+        "size": 300,
+        "layouts": [
+          "layered_lr",
+          "force"
+        ],
+        "themes": [
+          "classic",
+          "pastel",
+          "corporate",
+          "vivid",
+          "sketch"
+        ],
+        "held_out": false
+      },
+      {
+        "name": "test",
+        "size": 500,
+        "layouts": [
+          "layered_tb",
+          "radial",
+          "circular"
+        ],
+        "themes": [
+          "dark",
+          "blueprint",
+          "paper"
+        ],
+        "held_out": true
+      }
+    ]
+  },
+  "counts": {
+    "train": 2000,
+    "val": 300,
+    "test": 500
+  },
+  "split_hashes": {
+    "train": "16861766ab803a0e3ae95cc7e05760e8b04aba65a42ae872d74bc71f999ded01",
+    "val": "cb7973c366002fd064d8dff660efaa4609908b3c13872865b8b388871fd167da",
+    "test": "88ae7d751259f2eaa2fd612bb0aa2ad0e84c5ca57a06c029214031223309b6e3"
+  },
+  "graph_hashes": {
+    "train": "fbce4b92edddb8deace800c946b5f2d00b26aa2e4ce49e2a4fcc61dd7700bcfb",
+    "val": "e7ddbbd99bde91091741309bb0cb6d3b3d6ab78cfc373f9d7bc7f41733d60828",
+    "test": "8d4d2c69624c1a414c4c1d7073d3443736f5bb1e75e3abca2d1241a7989d6515"
+  },
+  "dataset_hash": "45e37fa428b193c10dc8f71520f067b156016978c0ec1b0afe9b96109bfaef4f"
+}

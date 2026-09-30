@@ -1,0 +1,137 @@
+{
+  "run_name": "qwen3vl-2b-qlora-a6000-v1",
+  "completed_at": "2026-09-30T02:50:07.485383+00:00",
+  "resumed": false,
+  "resumed_from": null,
+  "model": {
+    "id": "Qwen/Qwen3-VL-2B-Instruct",
+    "revision": "89644892e4d85e24eaac8bacfd4f463576704203"
+  },
+  "lora": {
+    "r": 16,
+    "alpha": 32,
+    "dropout": 0.05,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ]
+  },
+  "quantization": {
+    "load_in_4bit": true,
+    "quant_type": "nf4",
+    "double_quant": true,
+    "compute_dtype": "bfloat16"
+  },
+  "trainable_parameters": 17432576,
+  "total_parameters": 2144964608,
+  "prompt_id": "graph_extraction@1",
+  "prompt_sha256": "d7097c8ad971e570ebacd9fa5c62d96fe0ee3293ff4bc593e5f8021da107d409",
+  "target_format": "compact JSON, nulls omitted (training/qlora/data.py)",
+  "seed": 0,
+  "schema_version": "2.0",
+  "image_max_side": 896,
+  "train_split": {
+    "dataset": "synthetic-v1",
+    "directory": "F:\\vigraph\\data\\synthetic-v1",
+    "split": "train",
+    "samples": 2000,
+    "split_hash": "16861766ab803a0e3ae95cc7e05760e8b04aba65a42ae872d74bc71f999ded01",
+    "graph_hash": "fbce4b92edddb8deace800c946b5f2d00b26aa2e4ce49e2a4fcc61dd7700bcfb",
+    "dataset_hash": "45e37fa428b193c10dc8f71520f067b156016978c0ec1b0afe9b96109bfaef4f",
+    "generator_version": "1",
+    "graphviz_version": "dot - graphviz version 16.1.0 (20260904.0139)"
+  },
+  "eval_split": {
+    "dataset": "synthetic-v1",
+    "directory": "F:\\vigraph\\data\\synthetic-v1",
+    "split": "val",
+    "samples": 300,
+    "split_hash": "cb7973c366002fd064d8dff660efaa4609908b3c13872865b8b388871fd167da",
+    "graph_hash": "e7ddbbd99bde91091741309bb0cb6d3b3d6ab78cfc373f9d7bc7f41733d60828",
+    "dataset_hash": "45e37fa428b193c10dc8f71520f067b156016978c0ec1b0afe9b96109bfaef4f",
+    "generator_version": "1",
+    "graphviz_version": "dot - graphviz version 16.1.0 (20260904.0139)"
+  },
+  "train_samples": 2000,
+  "eval_samples": 48,
+  "config": {
+    "run_name": "qwen3vl-2b-qlora-a6000-v1",
+    "seed": 0,
+    "model": {
+      "id": "Qwen/Qwen3-VL-2B-Instruct",
+      "revision": null
+    },
+    "data": {
+      "dataset": "synthetic-v1",
+      "train_split": "train",
+      "eval_split": "val",
+      "eval_samples": 48,
+      "image_max_side": 896,
+      "train_limit": null
+    },
+    "quantization": {
+      "load_in_4bit": true,
+      "quant_type": "nf4",
+      "double_quant": true,
+      "compute_dtype": "bfloat16"
+    },
+    "lora": {
+      "r": 16,
+      "alpha": 32,
+      "dropout": 0.05,
+      "target_modules": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj"
+      ]
+    },
+    "optimization": {
+      "epochs": 2.0,
+      "micro_batch_size": 1,
+      "gradient_accumulation_steps": 16,
+      "learning_rate": 0.0001,
+      "lr_scheduler": "cosine",
+      "warmup": 0.03,
+      "weight_decay": 0.0,
+      "max_grad_norm": 1.0,
+      "optimizer": "paged_adamw_8bit",
+      "max_steps": null
+    },
+    "checkpointing": {
+      "save_steps": 20,
+      "save_total_limit": 3,
+      "eval_steps": 40,
+      "logging_steps": 5
+    }
+  },
+  "global_steps": 250,
+  "train_loss": 0.10163600444793701,
+  "eval_loss": 0.06607184559106827,
+  "seconds_this_session": 4944.575104700001,
+  "peak_gpu_memory_gb": 7.624527454376221,
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "packages": {
+      "torch": "2.11.0+cu128",
+      "transformers": "5.17.0",
+      "peft": "0.21.1",
+      "bitsandbytes": "0.50.2",
+      "accelerate": "1.15.0",
+      "pillow": "12.3.0"
+    },
+    "git_commit": null,
+    "torch_cuda": "12.8",
+    "gpu": "NVIDIA RTX A6000",
+    "gpu_memory_gb": 48.0
+  }
+}

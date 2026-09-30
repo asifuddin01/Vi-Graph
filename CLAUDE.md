@@ -7,17 +7,19 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 6 — Colab T4 training: PREPARED AND HANDED OFF, waiting for the user's Colab run
-  (§33.4). Phases 1–5 complete (usable product, synthetic dataset, evaluation framework +
-  classical baseline).
-Last completed: Phase 6 — training/ package + Colab notebook
-  (training/notebooks/vigraph_qlora_t4.ipynb); 709 tests passing.
-Waiting for: vigraph-handback-<run_name>.zip from the user (adapter, training_run.json,
-  train_log.jsonl, evaluation runs zero-shot / fine-tuned / baseline on the Colab data
-  build, comparisons, manifest). On receipt: verify MANIFEST.json hashes, commit the
-  evaluation run dirs to evaluation/reports/ and the training metadata (not the adapter
-  weights) under training/runs/<run_name>/, fill research/experiment_matrix.md, then
-  Phase 7 (experiments, §21–24).
+Phase: 7 — Research experiments (next). Phases 1–6 complete: usable product, synthetic
+  dataset, evaluation framework + classical baseline, first QLoRA run trained and evaluated
+  (on the user's RTX A6000; results in research/experiment_matrix.md).
+Last completed: Phase 6 hand-back processed — run qwen3vl-2b-qlora-a6000-v1: 24/24 files
+  sha256-verified (adapter weights kept by the user; sha256 in
+  training/runs/<run>/handback_MANIFEST.json), all 336 predictions re-scored here → identical;
+  715 tests passing.
+Phase 7 plan (first steps; GPU steps run on the user's PC via the Windows notebook):
+  1. Re-evaluate zero-shot + QLoRA with max_new_tokens 4096 (app default) — L4 was
+     truncation-bound at 2048 (zero-shot 27/28, QLoRA 11/28 truncated)
+  2. Full 500-sample test + 3 seeds (sampling) for variance (§20.10)
+  3. Perturbation study (§22), resolution ablation (§24B), repair ablation (§24D, data
+     already logged as first-attempt scores), real-diagram set (§15)
 Phase 6 plan (done, in order):
   1. [done] Config (training/configs/qlora_t4.yaml), examples = inference conversation +
      compact GT JSON, loss masking through the template's assistant header
@@ -79,8 +81,22 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: the user runs training (now on a Windows PC, see below); then process the
-  hand-back (above).
+Next up: Phase 7 step 1 (re-evaluation with max_new_tokens 4096).
+Results decisions (hand-back of qwen3vl-2b-qlora-a6000-v1):
+  - Committed: evaluation/reports/{qwen3-vl-2b-instruct-zeroshot-s0, qwen3vl-2b-qlora-a6000-v1-s0,
+    baseline-v1-windows}/ (run.json, summary.json, report.md, predictions.jsonl.gz),
+    evaluation/reports/comparisons/qwen3vl-2b-qlora-a6000-v1/, training/runs/<run>/
+    (training_run.json, run_config.json, train_log.jsonl, adapter_config.json,
+    memory_probe.json, handback_MANIFEST.json), data/splits/synthetic-v1.windows-graphviz16
+    .manifest.json (the eval data build: Graphviz 16.1, ground truth identical).
+  - Training: bf16, image_max_side 896 (probe at the 10.5 GB cap: 1024 peaked 9.91 GB > 9.45 GB
+    budget), 250 steps, 1.36 h, peak 7.6 GB allocated / 9.3 GB reserved (probe). Loss
+    0.478 → 0.069, val 0.147 → 0.066. The user asked to highlight the lightweight run: stated
+    in README as MEASURED peak memory (7.6 GB), not the cap (10.5 GB).
+  - Eval (112-sample stratified test prefix, greedy, 2048 tokens, 896 px): QLoRA > zero-shot on
+    all 9 metrics (significant); QLoRA ≈ baseline on node/edge/graph similarity (n.s.), better
+    on labels/QA/type; zero-shot < baseline on structure. git_commit is null in these runs
+    (the Windows notebook downloads the code as a zip); code was 57a2f55 or later.
 Windows notebook (training/notebooks/vigraph_qlora_windows.ipynb, hand-maintained — the user
   moved from Colab to a Windows PC with an RTX A6000; F:\vigraph, venv, bf16, a driver
   script it writes to tools/vigraph_windows.py applies the VRAM cap, Linux-identical file

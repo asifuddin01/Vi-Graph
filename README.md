@@ -29,10 +29,19 @@ Diagram image → VLM → structured JSON → validate / normalize / repair
 > PDF. Research track: synthetic dataset (2,800 rendered diagrams with exact ground truth
 > and a held-out-layout test split, see [`data/`](data/README.md)) and evaluation framework
 > ([`evaluation/`](evaluation/README.md)) are done, with a classical OCR + geometry baseline
-> measured ([results](research/experiment_matrix.md#measured-results)); the Colab T4 QLoRA
-> notebook ([`training/`](training/README.md)) is ready to run. See
+> measured, and a first fine-tuning run is in
+> ([results](research/experiment_matrix.md#measured-results)). See
 > [`CLAUDE.md`](CLAUDE.md) for current status and [`docs/SPEC.md`](docs/SPEC.md) for the
 > full specification.
+
+**Lightweight fine-tuning.** Qwen3-VL-2B-Instruct is fine-tuned with 4-bit QLoRA (17.4 M
+trainable parameters) in **1.4 hours on a single GPU using at most 7.6 GB of GPU memory**
+(measured peak; PyTorch was capped at 10.5 GB) — small enough that a 12 GB consumer card or a
+free Colab T4 should fit it, though it has not been run on those yet
+([`training/`](training/README.md)). On a 112-diagram held-out test subset it
+improves over the zero-shot model on every metric (edge F1 0.497 → 0.624, graph similarity
+0.586 → 0.727, structural QA 0.451 → 0.564; all significant in paired tests) — see the
+[results and caveats](research/experiment_matrix.md#model-a-zero-shot-vs-qlora-vs-baseline-run-qwen3vl-2b-qlora-a6000-v1).
 
 ## Repository layout
 
