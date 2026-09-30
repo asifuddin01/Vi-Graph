@@ -77,3 +77,30 @@ def test_preprocessing_check_never_passes_a_null_image_size(tmp_path: Path) -> N
     assert json.loads(without_size) == {"run_name": "run", "quantization.compute_dtype": "bfloat16"}
     assert json.loads(before_probe)["data.image_max_side"] == 1024
     assert "overrides(with_image_side=False)" in code(17)
+
+
+ADDON = NOTEBOOK.with_name("vigraph_windows_reeval_tok4096_cells.ipynb")
+REPORTS = Path(__file__).resolve().parents[2] / "evaluation" / "reports"
+
+
+def test_reeval_addon_cells_parse_and_use_4096_tokens() -> None:
+    addon = json.loads(ADDON.read_text(encoding="utf-8"))["cells"]
+    for cell in addon:
+        if cell["cell_type"] == "code":
+            ast.parse("".join(cell["source"]))
+    settings = "".join(addon[1]["source"])
+    assert "MAX_NEW_TOKENS_V2 = 4096" in settings and "-tok4096" in settings
+
+
+def test_reeval_truncation_counter_matches_the_first_runs() -> None:
+    addon = json.loads(ADDON.read_text(encoding="utf-8"))["cells"]
+    tree = ast.parse("".join(addon[5]["source"]))
+    function = next(n for n in tree.body if isinstance(n, ast.FunctionDef))
+    namespace = {"json": json, "gzip": __import__("gzip")}
+    exec(compile(ast.Module([function], []), "cell", "exec"), namespace)
+
+    zeroshot = namespace["truncation_by_level"](REPORTS / "qwen3-vl-2b-instruct-zeroshot-s0")
+    qlora = namespace["truncation_by_level"](REPORTS / "qwen3vl-2b-qlora-a6000-v1-s0")
+
+    assert zeroshot[4] == (28, 27, 27)  # (n, truncated, failed) at L4 with 2048 tokens
+    assert qlora[4] == (28, 11, 10)
