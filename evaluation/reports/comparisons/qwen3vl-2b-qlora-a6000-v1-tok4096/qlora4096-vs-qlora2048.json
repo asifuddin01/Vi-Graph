@@ -1,0 +1,146 @@
+{
+  "a": [
+    "F:\\vigraph\\output\\eval\\qwen3vl-2b-qlora-a6000-v1-s0"
+  ],
+  "b": [
+    "F:\\vigraph\\output\\eval\\qwen3vl-2b-qlora-a6000-v1-tok4096-s0"
+  ],
+  "samples": 112,
+  "metrics": [
+    {
+      "metric": "node_f1",
+      "test": {
+        "n": 112,
+        "mean_a": 0.8441102518233371,
+        "mean_b": 0.8441102518233371,
+        "mean_diff": 0.0,
+        "ci_low": 0.0,
+        "ci_high": 0.0,
+        "p_bootstrap": 1.0,
+        "p_ttest": 1.0,
+        "p_wilcoxon": 1.0
+      },
+      "p_holm": 1.0
+    },
+    {
+      "metric": "edge_f1",
+      "test": {
+        "n": 112,
+        "mean_a": 0.6239257866951206,
+        "mean_b": 0.6236281676475015,
+        "mean_diff": -0.00029761904761904857,
+        "ci_low": -0.0008928571428571456,
+        "ci_high": 0.0,
+        "p_bootstrap": 0.6293370662933707,
+        "p_ttest": 0.3194855072234204,
+        "p_wilcoxon": 0.31731050786291415
+      },
+      "p_holm": 1.0
+    },
+    {
+      "metric": "edge_strict_f1",
+      "test": {
+        "n": 112,
+        "mean_a": 0.5910368249194499,
+        "mean_b": 0.5907392058718308,
+        "mean_diff": -0.00029761904761904857,
+        "ci_low": -0.0008928571428571456,
+        "ci_high": 0.0,
+        "p_bootstrap": 0.6293370662933707,
+        "p_ttest": 0.3194855072234204,
+        "p_wilcoxon": 0.31731050786291415
+      },
+      "p_holm": 1.0
+    },
+    {
+      "metric": "graph_similarity",
+      "test": {
+        "n": 112,
+        "mean_a": 0.7267044871509307,
+        "mean_b": 0.7265639961719303,
+        "mean_diff": -0.00014049097900029558,
+        "ci_low": -0.0004214729370008867,
+        "ci_high": 0.0,
+        "p_bootstrap": 0.6293370662933707,
+        "p_ttest": 0.3194855072234204,
+        "p_wilcoxon": 0.31731050786291415
+      },
+      "p_holm": 1.0
+    },
+    {
+      "metric": "label_accuracy",
+      "test": {
+        "n": 100,
+        "mean_a": 0.9852842439734186,
+        "mean_b": 0.9852842439734186,
+        "mean_diff": 0.0,
+        "ci_low": 0.0,
+        "ci_high": 0.0,
+        "p_bootstrap": 1.0,
+        "p_ttest": 1.0,
+        "p_wilcoxon": 1.0
+      },
+      "p_holm": 1.0
+    },
+    {
+      "metric": "qa_accuracy",
+      "test": {
+        "n": 112,
+        "mean_a": 0.5640873015873016,
+        "mean_b": 0.5623015873015873,
+        "mean_diff": -0.0017857142857142863,
+        "ci_low": -0.005357142857142859,
+        "ci_high": 0.0,
+        "p_bootstrap": 0.6293370662933707,
+        "p_ttest": 0.3194855072234204,
+        "p_wilcoxon": 0.31731050786291415
+      },
+      "p_holm": 1.0
+    },
+    {
+      "metric": "diagram_type_accuracy",
+      "test": {
+        "n": 112,
+        "mean_a": 0.8660714285714286,
+        "mean_b": 0.8660714285714286,
+        "mean_diff": 0.0,
+        "ci_low": 0.0,
+        "ci_high": 0.0,
+        "p_bootstrap": 1.0,
+        "p_ttest": 1.0,
+        "p_wilcoxon": 1.0
+      },
+      "p_holm": 1.0
+    },
+    {
+      "metric": "valid_first_attempt",
+      "test": {
+        "n": 112,
+        "mean_a": 0.6696428571428571,
+        "mean_b": 0.6696428571428571,
+        "mean_diff": 0.0,
+        "ci_low": 0.0,
+        "ci_high": 0.0,
+        "p_bootstrap": 1.0,
+        "p_ttest": 1.0,
+        "p_wilcoxon": 1.0
+      },
+      "p_holm": 1.0
+    },
+    {
+      "metric": "valid_post_repair",
+      "test": {
+        "n": 112,
+        "mean_a": 0.8928571428571429,
+        "mean_b": 0.8928571428571429,
+        "mean_diff": 0.0,
+        "ci_low": 0.0,
+        "ci_high": 0.0,
+        "p_bootstrap": 1.0,
+        "p_ttest": 1.0,
+        "p_wilcoxon": 1.0
+      },
+      "p_holm": 1.0
+    }
+  ]
+}

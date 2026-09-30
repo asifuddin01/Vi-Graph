@@ -11,7 +11,7 @@ condition, mean ± std (§20.10), paired significance test for comparisons (§20
 | ID       | Model                             | Status      |
 | -------- | --------------------------------- | ----------- |
 | Baseline | OCR + rule-based geometry (§19.1) — `evaluation/baseline/` v1 | evaluated (synthetic test) |
-| A        | Compact VLM: Qwen3-VL-2B-Instruct                      | zero-shot + QLoRA evaluated (112-sample test subset) |
+| A        | Compact VLM: Qwen3-VL-2B-Instruct                      | zero-shot + QLoRA evaluated (112-sample test subset, 2048 + 4096 tokens) |
 | B        | Another compact VLM               | not chosen  |
 | C        | Medium VLM                        | not chosen  |
 | D        | Larger VLM, if resources permit   | not chosen  |
@@ -95,16 +95,54 @@ By level (node F1 / edge F1 / QA):
 | L3    | 0.942 / 0.675 / 0.357 | 0.819 / 0.526 / 0.402 | 0.900 / 0.611 / 0.490 |
 | L4    | 0.614 / 0.321 / 0.152 | 0.028 / 0.016 / 0.004 | 0.486 / 0.171 / 0.128 |
 
-**Caveat — L4 is dominated by the output budget, not only the model.** With max_new_tokens
-2048, zero-shot outputs were truncated on 27 of 28 L4 diagrams (all 27 failed: it writes
-verbose JSON, ~1,450 tokens already at L3) and the fine-tuned model's on 11 of 28 (10 failed).
-L1–L2 had no truncation, and QLoRA still beats zero-shot there (edge F1 0.936 vs 0.787 at L1,
-0.779 vs 0.657 at L2). Re-evaluating with max_new_tokens 4096 (the app default) is the first
-Phase 7 run.
+**Re-evaluation with max_new_tokens 4096** (Phase 7 step 1; runs `*-tok4096-s0`, same
+112 samples, everything else unchanged; comparisons in
+`evaluation/reports/comparisons/qwen3vl-2b-qlora-a6000-v1-tok4096/`; re-scored here, identical).
+At 2048 tokens, zero-shot outputs were truncated on 27 of 28 L4 diagrams and the fine-tuned
+model's on 11 of 28, so the budget looked like a confound. **It is not:**
+
+| Condition                   | Node F1 | Edge F1 | Strict | Graph sim. | Labels | Struct. QA | Valid @1 | Valid (post-repair) | L4 truncated |
+| --------------------------- | ------- | ------- | ------ | ---------- | ------ | ---------- | -------- | ------------------- | ------------ |
+| Zero-shot, 2048 tokens      | 0.712   | 0.497   | 0.420  | 0.586      | 0.984  | 0.451      | 0.509    | 0.723               | 27 / 28      |
+| Zero-shot, 4096 tokens      | 0.736   | 0.502   | 0.432  | 0.601      | 0.971  | 0.454      | 0.536    | 0.759               | 22 / 28      |
+| QLoRA, 2048 tokens          | 0.844   | 0.624   | 0.591  | 0.727      | 0.985  | 0.564      | 0.670    | 0.893               | 11 / 28      |
+| QLoRA, 4096 tokens          | 0.844   | 0.624   | 0.591  | 0.727      | 0.985  | 0.562      | 0.670    | 0.893               | 11 / 28      |
+
+- **QLoRA: no change.** The same 14 first attempts hit the limit at 2048 and at 4096 (the
+  other 98 are byte-identical). The only score difference is one L3 sample (`test-000102`)
+  whose retry saw the longer truncated attempt (QA −0.002, n.s.).
+- **Zero-shot: small gain.** L4 truncations 27 → 22, node F1 +0.024, graph similarity +0.015;
+  L4 node F1 0.028 → 0.161, still far below QLoRA (0.486) and the baseline (0.614).
+- **Conclusions unchanged at 4096**: QLoRA vs zero-shot is still better on every metric, all
+  significant (node F1 +0.108, edge F1 +0.121, strict +0.158, graph similarity +0.125, QA
+  +0.108, diagram type +0.527, validity @1 +0.134, post-repair +0.134; p_Holm ≤ 0.031); QLoRA
+  vs baseline still n.s. on structure; zero-shot still below the baseline on structure (node
+  F1 −0.129, edge F1 −0.118, graph similarity −0.135; QA +0.007, n.s.).
+
+**Why L4 outputs don't finish: runaway enumeration.** Each truncated first attempt is
+classified from its raw text by `evaluation/scripts/runaway_report.py` (tested on these
+runs). At L4 the model either never reaches the `"edges"` list, because it keeps listing
+nodes, mostly invented ones, or it emits far more edges than the diagram has:
+
+| Run (L4, 28 samples)   | Truncated | Stuck in nodes | Repeating edges | Excess edges (> 2× GT) | Other | Failed |
+| ---------------------- | --------- | -------------- | --------------- | ---------------------- | ----- | ------ |
+| Zero-shot, 2048        | 27        | 19             | 0               | 0                      | 8     | 27     |
+| Zero-shot, 4096        | 22        | 19             | 2               | 1                      | 0     | 22     |
+| QLoRA, 2048 and 4096   | 11        | 9              | 0               | 2                      | 0     | 10     |
+
+Examples: 161 invented node ids for a 43-node diagram, "Logger" repeated 246 times, 205
+edges for a 23-edge diagram. More tokens only lengthen the loop. Candidate causes, not yet
+tested: image resolution, since L4 images are downscaled more (median ×1.96 for runaways vs
+×1.80 for finished L4 outputs, a weak association that reverses for zero-shot at L3; §24B
+will test it), and the lack of a stopping signal at generation time (a runaway guard or
+salvage in Stage C is a possible fix, and it would have to be logged as a repair). Runaways
+also dominate evaluation time: QLoRA at 4096 tokens took a median of 35 s per sample but a mean
+of 122 s and up to 16 min, 3.8 h for the 112 samples.
 
 **Hypotheses so far** (synthetic test subset only; one run per condition):
 H1 (fine-tuning helps) — supported. H2 (edges degrade faster than nodes with complexity) —
 consistent for all three systems. H6 (VLM beats the classical baseline) — **not supported yet**
 on structure: fine-tuned ≈ baseline on node/edge/graph similarity, better on labels, QA and
-diagram type; zero-shot is below the baseline. The L4 truncation confound and the missing
-real-diagram set (§15) must be resolved before drawing conclusions.
+diagram type; zero-shot is below the baseline. The token budget is ruled out as the L4 confound
+(above); L4 failures are runaway enumeration. Open before drawing conclusions: seed variance
+(§20.10), the full 500-sample test, and the real-diagram set (§15).

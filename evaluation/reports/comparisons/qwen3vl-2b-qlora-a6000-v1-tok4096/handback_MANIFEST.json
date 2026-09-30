@@ -1,0 +1,101 @@
+{
+  "files": [
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-tok4096-s0/run.json",
+      "bytes": 3817,
+      "sha256": "eee3a079eea92cd9ed20058bf7ae3c2ca36e552576d66ef1a9b4e53e4ca87741"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-tok4096-s0/summary.json",
+      "bytes": 12793,
+      "sha256": "7e8db284d8c9acea453a2027a8301f8c538ae500f104bbbf3401af02d2172c83"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-tok4096-s0/report.md",
+      "bytes": 5553,
+      "sha256": "dd0ffcf6be06c879c9d80bdb558045dfe29ecfa9f4c7433ed5ec04851d08d60f"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-tok4096-s0/predictions.jsonl.gz",
+      "bytes": 135446,
+      "sha256": "88c39736eb367e3c8147e93e49fb9407fe01e54f5d896318dc8f46d63e09a54d"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-tok4096-s0/run.json",
+      "bytes": 3326,
+      "sha256": "09db63b2fd60405140f903f053407e4d81f392a001355e14d2dc8fdcdf73e2dd"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-tok4096-s0/summary.json",
+      "bytes": 13020,
+      "sha256": "8b6f0e47bdee667d5a6f528127e712387ed279dbc9316ed15232f3aa181b06de"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-tok4096-s0/report.md",
+      "bytes": 5217,
+      "sha256": "80722b88c2596a66ab18865de96918a7e261110d95407a4e5b2f91ba178f3038"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-tok4096-s0/predictions.jsonl.gz",
+      "bytes": 158214,
+      "sha256": "2d705758be87beec180ee605055b60396f5804b23a900369a22b2093f2661df8"
+    },
+    {
+      "path": "extra/qlora-vs-baseline.json",
+      "bytes": 3818,
+      "sha256": "9842d644af1d0688f9dbaaa052f853edf1b2fc3708e63e39e279e2cbbd8abec4"
+    },
+    {
+      "path": "extra/qlora-vs-baseline.md",
+      "bytes": 1387,
+      "sha256": "420574f670986283ce416bddefee3dfcb87b156b2e2af2ee23d38036e35178b4"
+    },
+    {
+      "path": "extra/qlora-vs-zeroshot.json",
+      "bytes": 4286,
+      "sha256": "68e34e3d7044a07418842303a94a4447e3b8f9fee7335bc8d5d2a5112d4f55ed"
+    },
+    {
+      "path": "extra/qlora-vs-zeroshot.md",
+      "bytes": 1442,
+      "sha256": "cd81d725890b58b88b513e2175ee46805b1aec2089c117dac3f8d34625f30d2b"
+    },
+    {
+      "path": "extra/qlora4096-vs-qlora2048.json",
+      "bytes": 3571,
+      "sha256": "81df0a4434949a6b5bcf197c188a702415118034d2e2f8ac1ed1714399cdb7b2"
+    },
+    {
+      "path": "extra/qlora4096-vs-qlora2048.md",
+      "bytes": 1431,
+      "sha256": "8155ea704235d5b095dac5fb31f68787ce65baac6d26a13b037ee6842266b5a7"
+    },
+    {
+      "path": "extra/zeroshot-vs-baseline.json",
+      "bytes": 3931,
+      "sha256": "b99239869deadae82a9dd7a7b76ac52e556f9439760315bf958e8150041b5b60"
+    },
+    {
+      "path": "extra/zeroshot-vs-baseline.md",
+      "bytes": 1391,
+      "sha256": "942909a4c2b696f2d3924147bf3a09586b5c67e6de7930f82d7c6db7e502a07e"
+    }
+  ],
+  "missing": [],
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "packages": {
+      "torch": "2.11.0+cu128",
+      "transformers": "5.17.0",
+      "peft": "0.21.1",
+      "bitsandbytes": "0.50.2",
+      "accelerate": "1.15.0",
+      "pillow": "12.3.0"
+    },
+    "git_commit": null,
+    "torch_cuda": "12.8",
+    "gpu": "NVIDIA RTX A6000",
+    "gpu_memory_gb": 48.0
+  }
+}

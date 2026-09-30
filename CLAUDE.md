@@ -7,19 +7,36 @@ work block (§33.1).
 ## Current status
 
 ```text
-Phase: 7 — Research experiments (next). Phases 1–6 complete: usable product, synthetic
+Phase: 7 — Research experiments (in progress). Phases 1–6 complete: usable product, synthetic
   dataset, evaluation framework + classical baseline, first QLoRA run trained and evaluated
   (on the user's RTX A6000; results in research/experiment_matrix.md).
-Last completed: Phase 6 hand-back processed — run qwen3vl-2b-qlora-a6000-v1: 24/24 files
-  sha256-verified (adapter weights kept by the user; sha256 in
-  training/runs/<run>/handback_MANIFEST.json), all 336 predictions re-scored here → identical;
-  715 tests passing.
-Phase 7 plan (first steps; GPU steps run on the user's PC via the Windows notebook):
-  1. Re-evaluate zero-shot + QLoRA with max_new_tokens 4096 (app default) — L4 was
-     truncation-bound at 2048 (zero-shot 27/28, QLoRA 11/28 truncated)
+Last completed: Phase 7 step 1 — tok4096 hand-back (16/16 files sha256-verified, all 224
+  predictions re-scored here → identical): max_new_tokens 4096 changes nothing for QLoRA and
+  little for zero-shot; L4 failures are runaway enumeration, not the budget.
+  evaluation/scripts/runaway_report.py + tests; 723 tests passing.
+Phase 7 plan (GPU steps run on the user's PC via the Windows notebook + add-on cell files):
+  1. [done] Re-evaluate zero-shot + QLoRA with max_new_tokens 4096 (add-on cells
+     training/notebooks/vigraph_windows_reeval_tok4096_cells.ipynb, 9.1–9.6)
   2. Full 500-sample test + 3 seeds (sampling) for variance (§20.10)
-  3. Perturbation study (§22), resolution ablation (§24B), repair ablation (§24D, data
-     already logged as first-attempt scores), real-diagram set (§15)
+  3. Perturbation study (§22), resolution ablation (§24B — also tests the runaway
+     hypothesis below), repair ablation (§24D, data already logged as first-attempt
+     scores), real-diagram set (§15)
+Phase 7 step 1 findings (research/experiment_matrix.md, research/error_taxonomy.md):
+  - QLoRA 4096 = 2048: the same 14 first attempts hit the limit; the other 98 are
+    byte-identical; one L3 retry differs (QA −0.002, n.s.). Zero-shot: L4 truncations
+    27 → 22, node F1 0.712 → 0.736. All pairwise conclusions unchanged.
+  - Runaway enumeration (new failure mode, reported next to the §23 taxonomy, not a
+    type): at L4 the model lists nodes (mostly invented) until the limit (stuck_in_nodes:
+    zero-shot 19, QLoRA 9 of 28) or emits > 2× the true edges. Classifier thresholds are in
+    runaway_report.py; ground truth is regenerated from the generator and must reproduce
+    the run's split graph hash (data.generator.dataset.sample_graph, no dataset needed).
+  - Resolution: weak association only (L4 runaways downscaled median ×1.96 vs ×1.80 for
+    finished L4 outputs; reverses for zero-shot at L3) — a hypothesis for §24B, not a result.
+  - Cost: runaways dominate evaluation time (QLoRA at 4096: median 35 s/sample, mean
+    122 s, max 16 min; the 112-sample run took 3.8 h). For large QLoRA runs, 2048 tokens
+    gives identical scores at about half the runaway cost.
+  - Not done (would change outputs → must be an ablation, logged in DecodingParams): an
+    inference-time runaway guard (stopping criterion) or Stage C salvage.
 Phase 6 plan (done, in order):
   1. [done] Config (training/configs/qlora_t4.yaml), examples = inference conversation +
      compact GT JSON, loss masking through the template's assistant header
@@ -81,7 +98,8 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 7 step 1 (re-evaluation with max_new_tokens 4096).
+Next up: Phase 7 — resolution ablation (§24B) or the 500-sample + 3-seed runs (step 2);
+  both need the user's GPU.
 Results decisions (hand-back of qwen3vl-2b-qlora-a6000-v1):
   - Committed: evaluation/reports/{qwen3-vl-2b-instruct-zeroshot-s0, qwen3vl-2b-qlora-a6000-v1-s0,
     baseline-v1-windows}/ (run.json, summary.json, report.md, predictions.jsonl.gz),

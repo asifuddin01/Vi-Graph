@@ -32,3 +32,24 @@ wrong; 10 and 11 count matched edges with wrong text and matched nodes in the wr
 Type 9 (layout interpretation failure) needs a human looking at the image and is assigned
 manually during error analysis. Failed predictions (no graph) are counted separately, not
 as omissions.
+
+## Observed beyond §23: runaway enumeration
+
+Found in Phase 7 ([experiment matrix](experiment_matrix.md#model-a-zero-shot-vs-qlora-vs-baseline-run-qwen3vl-2b-qlora-a6000-v1)):
+on L4 diagrams the VLM keeps enumerating and never closes the JSON. It lists nodes past the
+diagram's real ones, mostly invented, or emits several times the true number of edges,
+until max_new_tokens runs out. The truncated JSON does not parse, and unless the Stage C retry
+recovers it, the sample counts as a **failed prediction**, not as types 1–11. A larger budget
+does not help: the fine-tuned model's first attempt ran away on the same 11 of 28 L4 samples at
+2048 and at 4096 tokens, and 10 of the 11 failed.
+
+It is a generation failure rather than a structural one, so it is reported next to the
+taxonomy, not as a twelfth type. `evaluation/scripts/runaway_report.py` classifies each
+truncated first attempt from its raw text:
+
+| Class             | Definition                                                                 |
+| ----------------- | -------------------------------------------------------------------------- |
+| `stuck_in_nodes`  | The `"edges"` key never appears: the node list ran until the limit.        |
+| `repeating_edges` | More duplicate (source, target) pairs than the ground truth has edges.     |
+| `excess_edges`    | More than 2× the ground truth's edge count, without that many repeats.     |
+| `other`           | Truncated, none of the above.                                              |

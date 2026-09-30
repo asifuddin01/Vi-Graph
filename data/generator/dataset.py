@@ -36,6 +36,7 @@ from data.generator.graphs import (
     DIAGRAM_TYPES,
     GENERATOR_VERSION,
     LEVELS,
+    GeneratedGraph,
     GraphSpec,
     generate_graph,
 )
@@ -213,11 +214,17 @@ def sample_plan(config: DatasetConfig, split: SplitConfig, index: int) -> tuple[
     return level, diagram_type, f"{config.seed}:{split.name}:{index}"
 
 
+def sample_graph(config: DatasetConfig, split: SplitConfig, index: int) -> GeneratedGraph:
+    """A sample's ground truth, without rendering (does not depend on Graphviz)."""
+    level, diagram_type, seed = sample_plan(config, split, index)
+    return generate_graph(random.Random(f"{seed}:graph"), level, diagram_type)
+
+
 def _make_sample(
     config: DatasetConfig, split: SplitConfig, index: int, out_dir: Path
 ) -> SampleRecord:
     level, diagram_type, seed = sample_plan(config, split, index)
-    generated = generate_graph(random.Random(f"{seed}:graph"), level, diagram_type)
+    generated = sample_graph(config, split, index)
     last_error: Exception | None = None
     for attempt in range(1, MAX_RENDER_ATTEMPTS + 1):
         params = sample_params(
