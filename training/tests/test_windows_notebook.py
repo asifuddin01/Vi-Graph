@@ -79,22 +79,34 @@ def test_preprocessing_check_never_passes_a_null_image_size(tmp_path: Path) -> N
     assert "overrides(with_image_side=False)" in code(17)
 
 
-ADDON = NOTEBOOK.with_name("vigraph_windows_reeval_tok4096_cells.ipynb")
 REPORTS = Path(__file__).resolve().parents[2] / "evaluation" / "reports"
 
 
-def test_reeval_addon_cells_parse_and_use_4096_tokens() -> None:
-    addon = json.loads(ADDON.read_text(encoding="utf-8"))["cells"]
-    for cell in addon:
-        if cell["cell_type"] == "code":
-            ast.parse("".join(cell["source"]))
-    settings = "".join(addon[1]["source"])
+def cell(prefix: str) -> str:
+    """The code cell whose first line starts with prefix (sections 9 and 10 are numbered)."""
+    sources = ["".join(c["source"]) for c in cells() if c["cell_type"] == "code"]
+    (match,) = [s for s in sources if s.startswith(prefix)]
+    return match
+
+
+def test_sections_are_in_order_and_the_intro_lists_them() -> None:
+    headings = [
+        "".join(c["source"]).split("\n")[0] for c in cells() if c["cell_type"] == "markdown"
+    ]
+    numbered = [h.split(".")[0].removeprefix("## ") for h in headings if h.startswith("## ")]
+    intro = "".join(cells()[0]["source"])
+
+    assert numbered == [str(n) for n in range(1, 11)]
+    assert "| 9. Re-evaluation, 4096 tokens |" in intro and "| 10. Resolution ablation |" in intro
+
+
+def test_reeval_cells_use_4096_tokens() -> None:
+    settings = cell("# 9.1")
     assert "MAX_NEW_TOKENS_V2 = 4096" in settings and "-tok4096" in settings
 
 
 def test_reeval_truncation_counter_matches_the_first_runs() -> None:
-    addon = json.loads(ADDON.read_text(encoding="utf-8"))["cells"]
-    tree = ast.parse("".join(addon[5]["source"]))
+    tree = ast.parse(cell("# 9.5"))
     function = next(n for n in tree.body if isinstance(n, ast.FunctionDef))
     namespace = {"json": json, "gzip": __import__("gzip")}
     exec(compile(ast.Module([function], []), "cell", "exec"), namespace)
@@ -106,13 +118,9 @@ def test_reeval_truncation_counter_matches_the_first_runs() -> None:
     assert qlora[4] == (28, 11, 10)
 
 
-RESOLUTION = NOTEBOOK.with_name("vigraph_windows_resolution_cells.ipynb")
-
-
 def resolution_helpers(eval_dir: Path) -> dict:
     """10.1's functions, run against committed evaluation runs (EVAL_LIMIT 112, 2048 tokens)."""
-    settings = "".join(json.loads(RESOLUTION.read_text(encoding="utf-8"))["cells"][1]["source"])
-    tree = ast.parse(settings)
+    tree = ast.parse(cell("# 10.1"))
     functions = [n for n in tree.body if isinstance(n, ast.FunctionDef)]
     namespace = {
         "json": json,
@@ -130,13 +138,12 @@ def resolution_helpers(eval_dir: Path) -> dict:
 
 
 def test_resolution_cells_run_the_four_sizes_in_order_at_2048_tokens() -> None:
-    cells = json.loads(RESOLUTION.read_text(encoding="utf-8"))["cells"]
-    sources = ["".join(c["source"]) for c in cells if c["cell_type"] == "code"]
-    for source in sources:
-        ast.parse(source)
-    assert "SIZES = [640, 768, 896, 1024]" in sources[0]
-    assert "MAX_NEW_TOKENS_RES = 2048" in sources[0]
+    settings = cell("# 10.1")
+    sources = ["".join(c["source"]) for c in cells() if c["cell_type"] == "code"]
     calls = [s.split("evaluate_size(")[1].split(")")[0] for s in sources if "= evaluate_size(" in s]
+
+    assert "SIZES = [640, 768, 896, 1024]" in settings
+    assert "MAX_NEW_TOKENS_RES = 2048" in settings
     assert calls == ["640", "768", "896", "1024"]
 
 

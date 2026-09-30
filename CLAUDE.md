@@ -13,15 +13,17 @@ Phase: 7 — Research experiments (in progress). Phases 1–6 complete: usable p
 Last completed: Phase 7 step 1 — tok4096 hand-back (16/16 files sha256-verified, all 224
   predictions re-scored here → identical): max_new_tokens 4096 changes nothing for QLoRA and
   little for zero-shot; L4 failures are runaway enumeration, not the budget.
-  evaluation/scripts/runaway_report.py + tests. Resolution add-on cells delivered;
-  725 tests passing.
-Phase 7 plan (GPU steps run on the user's PC via the Windows notebook + add-on cell files):
-  1. [done] Re-evaluate zero-shot + QLoRA with max_new_tokens 4096 (add-on cells
-     training/notebooks/vigraph_windows_reeval_tok4096_cells.ipynb, 9.1–9.6)
+  evaluation/scripts/runaway_report.py + tests. Resolution section 10 delivered;
+  726 tests passing.
+Phase 7 plan (GPU steps run on the user's PC via the Windows notebook; since section 10 the
+  repo copy training/notebooks/vigraph_qlora_windows.ipynb holds every section — the user sent
+  their working copy (sources identical to the repo) and got it back with outputs kept + the new
+  section; the repo copy has outputs cleared; the separate add-on cell files were removed):
+  1. [done] Re-evaluate zero-shot + QLoRA with max_new_tokens 4096 (Windows notebook
+     section 9, cells 9.1–9.6)
   2. Full 500-sample test + 3 seeds (sampling) for variance (§20.10)
-  3. Resolution ablation (§24B — also tests the runaway hypothesis below): add-on cells
-     training/notebooks/vigraph_windows_resolution_cells.ipynb (section 10) DELIVERED, not run
-     yet. QLoRA adapter (trained at 896) evaluated at 640 / 768 / 896 / 1024 px, 2048 tokens,
+  3. Resolution ablation (§24B — also tests the runaway hypothesis below): Windows notebook
+     section 10 DELIVERED (the user's full notebook with section 10 appended), not run yet. QLoRA adapter (trained at 896) evaluated at 640 / 768 / 896 / 1024 px, 2048 tokens,
      greedy, same 112 samples; 896 reuses section 7's run when its run.json matches (adapter,
      896, 2048, greedy, limit); run names <RUN_NAME>-px<size>-s0; comparisons vs 896 in
      comparisons-resolution/; hand-back zip vigraph-handback-<RUN_NAME>-resolution.zip.
