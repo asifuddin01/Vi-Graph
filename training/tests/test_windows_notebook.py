@@ -104,3 +104,48 @@ def test_reeval_truncation_counter_matches_the_first_runs() -> None:
 
     assert zeroshot[4] == (28, 27, 27)  # (n, truncated, failed) at L4 with 2048 tokens
     assert qlora[4] == (28, 11, 10)
+
+
+RESOLUTION = NOTEBOOK.with_name("vigraph_windows_resolution_cells.ipynb")
+
+
+def resolution_helpers(eval_dir: Path) -> dict:
+    """10.1's functions, run against committed evaluation runs (EVAL_LIMIT 112, 2048 tokens)."""
+    settings = "".join(json.loads(RESOLUTION.read_text(encoding="utf-8"))["cells"][1]["source"])
+    tree = ast.parse(settings)
+    functions = [n for n in tree.body if isinstance(n, ast.FunctionDef)]
+    namespace = {
+        "json": json,
+        "gzip": __import__("gzip"),
+        "read_json": lambda path: json.loads(Path(path).read_text(encoding="utf-8")),
+        "EXPECTED": 112,
+        "EVAL_LIMIT": 112,
+        "MAX_NEW_TOKENS_RES": 2048,
+        "RUN_NAME": "qwen3vl-2b-qlora-a6000-v1",
+        "EVAL_DIR": eval_dir,
+        "FIRST_RUN": eval_dir / "qwen3vl-2b-qlora-a6000-v1-s0",
+    }
+    exec(compile(ast.Module(functions, []), "settings", "exec"), namespace)
+    return namespace
+
+
+def test_resolution_cells_run_the_four_sizes_in_order_at_2048_tokens() -> None:
+    cells = json.loads(RESOLUTION.read_text(encoding="utf-8"))["cells"]
+    sources = ["".join(c["source"]) for c in cells if c["cell_type"] == "code"]
+    for source in sources:
+        ast.parse(source)
+    assert "SIZES = [640, 768, 896, 1024]" in sources[0]
+    assert "MAX_NEW_TOKENS_RES = 2048" in sources[0]
+    calls = [s.split("evaluate_size(")[1].split(")")[0] for s in sources if "= evaluate_size(" in s]
+    assert calls == ["640", "768", "896", "1024"]
+
+
+def test_resolution_cells_reuse_only_the_matching_896_run() -> None:
+    helpers = resolution_helpers(REPORTS)
+    first = REPORTS / "qwen3vl-2b-qlora-a6000-v1-s0"
+
+    assert helpers["run_path"](896) == first  # fine-tuned, 896 px, 2048 tokens, 112 samples
+    assert helpers["run_path"](640) == REPORTS / "qwen3vl-2b-qlora-a6000-v1-px640-s0"
+    assert not helpers["reusable"](REPORTS / "qwen3-vl-2b-instruct-zeroshot-s0", 896)  # no adapter
+    assert not helpers["reusable"](REPORTS / "qwen3vl-2b-qlora-a6000-v1-tok4096-s0", 896)
+    assert helpers["truncation_by_level"](first)[4] == (28, 11, 10)

@@ -13,13 +13,20 @@ Phase: 7 — Research experiments (in progress). Phases 1–6 complete: usable p
 Last completed: Phase 7 step 1 — tok4096 hand-back (16/16 files sha256-verified, all 224
   predictions re-scored here → identical): max_new_tokens 4096 changes nothing for QLoRA and
   little for zero-shot; L4 failures are runaway enumeration, not the budget.
-  evaluation/scripts/runaway_report.py + tests; 723 tests passing.
+  evaluation/scripts/runaway_report.py + tests. Resolution add-on cells delivered;
+  725 tests passing.
 Phase 7 plan (GPU steps run on the user's PC via the Windows notebook + add-on cell files):
   1. [done] Re-evaluate zero-shot + QLoRA with max_new_tokens 4096 (add-on cells
      training/notebooks/vigraph_windows_reeval_tok4096_cells.ipynb, 9.1–9.6)
   2. Full 500-sample test + 3 seeds (sampling) for variance (§20.10)
-  3. Perturbation study (§22), resolution ablation (§24B — also tests the runaway
-     hypothesis below), repair ablation (§24D, data already logged as first-attempt
+  3. Resolution ablation (§24B — also tests the runaway hypothesis below): add-on cells
+     training/notebooks/vigraph_windows_resolution_cells.ipynb (section 10) DELIVERED, not run
+     yet. QLoRA adapter (trained at 896) evaluated at 640 / 768 / 896 / 1024 px, 2048 tokens,
+     greedy, same 112 samples; 896 reuses section 7's run when its run.json matches (adapter,
+     896, 2048, greedy, limit); run names <RUN_NAME>-px<size>-s0; comparisons vs 896 in
+     comparisons-resolution/; hand-back zip vigraph-handback-<RUN_NAME>-resolution.zip.
+     On return: commit runs + comparisons, runaway_report.py per size, downscale factors.
+  4. Perturbation study (§22), repair ablation (§24D, data already logged as first-attempt
      scores), real-diagram set (§15)
 Phase 7 step 1 findings (research/experiment_matrix.md, research/error_taxonomy.md):
   - QLoRA 4096 = 2048: the same 14 first attempts hit the limit; the other 98 are
@@ -98,8 +105,8 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 7 — resolution ablation (§24B) or the 500-sample + 3-seed runs (step 2);
-  both need the user's GPU.
+Next up: the user runs section 10 (resolution ablation) on the A6000 and hands back the zip +
+  cell 10.7 output; then process it (step 3). Step 2 (500 samples + seeds) after that.
 Results decisions (hand-back of qwen3vl-2b-qlora-a6000-v1):
   - Committed: evaluation/reports/{qwen3-vl-2b-instruct-zeroshot-s0, qwen3vl-2b-qlora-a6000-v1-s0,
     baseline-v1-windows}/ (run.json, summary.json, report.md, predictions.jsonl.gz),
