@@ -79,7 +79,20 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: the user runs the notebook in Colab; then process the hand-back (above).
+Next up: the user runs training (now on a Windows PC, see below); then process the
+  hand-back (above).
+Windows notebook (training/notebooks/vigraph_qlora_windows.ipynb, hand-maintained — the user
+  moved from Colab to a Windows PC with an RTX A6000; F:\vigraph, venv, bf16, a driver
+  script it writes to tools/vigraph_windows.py applies the VRAM cap, Linux-identical file
+  writes and no DataLoader workers):
+  - First run failed in section 3: the memory probe (section 4, run earlier) found no image
+    size under 90 % of a 9.5 GB cap (peaks 8.66–9.29 GB for 1024…640 — memory is dominated
+    by the text/vocab side, not the image) and wrote chosen_image_max_side: null;
+    image_side() passed that null into every config → pydantic int error.
+  - Fix (user asked for a 10–11 GB cap): VRAM_LIMIT_GB 10.5 (≈ 11 GB in nvidia-smi with
+    the CUDA context; budget 9.45 GB → 1024 fits); image_side() returns 1024 before the
+    probe and raises a clear "raise VRAM_LIMIT_GB" error instead of returning null;
+    section 3 uses overrides(with_image_side=False). training/tests/test_windows_notebook.py.
 Training decisions (Phase 6):
   - UNVERIFIED on a GPU: nothing in training/ has run against real weights or CUDA here
     (huggingface.co / torch blocked). APIs were checked against transformers 5.17.0, peft
