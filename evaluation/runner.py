@@ -76,7 +76,8 @@ def run_evaluation(
     """Evaluate ``samples`` (already limited to ``config.limit``); returns the summary."""
     out_dir.mkdir(parents=True, exist_ok=True)
     run_path = out_dir / RUN_FILE
-    if run_path.exists():
+    resuming = run_path.exists()
+    if resuming:
         run = RunInfo.model_validate_json(run_path.read_text())
         if run.config != config:
             raise RunConfigMismatch(
@@ -103,6 +104,8 @@ def run_evaluation(
 
     done = _load_done(out_dir / PREDICTIONS_FILE, drop_errors=retry_errors)
     todo = [s for s in samples if s.id not in done]
+    if resuming and todo:
+        _require_same_gpu(run, out_dir)
     consecutive_errors = 0
     start = time.perf_counter()
     with (out_dir / PREDICTIONS_FILE).open("a") as handle:
@@ -279,6 +282,19 @@ def _git_commit() -> str | None:
     except (OSError, subprocess.CalledProcessError):
         return None
     return commit + ("-dirty" if dirty else "")
+
+
+def _require_same_gpu(run: RunInfo, out_dir: Path) -> None:
+    """Greedy decoding is not bit-identical across GPU models (seen in Phase 7: 3 of 21
+    identical inputs gave different outputs on an RTX A6000 and an RTX 4080 SUPER), so a run
+    is finished on the GPU it started on."""
+    started_on, here = run.environment.get("gpu"), _environment().get("gpu")
+    if started_on != here:
+        raise RunConfigMismatch(
+            f"{out_dir} was started on {started_on or 'no GPU'} and this machine has "
+            f"{here or 'no GPU'}; outputs differ between GPUs, so finish the run on the same "
+            "GPU or use another output directory"
+        )
 
 
 def _environment() -> dict[str, object]:

@@ -168,6 +168,23 @@ def test_resume_refuses_a_different_config_or_split_build(dataset: Path, tmp_pat
         run_evaluation(oracle(split), samples[:1], rebuilt, config(dataset), out)
 
 
+def test_resume_refuses_another_gpu(
+    dataset: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    split, samples = load_split(dataset, "test")
+    out = tmp_path / "gpu"
+    a6000 = {"python": "3.12", "platform": "Windows", "gpu": "NVIDIA RTX A6000"}
+    monkeypatch.setattr("evaluation.runner._environment", lambda: a6000)
+    run_evaluation(oracle(split), samples[:2], split, config(dataset), out, progress=False)
+
+    monkeypatch.setattr(
+        "evaluation.runner._environment", lambda: {**a6000, "gpu": "NVIDIA GeForce RTX 4080 SUPER"}
+    )
+    run_evaluation(oracle(split), samples[:2], split, config(dataset), out, progress=False)  # done
+    with pytest.raises(RunConfigMismatch, match="started on NVIDIA RTX A6000"):
+        run_evaluation(oracle(split), samples, split, config(dataset), out, progress=False)
+
+
 # --- errors ---------------------------------------------------------------------------
 
 

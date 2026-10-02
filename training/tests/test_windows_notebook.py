@@ -118,8 +118,9 @@ def test_reeval_truncation_counter_matches_the_first_runs() -> None:
     assert qlora[4] == (28, 11, 10)
 
 
-def resolution_helpers(eval_dir: Path) -> dict:
-    """10.1's functions, run against committed evaluation runs (EVAL_LIMIT 112, 2048 tokens)."""
+def resolution_helpers(eval_dir: Path, gpu: str | None = "NVIDIA RTX A6000") -> dict:
+    """10.1's functions, run against committed evaluation runs (EVAL_LIMIT 112, 2048 tokens),
+    on a PC whose GPU is ``gpu``."""
     tree = ast.parse(cell("# 10.1"))
     functions = [n for n in tree.body if isinstance(n, ast.FunctionDef)]
     namespace = {
@@ -132,6 +133,7 @@ def resolution_helpers(eval_dir: Path) -> dict:
         "RUN_NAME": "qwen3vl-2b-qlora-a6000-v1",
         "EVAL_DIR": eval_dir,
         "FIRST_RUN": eval_dir / "qwen3vl-2b-qlora-a6000-v1-s0",
+        "GPU": gpu,
     }
     exec(compile(ast.Module(functions, []), "settings", "exec"), namespace)
     return namespace
@@ -156,3 +158,17 @@ def test_resolution_cells_reuse_only_the_matching_896_run() -> None:
     assert not helpers["reusable"](REPORTS / "qwen3-vl-2b-instruct-zeroshot-s0", 896)  # no adapter
     assert not helpers["reusable"](REPORTS / "qwen3vl-2b-qlora-a6000-v1-tok4096-s0", 896)
     assert helpers["truncation_by_level"](first)[4] == (28, 11, 10)
+
+
+def test_resolution_cells_reuse_section_7_only_on_the_same_gpu() -> None:
+    px896 = REPORTS / "qwen3vl-2b-qlora-a6000-v1-px896-s0"
+    first = REPORTS / "qwen3vl-2b-qlora-a6000-v1-s0"  # made on the RTX A6000
+
+    on_4080 = resolution_helpers(REPORTS, gpu="NVIDIA GeForce RTX 4080 SUPER")
+    no_gpu = resolution_helpers(REPORTS, gpu=None)
+
+    assert on_4080["run_path"](896) == px896 and no_gpu["run_path"](896) == px896
+    assert on_4080["run_gpu"](REPORTS / "qwen3vl-2b-qlora-a6000-v1-px640-s0") == (
+        "NVIDIA GeForce RTX 4080 SUPER"
+    )
+    assert on_4080["run_gpu"](first) == "NVIDIA RTX A6000"

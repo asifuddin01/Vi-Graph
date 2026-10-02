@@ -53,3 +53,8 @@ truncated first attempt from its raw text:
 | `repeating_edges` | More duplicate (source, target) pairs than the ground truth has edges.     |
 | `excess_edges`    | More than 2× the ground truth's edge count, without that many repeats.     |
 | `other`           | Truncated, none of the above.                                              |
+
+Resolution ablation (Phase 7, fine-tuned model, same GPU): runaways at L4 are 20 / 14 / 13 of 28
+at 640 / 768 / 1024 px. Too little resolution makes them more frequent, but from 768 px up about
+half of L4 still runs away, and which diagrams do so changes with the size (7 at every size, 23
+at some size), so resolution is not their main cause.

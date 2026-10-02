@@ -1,0 +1,17 @@
+# Paired comparison
+
+- A: `evaluation/reports/qwen3vl-2b-qlora-a6000-v1-px768-s0`
+- B: `evaluation/reports/qwen3vl-2b-qlora-a6000-v1-px1024-s0`
+- 112 paired samples. Δ = B − A. Primary test: paired bootstrap (10,000 resamples, 95% CI); Holm-adjusted across the metrics below. Paired t-test and Wilcoxon signed-rank for reference.
+
+| Metric | n | A | B | Δ | 95% CI | p (bootstrap) | p (Holm) | p (t) | p (Wilcoxon) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| node_f1 | 112 | 0.823 | 0.855 | +0.032 | [-0.006, +0.071] | 0.0981 | 0.5885 | 0.1092 | 0.0102 |
+| edge_f1 | 112 | 0.626 | 0.659 | +0.032 | [-0.003, +0.066] | 0.0665 | 0.5319 | 0.0730 | 0.0043 |
+| edge_strict_f1 | 112 | 0.608 | 0.627 | +0.019 | [-0.019, +0.055] | 0.3098 | 1.0000 | 0.3186 | 0.0164 |
+| graph_similarity | 112 | 0.720 | 0.749 | +0.029 | [-0.002, +0.061] | 0.0730 | 0.5319 | 0.0821 | 0.0109 |
+| label_accuracy | 95 | 0.980 | 0.995 | +0.014 | [+0.003, +0.031] | 0.0424 | 0.3816 | 0.0541 | 0.0097 |
+| qa_accuracy | 112 | 0.572 | 0.590 | +0.018 | [-0.016, +0.049] | 0.2790 | 1.0000 | 0.2767 | 0.1017 |
+| diagram_type_accuracy | 112 | 0.857 | 0.875 | +0.018 | [-0.027, +0.063] | 0.5796 | 1.0000 | 0.4820 | 0.4795 |
+| valid_first_attempt | 112 | 0.688 | 0.670 | -0.018 | [-0.098, +0.062] | 0.7315 | 1.0000 | 0.6567 | 0.6547 |
+| valid_post_repair | 112 | 0.875 | 0.884 | +0.009 | [-0.036, +0.054] | 0.8450 | 1.0000 | 0.7073 | 0.7055 |

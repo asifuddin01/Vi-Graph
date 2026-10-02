@@ -1,0 +1,111 @@
+{
+  "files": [
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px640-s0/run.json",
+      "bytes": 3874,
+      "sha256": "ec2e01716dbe1c635ec4af07b620588c85aff104c298fa9439c320ca255588d8"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px640-s0/summary.json",
+      "bytes": 12973,
+      "sha256": "1c88087b7962f1237e1bb566d62e651f7a16a035a0d6b71d9dfde487ca202074"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px640-s0/report.md",
+      "bytes": 5553,
+      "sha256": "fb74f39a7017a3a0f6ef66de9bf2cdf2638ac10acf0469956161b672682431a9"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px640-s0/predictions.jsonl.gz",
+      "bytes": 105792,
+      "sha256": "79f6b7fd95581d77748bedef1e50e9404960f8b5b037486edd559dc989db16a6"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px768-s0/run.json",
+      "bytes": 3874,
+      "sha256": "6cd54c1016b70347d385193bd6fcda4fb8049f2586d807ed4f85f67c419b0e9b"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px768-s0/summary.json",
+      "bytes": 12898,
+      "sha256": "12e77152c7a38998c60bbbbbb54fe1a871c99792df00ef7b3a059578561fc361"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px768-s0/report.md",
+      "bytes": 5555,
+      "sha256": "9ec64369e32fee2b86ee650fbe6fc2aa6c5706699f13c6aca71a008dd386b5e9"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px768-s0/predictions.jsonl.gz",
+      "bytes": 109190,
+      "sha256": "64f9dfc490991dbf648b2493b1a9a443a4a57afb25fa7edd2ebc2ed93559b0c8"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px1024-s0/run.json",
+      "bytes": 3879,
+      "sha256": "1bd4f86cd07c71dcc3c23f6fc4ebb60e513a114da85c589c214d30315ccf62bc"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px1024-s0/summary.json",
+      "bytes": 12960,
+      "sha256": "560cd5ec126b3aae396b161819870ddc305bd9e09945ca38c3b3a98eb2b26a99"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px1024-s0/report.md",
+      "bytes": 5558,
+      "sha256": "d2eeb4e1395220b5aa655f350a0fd088bf790def26acd8c1032d35a160ad0b40"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px1024-s0/predictions.jsonl.gz",
+      "bytes": 112698,
+      "sha256": "09333df55b30da1052e383527151bbb540190e2ab5b7481b1ca949e1c67e3f5a"
+    },
+    {
+      "path": "extra/px1024-vs-px896.json",
+      "bytes": 4073,
+      "sha256": "2dd6fbcadfab81c4e993b94d32e2582a4083ef6c942476dfb8790bf79dfda297"
+    },
+    {
+      "path": "extra/px1024-vs-px896.md",
+      "bytes": 1439,
+      "sha256": "9c539b63b25cffff5b203cceca333d8f128eb3810234a2eecc6ab69df82ffcb9"
+    },
+    {
+      "path": "extra/px640-vs-px896.json",
+      "bytes": 4236,
+      "sha256": "b2b9ab7f317731e2af10f46d37e9d51a5dc582cad605fcdc9970b341ed907032"
+    },
+    {
+      "path": "extra/px640-vs-px896.md",
+      "bytes": 1438,
+      "sha256": "5daf3c40346910f6ffcbedc14c1e0835f559f35f636522c26fb0847f5f8b6b74"
+    },
+    {
+      "path": "extra/px768-vs-px896.json",
+      "bytes": 4080,
+      "sha256": "7e32019201e9119c1350c57e1d9a2a5c9010bb8db2e33f96aeb1af0b886303a0"
+    },
+    {
+      "path": "extra/px768-vs-px896.md",
+      "bytes": 1438,
+      "sha256": "4c5dbdf7f931987256f399d1e2d83ba331c9d1efcb32ef60616cdb0e6d05f4d6"
+    }
+  ],
+  "missing": [],
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "packages": {
+      "torch": "2.11.0+cu128",
+      "transformers": "5.17.0",
+      "peft": "0.21.1",
+      "bitsandbytes": "0.50.2",
+      "accelerate": "1.15.0",
+      "pillow": "12.3.0"
+    },
+    "git_commit": null,
+    "torch_cuda": "12.8",
+    "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+    "gpu_memory_gb": 16.0
+  }
+}

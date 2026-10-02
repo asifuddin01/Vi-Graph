@@ -10,11 +10,10 @@ work block (§33.1).
 Phase: 7 — Research experiments (in progress). Phases 1–6 complete: usable product, synthetic
   dataset, evaluation framework + classical baseline, first QLoRA run trained and evaluated
   (on the user's RTX A6000; results in research/experiment_matrix.md).
-Last completed: Phase 7 step 1 — tok4096 hand-back (16/16 files sha256-verified, all 224
-  predictions re-scored here → identical): max_new_tokens 4096 changes nothing for QLoRA and
-  little for zero-shot; L4 failures are runaway enumeration, not the budget.
-  evaluation/scripts/runaway_report.py + tests. Resolution section 10 delivered;
-  726 tests passing.
+Last completed: Phase 7 step 3, first hand-back — resolution ablation at 640 / 768 / 1024 px
+  (18/18 files sha256-verified, every sample re-scored here → identical). Found: the user ran
+  it on an RTX 4080 SUPER (16 GB), while 896 px is section 7's A6000 run — greedy outputs differ
+  across GPUs, so 896 must be re-run on the 4080 (notebook + runner fixed for that); 731 tests.
 Phase 7 plan (GPU steps run on the user's PC via the Windows notebook; since section 10 the
   repo copy training/notebooks/vigraph_qlora_windows.ipynb holds every section — the user sent
   their working copy (sources identical to the repo) and got it back with outputs kept + the new
@@ -22,12 +21,14 @@ Phase 7 plan (GPU steps run on the user's PC via the Windows notebook; since sec
   1. [done] Re-evaluate zero-shot + QLoRA with max_new_tokens 4096 (Windows notebook
      section 9, cells 9.1–9.6)
   2. Full 500-sample test + 3 seeds (sampling) for variance (§20.10)
-  3. Resolution ablation (§24B — also tests the runaway hypothesis below): Windows notebook
-     section 10 DELIVERED (the user's full notebook with section 10 appended), not run yet. QLoRA adapter (trained at 896) evaluated at 640 / 768 / 896 / 1024 px, 2048 tokens,
-     greedy, same 112 samples; 896 reuses section 7's run when its run.json matches (adapter,
-     896, 2048, greedy, limit); run names <RUN_NAME>-px<size>-s0; comparisons vs 896 in
-     comparisons-resolution/; hand-back zip vigraph-handback-<RUN_NAME>-resolution.zip.
-     On return: commit runs + comparisons, runaway_report.py per size, downscale factors.
+  3. Resolution ablation (§24B): Windows notebook section 10. QLoRA adapter (trained at 896)
+     at 640 / 768 / 896 / 1024 px, 2048 tokens, greedy, same 112 samples; run names
+     <RUN_NAME>-px<size>-s0; comparisons vs 896 in comparisons-resolution/; hand-back zip
+     vigraph-handback-<RUN_NAME>-resolution.zip. 640 / 768 / 1024 DONE on the 4080 SUPER
+     (committed). PENDING: 896 px on the same 4080 (section 10.4 now reuses section 7's run
+     only when run.json environment.gpu == nvidia-smi's GPU name; 10.6 skips cross-GPU pairs;
+     10.7 shows the GPU). On return: commit px896 + the same-GPU comparisons vs 896, update
+     the experiment matrix table (replace the A6000 896 row), runaway_report for px896.
   4. Perturbation study (§22), repair ablation (§24D, data already logged as first-attempt
      scores), real-diagram set (§15)
 Phase 7 step 1 findings (research/experiment_matrix.md, research/error_taxonomy.md):
@@ -46,6 +47,19 @@ Phase 7 step 1 findings (research/experiment_matrix.md, research/error_taxonomy.
     gives identical scores at about half the runaway cost.
   - Not done (would change outputs → must be an ablation, logged in DecodingParams): an
     inference-time runaway guard (stopping criterion) or Stage C salvage.
+Phase 7 step 3 findings so far (research/experiment_matrix.md "Resolution ablation"):
+  - Hardware: on 21 samples with identical input on both GPUs (never shrunk), 3 first attempts
+    differ between the A6000 and the 4080 SUPER (L1–L2, short outputs); same GPU → identical
+    (13/13, 7/7). Compare runs only on one GPU. evaluation/runner.py refuses to resume a run
+    on another GPU (_require_same_gpu; run.json environment.gpu = torch device name).
+  - Same GPU (4080): 1024 vs 640 significantly better on edge F1 +0.078, strict +0.071,
+    graph sim +0.072, QA +0.052 (p_Holm ≤ 0.007); 768 vs 640 strict +0.051; 1024 vs 768 n.s.
+    Gains are at L3/L4 (L4 graph sim 0.154 → 0.273 → 0.372); L1–L2 flat; label accuracy flat.
+  - Runaways at L4: 20 / 14 / 13 (640 / 768 / 1024); only 7 diagrams at every size, 23 at
+    some size; runaways are not the larger images within L4 → resolution is not the main
+    cause above 768 px. The earlier ×1.96 vs ×1.80 downscale association does not hold up.
+  - The user's PC now has an RTX 4080 SUPER 16 GB (VRAM cap 10.5 GB still applies). Their
+    hand-back environment says GPU "NVIDIA GeForce RTX 4080 SUPER".
 Phase 6 plan (done, in order):
   1. [done] Config (training/configs/qlora_t4.yaml), examples = inference conversation +
      compact GT JSON, loss masking through the template's assistant header
@@ -107,8 +121,9 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: the user runs section 10 (resolution ablation) on the A6000 and hands back the zip +
-  cell 10.7 output; then process it (step 3). Step 2 (500 samples + seeds) after that.
+Next up: the user re-runs section 10 with the updated notebook (only 896 px runs, ~1.5 h on the
+  4080) and hands back the zip + cell 10.7 output; then finish step 3. Then step 2 (500 samples
+  + seeds, all on one GPU) or a runaway guard ablation.
 Results decisions (hand-back of qwen3vl-2b-qlora-a6000-v1):
   - Committed: evaluation/reports/{qwen3-vl-2b-instruct-zeroshot-s0, qwen3vl-2b-qlora-a6000-v1-s0,
     baseline-v1-windows}/ (run.json, summary.json, report.md, predictions.jsonl.gz),
