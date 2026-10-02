@@ -149,14 +149,19 @@ def _pooled(results: list[SampleResult]) -> dict[str, object]:
 def _validity_summary(results: list[SampleResult]) -> dict[str, object]:
     validities = [r.prediction.validity for r in results if r.prediction.validity]
     analyses = [r.prediction.analysis for r in results if r.prediction.analysis]
+
+    def stopped_by(reason: str) -> int:
+        return sum(
+            any(a.output.finish_reason == reason for a in x.extraction.attempts) for x in analyses
+        )
+
     return {
         "scored": len(validities),
         "status": dict(Counter(v.status for v in validities).most_common()),
         "mean_attempts": statistics.fmean(v.attempts for v in validities) if validities else None,
         "samples_with_repairs": sum(v.repairs > 0 for v in validities),
-        "truncated_outputs": sum(
-            any(a.output.finish_reason == "length" for a in x.extraction.attempts) for x in analyses
-        ),
+        "truncated_outputs": stopped_by("length"),
+        "runaway_stopped_outputs": stopped_by("runaway"),  # the runaway guard fired
     }
 
 

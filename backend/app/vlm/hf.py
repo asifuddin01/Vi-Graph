@@ -8,6 +8,8 @@ from a Colab training run (§18) is applied with peft.
 Decoding is fully determined by ``DecodingParams``: model-provided generation defaults that
 would silently change the output (sampling top_k, repetition_penalty) are overridden, so
 the logged parameters are the real ones (§18.1) and every model runs the same protocol.
+With ``runaway_guard`` set, a stopping criterion runs the runaway guard (app.vlm.runaway)
+on the text generated so far, every ``GUARD_EVERY`` tokens.
 """
 
 from __future__ import annotations
@@ -20,6 +22,9 @@ from pathlib import Path
 from typing import Any
 
 from app.vlm.base import Completion, DecodingParams, Message, ModelInfo, VLMBackend
+from app.vlm.runaway import RunawayGuard
+
+GUARD_EVERY = 16  # tokens between runaway-guard checks (each check decodes the new text)
 
 
 @dataclass
@@ -31,6 +36,25 @@ class HFRuntime:
     inference_mode: Callable[[], AbstractContextManager[Any]]
     set_seed: Callable[[int], None]
     revision: str | None  # resolved commit hash when known
+    # Wraps a predicate on the token ids so far into generate()'s ``stopping_criteria``.
+    stopping_criteria: Callable[[Callable[[Any], bool]], Any] | None = None
+
+
+class GuardCheck:
+    """Stopping predicate: the runaway guard on the newly generated text. Remembers why it fired."""
+
+    def __init__(self, decode: Callable[[Any], str], prompt_tokens: int) -> None:
+        self.guard = RunawayGuard()
+        self.decode = decode
+        self.prompt_tokens = prompt_tokens
+        self.reason: str | None = None
+
+    def __call__(self, input_ids: Any) -> bool:
+        if self.reason is None:
+            new_tokens = int(input_ids.shape[1]) - self.prompt_tokens
+            if new_tokens > 0 and new_tokens % GUARD_EVERY == 0:
+                self.reason = self.guard.check(self.decode(input_ids[0, self.prompt_tokens :]))
+        return self.reason is not None
 
 
 def to_chat_messages(messages: Sequence[Message]) -> list[dict[str, Any]]:
@@ -90,7 +114,21 @@ def load_runtime(
         inference_mode=torch.inference_mode,
         set_seed=set_seed,
         revision=resolved_revision,
+        stopping_criteria=_torch_stopping_criteria,
     )
+
+
+def _torch_stopping_criteria(should_stop: Callable[[Any], bool]) -> Any:
+    import torch
+    from transformers import StoppingCriteria, StoppingCriteriaList
+
+    class Predicate(StoppingCriteria):
+        def __call__(self, input_ids: Any, scores: Any, **kwargs: Any) -> Any:
+            stop = should_stop(input_ids)
+            rows = input_ids.shape[0]
+            return torch.full((rows,), stop, device=input_ids.device, dtype=torch.bool)
+
+    return StoppingCriteriaList([Predicate()])
 
 
 class HuggingFaceVLM(VLMBackend):
@@ -150,17 +188,34 @@ class HuggingFaceVLM(VLMBackend):
                 return_dict=True,
                 return_tensors="pt",
             ).to(runtime.model.device)
+            prompt_tokens = int(inputs["input_ids"].shape[1])
+            kwargs = generation_kwargs(params)
+            guard = None
+            if params.runaway_guard is not None:
+                if runtime.stopping_criteria is None:
+                    raise RuntimeError("this runtime cannot apply the runaway guard")
+                guard = GuardCheck(
+                    lambda ids: runtime.processor.decode(ids, skip_special_tokens=True),
+                    prompt_tokens,
+                )
+                kwargs["stopping_criteria"] = runtime.stopping_criteria(guard)
             runtime.set_seed(params.seed)
             with runtime.inference_mode():
-                output_ids = runtime.model.generate(**inputs, **generation_kwargs(params))
+                output_ids = runtime.model.generate(**inputs, **kwargs)
 
-        prompt_tokens = int(inputs["input_ids"].shape[1])
         new_ids = output_ids[0, prompt_tokens:]
         completion_tokens = int(new_ids.shape[0])
         text = runtime.processor.decode(new_ids, skip_special_tokens=True)
+        if guard is not None and guard.reason is not None:
+            finish_reason = "runaway"
+        elif completion_tokens >= params.max_new_tokens:
+            finish_reason = "length"
+        else:
+            finish_reason = "stop"
         return Completion(
             text=text,
-            finish_reason="length" if completion_tokens >= params.max_new_tokens else "stop",
+            finish_reason=finish_reason,
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
+            runaway=guard.reason if guard is not None else None,
         )

@@ -30,6 +30,7 @@ hardware check under the resolution ablation).
 | A-D | Raw VLM output vs. validated/normalized/repaired output | §24D  | not started |
 | A-E | Synthetic-only vs. synthetic + real training data       | §24E  | not started |
 | A-F | VLM vs. non-VLM baseline                                | §24F  | not started |
+| A-G | Runaway guard: stop generations stuck enumerating (QLoRA, 896 px) | Phase 7 | notebook section 11 ready, not run |
 
 ## Hypotheses under test (§25)
 
@@ -192,6 +193,21 @@ The **scores do not move**: every metric within ±0.009, none significant
 (`px896-a6000-vs-4080-hardware.md`). So the GPU acts like run-to-run noise: the A6000 results
 above stand, but conditions that are compared are run on one GPU (the notebook and the runner
 enforce it), and single-run differences below ~0.01–0.03 are not meaningful.
+
+**Runaway guard (A-G, prepared, not run)** — `backend/app/vlm/runaway.py`
+(`RUNAWAY_GUARD_VERSION` "1", opt-in decoding parameter `runaway_guard`, CLI
+`--runaway-guard`). Checked every 16 generated tokens, it stops a generation when (1) at
+least 50 nodes are listed and the last 12 labels use at most 2 templates (numbers → `#`), (2)
+the last 8 edges all point to undeclared node ids, or (3) the last 12 edges hold at most 4
+distinct pairs. Thresholds come from synthetic-v1 train/val ground truth (no 12-label window
+has fewer than 3 templates; at most 49 nodes); the guard never fires on that ground truth
+(tested, compact and indented, at every object boundary for a sample). Replayed offline on
+every stored attempt of the earlier runs (an estimate, not a run): fine-tuned model, it would
+stop 179 of 181 cut-off outputs (median 56% of the text saved) and 3 of 707 finished ones, all
+the same degenerate retry (`test-000083`: 80+ edges to undeclared ids, then a closed JSON that
+Stage C repaired to 23 nodes); zero-shot, 63 of 118 cut-off and 0 of 213 finished. The run
+(notebook section 11: 896 px, 2048 tokens, same 112 samples, same GPU as 10.4) measures the
+real effect, including on the Stage C retry.
 
 **Hypotheses so far** (synthetic test subset only; one run per condition):
 H1 (fine-tuning helps) — supported. H2 (edges degrade faster than nodes with complexity) —

@@ -36,6 +36,7 @@ class RunConfig(BaseModel):
     top_p: float = 1.0
     max_new_tokens: int = 4096
     seed: int = 0
+    runaway_guard: str | None = None  # app.vlm.runaway version; None = off
     image_max_side: int
     image_max_pixels: int
 

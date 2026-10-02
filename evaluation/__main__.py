@@ -25,6 +25,7 @@ from pathlib import Path
 from app.config import Settings
 from app.vlm.base import DecodingParams
 from app.vlm.factory import create_vlm_backend
+from app.vlm.runaway import RUNAWAY_GUARD_VERSION
 from evaluation.aggregate import SAMPLE_METRICS
 from evaluation.compare import (
     DEFAULT_METRICS,
@@ -63,6 +64,12 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--top-p", type=float, default=decoding.top_p)
     run.add_argument("--max-new-tokens", type=int, default=decoding.max_new_tokens)
     run.add_argument("--seed", type=int, default=decoding.seed)
+    run.add_argument(
+        "--runaway-guard",
+        action="store_const",
+        const=RUNAWAY_GUARD_VERSION,
+        help="stop generations stuck enumerating (app.vlm.runaway); logged in the run config",
+    )
     run.add_argument("--image-max-side", type=int, default=defaults.image_max_side)
     run.add_argument("--image-max-pixels", type=int, default=defaults.image_max_pixels)
     run.add_argument("--retry-errors", action="store_true", help="re-run samples that raised")
@@ -124,6 +131,7 @@ def _run(args: argparse.Namespace, command: list[str]) -> dict[str, object]:
         top_p=args.top_p,
         max_new_tokens=args.max_new_tokens,
         seed=args.seed,
+        runaway_guard=args.runaway_guard,
     )
     uses_model = args.backend == "hf"
     predictor = _predictor(args, params, split)
@@ -142,6 +150,7 @@ def _run(args: argparse.Namespace, command: list[str]) -> dict[str, object]:
         top_p=params.top_p,
         max_new_tokens=params.max_new_tokens,
         seed=params.seed,
+        runaway_guard=params.runaway_guard,
         image_max_side=args.image_max_side,
         image_max_pixels=args.image_max_pixels,
     )

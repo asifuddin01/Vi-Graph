@@ -10,9 +10,9 @@ work block (§33.1).
 Phase: 7 — Research experiments (in progress). Phases 1–6 complete: usable product, synthetic
   dataset, evaluation framework + classical baseline, first QLoRA run trained and evaluated
   (on the user's RTX A6000; results in research/experiment_matrix.md).
-Last completed: Phase 7 step 3 — resolution ablation done, all four sizes on one RTX 4080 SUPER
-  (second hand-back: 28/28 files sha256-verified; px896 re-scored here → identical; all six
-  hand-back comparisons recomputed here → identical); 732 tests.
+Last completed: Phase 7 step 3 (resolution ablation, all sizes on one RTX 4080 SUPER). Then the
+  runaway guard (step 5 below) built, tested and replayed offline; notebook section 11 delivered
+  (the user runs it). 748 tests.
 Phase 7 plan (GPU steps run on the user's PC via the Windows notebook; since section 10 the
   repo copy training/notebooks/vigraph_qlora_windows.ipynb holds every section — the user sent
   their working copy (sources identical to the repo) and got it back with outputs kept + the new
@@ -27,6 +27,14 @@ Phase 7 plan (GPU steps run on the user's PC via the Windows notebook; since sec
      px896-a6000-vs-4080-hardware). The first, cross-GPU vs-896 comparisons were replaced.
   4. Perturbation study (§22), repair ablation (§24D, data already logged as first-attempt
      scores), real-diagram set (§15)
+  5. Runaway guard ablation (A-G): notebook section 11 DELIVERED, not run. QLoRA, 896 px,
+     2048 tokens, greedy, 112 samples, --runaway-guard, run <RUN_NAME>-px896-guard-s0 on the
+     4080, compared with px896 (10.4, same GPU) → comparisons-guard/guard-vs-noguard-px896;
+     hand-back zip vigraph-handback-<RUN_NAME>-guard.zip + cell 11.3 output. On return:
+     commit run + comparison, check that non-runaway samples are byte-identical to px896
+     (greedy, same GPU: the guard only stops early), measure tokens/time saved, how the
+     Stage C retry behaves after a guard stop, and decide whether the 500-sample + seed runs
+     (step 2) use the guard.
 Phase 7 step 1 findings (research/experiment_matrix.md, research/error_taxonomy.md):
   - QLoRA 4096 = 2048: the same 14 first attempts hit the limit; the other 98 are
     byte-identical; one L3 retry differs (QA −0.002, n.s.). Zero-shot: L4 truncations
@@ -57,6 +65,24 @@ Phase 7 step 3 findings (research/experiment_matrix.md "Resolution ablation"):
     evaluation/runner.py refuses to resume on another GPU (_require_same_gpu); notebook 10.1
     reuses a run only from this PC's GPU (nvidia-smi name == run.json environment.gpu).
   - The user's PC now has an RTX 4080 SUPER 16 GB (VRAM cap 10.5 GB still applies).
+Runaway guard decisions (backend/app/vlm/runaway.py, RUNAWAY_GUARD_VERSION "1"):
+  - Opt-in decoding parameter DecodingParams.runaway_guard ("1" | None, default None → the app
+    and all earlier runs are unchanged); RunConfig.runaway_guard; CLI --runaway-guard. The run
+    cache compares full params on the stored record (no new DB column).
+  - Rules on the text so far, checked every GUARD_EVERY = 16 tokens in the HF backend
+    (GuardCheck → transformers StoppingCriteria returning a bool tensor; the runtime's
+    stopping_criteria factory keeps torch out of tests): node loop (≥ 50 nodes and the last 12
+    labels ≤ 2 templates, numbers → #), undeclared edges (last 8 edges all to undeclared ids),
+    edge loop (last 12 edges ≤ 4 distinct pairs; ≤ 6 hit a valid zero-shot output listing every
+    edge twice). Thresholds from train/val GT (no 12-window < 3 templates; ≤ 49 nodes).
+  - A stop → finish_reason "runaway" + Completion.runaway = the rule; text is the prefix the
+    model produced (never edited). Stage C puts "stopped because it kept repeating itself
+    (<rule>); list each node and edge … once, then close the JSON" first in the retry
+    problems; the retry is guarded too. summary.json validity gains runaway_stopped_outputs;
+    runaway_report counts guard stops with cut-offs.
+  - Offline replay over every stored attempt (estimate only, see experiment matrix A-G):
+    QLoRA 179/181 cut-offs caught, 3/707 finished outputs stopped (all test-000083's
+    degenerate retry); zero-shot 63/118, 0/213.
 Phase 6 plan (done, in order):
   1. [done] Config (training/configs/qlora_t4.yaml), examples = inference conversation +
      compact GT JSON, loss masking through the template's assistant header
@@ -118,8 +144,8 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: Phase 7 step 2 (full 500-sample test + 3 sampling seeds, zero-shot + QLoRA, all on the
-  4080, 896 px, 2048 tokens) or a logged runaway-guard ablation; both need the user's GPU.
+Next up: the user runs notebook section 11 (runaway guard, ~1–1.5 h on the 4080) and hands back
+  the zip + cell 11.3 output; process it (step 5). Then step 2 (500 samples + 3 seeds).
 Results decisions (hand-back of qwen3vl-2b-qlora-a6000-v1):
   - Committed: evaluation/reports/{qwen3-vl-2b-instruct-zeroshot-s0, qwen3vl-2b-qlora-a6000-v1-s0,
     baseline-v1-windows}/ (run.json, summary.json, report.md, predictions.jsonl.gz),

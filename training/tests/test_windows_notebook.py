@@ -2,7 +2,9 @@
 not generated; these checks cover what broke on the user's first run."""
 
 import ast
+import gzip
 import json
+from collections import Counter
 from pathlib import Path
 
 import pytest
@@ -96,8 +98,9 @@ def test_sections_are_in_order_and_the_intro_lists_them() -> None:
     numbered = [h.split(".")[0].removeprefix("## ") for h in headings if h.startswith("## ")]
     intro = "".join(cells()[0]["source"])
 
-    assert numbered == [str(n) for n in range(1, 11)]
+    assert numbered == [str(n) for n in range(1, 12)]
     assert "| 9. Re-evaluation, 4096 tokens |" in intro and "| 10. Resolution ablation |" in intro
+    assert "| 11. Runaway guard |" in intro
 
 
 def test_reeval_cells_use_4096_tokens() -> None:
@@ -172,3 +175,25 @@ def test_resolution_cells_reuse_section_7_only_on_the_same_gpu() -> None:
         "NVIDIA GeForce RTX 4080 SUPER"
     )
     assert on_4080["run_gpu"](first) == "NVIDIA RTX A6000"
+
+
+def test_guard_section_runs_896_px_with_the_guard_against_10_4() -> None:
+    settings, run = cell("# 11.1"), cell("# 11.2")
+
+    assert "REFERENCE = run_path(GUARD_SIZE)" in settings
+    assert "GUARD_SIZE = TRAINED_SIZE" in settings
+    assert '"--runaway-guard"' in run and "*hf_res" in run and "GUARD_SIZE" in run
+
+
+def test_guard_section_counts_cut_offs_and_guard_stops_per_level() -> None:
+    tree = ast.parse(cell("# 11.3"))
+    function = next(n for n in tree.body if isinstance(n, ast.FunctionDef))
+    namespace = {"json": json, "gzip": gzip, "Counter": Counter}
+    exec(compile(ast.Module([function], []), "cell", "exec"), namespace)
+
+    tokens, rules, by_level = namespace["generation_stats"](
+        REPORTS / "qwen3vl-2b-qlora-a6000-v1-px896-s0"
+    )
+
+    assert by_level[4] == (28, 10, 0, 9) and by_level[3] == (28, 5, 0, 3)  # no guard: no stops
+    assert rules == {} and tokens > 50_000

@@ -44,11 +44,14 @@ PYTHONPATH=backend python -m evaluation rescore evaluation/reports/<run>
 
 `--limit N` evaluates the first N samples of the split; splits are ordered so any prefix
 of 28 covers every level × diagram type. Decoding is greedy by default; `--temperature`,
-`--top-p` and `--seed` set sampling for run-to-run variance (§20.10).
+`--top-p` and `--seed` set sampling for run-to-run variance (§20.10). `--runaway-guard`
+stops generations that are stuck enumerating (`backend/app/vlm/runaway.py`; logged in the
+decoding parameters, so it is its own condition; stops are `finish_reason: "runaway"`).
 
 **Resuming:** each sample is appended to `predictions.jsonl` and fsynced as soon as it is
 scored. Re-running the same command on the same `--out` continues where it stopped (a
-different config, or a rebuilt split with a different hash, is refused). Samples whose
+different config, a rebuilt split with a different hash, or a different GPU is refused:
+greedy outputs differ between GPU models, so compared runs come from one GPU). Samples whose
 predictor raised (e.g. CUDA out of memory) count as failures; `--retry-errors` re-runs
 them. Three errors in a row stop the run.
 

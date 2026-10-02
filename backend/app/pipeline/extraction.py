@@ -157,6 +157,13 @@ def _evaluate(output: VLMOutput) -> _Evaluation:
             f"the response was cut off at the {output.params.max_new_tokens}-token limit; "
             "return a more compact JSON (no indentation, short ids)",
         )
+    elif graph is None and output.finish_reason == "runaway":
+        problems.insert(
+            0,
+            f"the response was stopped because it kept repeating itself ({output.runaway}); "
+            "list each node and edge that is visible in the diagram exactly once, then close "
+            "the JSON",
+        )
     return _Evaluation(graph=graph, value=value, method=method, problems=problems)
 
 

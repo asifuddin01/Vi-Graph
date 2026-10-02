@@ -92,6 +92,7 @@ def test_cache_hits_on_identical_inputs(store: RunStore) -> None:
     [
         {"params": DecodingParams(seed=1)},
         {"params": DecodingParams(max_new_tokens=100)},
+        {"params": DecodingParams(runaway_guard="1")},
         {"model": ModelInfo(backend="hf", model_id="vigraph/mock-vlm", revision="1")},
         {"model": ModelInfo(backend="mock", model_id="vigraph/mock-vlm", revision="2")},
         {
@@ -106,6 +107,7 @@ def test_cache_hits_on_identical_inputs(store: RunStore) -> None:
     ids=[
         "seed",
         "max-tokens",
+        "runaway-guard",
         "backend",
         "revision",
         "adapter",

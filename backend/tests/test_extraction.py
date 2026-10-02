@@ -161,6 +161,33 @@ def test_truncation_is_reported_first_and_passed_to_the_retry() -> None:
     assert "cut off at the 256-token limit" in vlm.calls[1][-1].text
 
 
+class RunawayVLM(TruncatingVLM):
+    """Stopped by the runaway guard, mid-JSON."""
+
+    def _generate(self, messages: Sequence[Message], params: DecodingParams) -> Completion:
+        self.calls.append(list(messages))
+        return Completion(
+            text=VALID[:80], finish_reason="runaway", runaway="node loop: 64 nodes, …"
+        )
+
+
+def test_a_runaway_stop_is_reported_first_and_passed_to_the_retry() -> None:
+    vlm = RunawayVLM()
+
+    result = extract_graph(vlm, [image()], DecodingParams(runaway_guard="1"))
+
+    assert result.status == "failed"
+    assert (
+        result.attempts[0]
+        .problems[0]
+        .startswith(
+            "the response was stopped because it kept repeating itself (node loop: 64 nodes, …)"
+        )
+    )
+    assert "kept repeating itself" in vlm.calls[1][-1].text
+    assert result.attempts[1].output.params.runaway_guard == "1"  # the retry is guarded too
+
+
 def test_result_serializes_for_logging() -> None:
     result = extract_graph(MockVLM([dangling("a"), dangling("b")]), [image()])
 

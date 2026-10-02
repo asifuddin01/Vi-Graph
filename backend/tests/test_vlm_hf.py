@@ -196,6 +196,72 @@ def test_hitting_max_new_tokens_reports_length(state: dict) -> None:
     assert output.finish_reason == "length"
 
 
+# --- runaway guard --------------------------------------------------------------------
+
+
+class StreamingProcessor(FakeProcessor):
+    """Token k (from 100) decodes to node k: '{"nodes":[' + one node object per token."""
+
+    def decode(self, ids: np.ndarray, skip_special_tokens: bool) -> str:
+        nodes = "".join(f'{{"id":"n{k}","label":"Shard {k}"}},' for k in range(len(ids)))
+        return '{"nodes":[' + nodes
+
+
+class SteppingModel(FakeModel):
+    """Generates one token at a time and asks the stopping criteria after each, like
+    transformers does; ``stopping_criteria`` here is the plain predicate list."""
+
+    def generate(self, **kwargs: Any) -> np.ndarray:
+        self.generate_calls.append(kwargs)
+        ids = kwargs["input_ids"]
+        for step in range(kwargs["max_new_tokens"]):
+            ids = np.concatenate([ids, [[100 + step]]], axis=1)
+            if any(stop(ids) for stop in kwargs.get("stopping_criteria", [])):
+                break
+        return ids
+
+
+def guarded_backend(state: dict, *, criteria: bool = True) -> tuple:
+    backend, _, _ = make_backend(state)
+    runtime = backend._runtime
+    runtime.model = SteppingModel(state, 0)
+    runtime.processor = StreamingProcessor("")
+    runtime.inference_mode = lambda: contextmanager(lambda: iter([None]))()
+    runtime.stopping_criteria = (lambda predicate: [predicate]) if criteria else None
+    return backend, runtime.model
+
+
+def test_runaway_guard_stops_a_looping_generation(state: dict) -> None:
+    backend, model = guarded_backend(state)
+
+    output = backend.generate(
+        [Message(role="user", text="Go")],
+        DecodingParams(max_new_tokens=200, runaway_guard="1"),
+    )
+
+    # checked every 16 tokens: 48 nodes is below the 50-node floor, 64 fires
+    assert output.completion_tokens == 64
+    assert output.finish_reason == "runaway"
+    assert output.runaway.startswith("node loop: 64 nodes")
+    assert output.params.runaway_guard == "1"
+
+
+def test_without_the_guard_nothing_is_passed_to_generate(state: dict) -> None:
+    backend, model = guarded_backend(state)
+
+    output = backend.generate([Message(role="user", text="Go")], DecodingParams(max_new_tokens=80))
+
+    assert "stopping_criteria" not in model.generate_calls[0]
+    assert (output.completion_tokens, output.finish_reason, output.runaway) == (80, "length", None)
+
+
+def test_guard_needs_a_runtime_that_supports_it(state: dict) -> None:
+    backend, _ = guarded_backend(state, criteria=False)
+
+    with pytest.raises(RuntimeError, match="runaway guard"):
+        backend.generate([Message(role="user", text="Go")], DecodingParams(runaway_guard="1"))
+
+
 # --- model identity -------------------------------------------------------------------
 
 

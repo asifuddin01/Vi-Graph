@@ -113,6 +113,18 @@ def test_mock_run_and_limit(dataset: Path, tmp_path: Path) -> None:
     assert read_run(out).config.model_id is None  # only recorded for real models
 
 
+def test_runaway_guard_is_part_of_the_run_config(dataset: Path, tmp_path: Path) -> None:
+    out = tmp_path / "guarded"
+    args = ["run", "--dataset", str(dataset), "--backend", "mock", "--limit", "1", "--quiet"]
+
+    cli([*args, "--out", str(out), "--runaway-guard"])
+
+    assert read_run(out).config.runaway_guard == "1"
+    assert read_results(out)[0].prediction.analysis.metadata.params.runaway_guard == "1"
+    with pytest.raises(RunConfigMismatch, match="different config"):
+        cli([*args, "--out", str(out)])  # resuming without the guard is another condition
+
+
 def test_summarize_and_rescore_reproduce_the_summary(dataset: Path, tmp_path: Path) -> None:
     out = tmp_path / "run"
     cli(

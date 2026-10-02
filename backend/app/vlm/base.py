@@ -35,6 +35,9 @@ class DecodingParams(BaseModel):
     top_p: float = Field(default=1.0, gt=0.0, le=1.0)
     max_new_tokens: int = Field(default=4096, ge=1)
     seed: int = 0
+    # Version of the runaway guard that stops generations stuck enumerating (app.vlm.runaway);
+    # None = off. Changes outputs (stops early), so it is a logged decoding parameter.
+    runaway_guard: Literal["1"] | None = None
 
 
 class ModelInfo(BaseModel):
@@ -52,10 +55,12 @@ class Completion(BaseModel):
     """What a backend returns from a single generation."""
 
     text: str
-    # "length" means generation hit max_new_tokens — a common cause of truncated JSON.
-    finish_reason: Literal["stop", "length"] | None = None
+    # "length" means generation hit max_new_tokens — a common cause of truncated JSON;
+    # "runaway" means the runaway guard stopped it (the rule that fired is in ``runaway``).
+    finish_reason: Literal["stop", "length", "runaway"] | None = None
     prompt_tokens: int | None = None
     completion_tokens: int | None = None
+    runaway: str | None = None
 
 
 class VLMOutput(Completion):

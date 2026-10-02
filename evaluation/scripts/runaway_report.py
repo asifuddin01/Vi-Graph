@@ -78,7 +78,7 @@ def runaway_by_level(
         if analysis is None:
             continue
         first = analysis.extraction.attempts[0].output
-        if first.finish_reason != "length":
+        if first.finish_reason not in ("length", "runaway"):  # cut off, or stopped by the guard
             continue
         counts["truncated"] += 1
         counts[classify(first.text, graphs[result.sample_id])] += 1
