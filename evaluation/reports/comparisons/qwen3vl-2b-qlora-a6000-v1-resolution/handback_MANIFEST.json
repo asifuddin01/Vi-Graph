@@ -41,6 +41,26 @@
       "sha256": "64f9dfc490991dbf648b2493b1a9a443a4a57afb25fa7edd2ebc2ed93559b0c8"
     },
     {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px896-s0/run.json",
+      "bytes": 3874,
+      "sha256": "53ec5559b1eb4fb21b78bb47d4f64da2faa381b37f32deecf42a5b76063e72ba"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px896-s0/summary.json",
+      "bytes": 12756,
+      "sha256": "ebd1a2490b3e87c1e6cedb0da3e4545b5dcaaa1a7e07092125b6434121d489ab"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px896-s0/report.md",
+      "bytes": 5558,
+      "sha256": "e61286c4f227ee5d13a55981873bb962e620815371210e0e2fffbc767ab1f420"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px896-s0/predictions.jsonl.gz",
+      "bytes": 115777,
+      "sha256": "5fe01f629fd6e4dacb5f682590b6783d8e0e829e628b740accfc6ffa132c7551"
+    },
+    {
       "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px1024-s0/run.json",
       "bytes": 3879,
       "sha256": "1bd4f86cd07c71dcc3c23f6fc4ebb60e513a114da85c589c214d30315ccf62bc"
@@ -62,33 +82,63 @@
     },
     {
       "path": "extra/px1024-vs-px896.json",
-      "bytes": 4073,
-      "sha256": "2dd6fbcadfab81c4e993b94d32e2582a4083ef6c942476dfb8790bf79dfda297"
+      "bytes": 4125,
+      "sha256": "4cacb8bd801c4b08e104c5368af4b98ad0d01ba6ba3d64d9cf9f149d49cbb664"
     },
     {
       "path": "extra/px1024-vs-px896.md",
-      "bytes": 1439,
-      "sha256": "9c539b63b25cffff5b203cceca333d8f128eb3810234a2eecc6ab69df82ffcb9"
+      "bytes": 1445,
+      "sha256": "69a27ee33afd9de683f4b48afc12bfe91f89cb866503c40d6b2788bba5aaaba9"
+    },
+    {
+      "path": "extra/px640-vs-px1024.json",
+      "bytes": 4277,
+      "sha256": "df54ffcb21ead08dac44a99802e6606e068c8f1e03a3e075edbd3129757e2878"
+    },
+    {
+      "path": "extra/px640-vs-px1024.md",
+      "bytes": 1445,
+      "sha256": "7c1c4953ec562cd0745227cd9dca9c1b6b9ae9f85e5843921fa23cc6f8fc7eae"
     },
     {
       "path": "extra/px640-vs-px896.json",
-      "bytes": 4236,
-      "sha256": "b2b9ab7f317731e2af10f46d37e9d51a5dc582cad605fcdc9970b341ed907032"
+      "bytes": 4271,
+      "sha256": "2fd3dbafef0d27d989bc28b7f636b00f75af47437e27f2b931df771cfc1f0228"
     },
     {
       "path": "extra/px640-vs-px896.md",
-      "bytes": 1438,
-      "sha256": "5daf3c40346910f6ffcbedc14c1e0835f559f35f636522c26fb0847f5f8b6b74"
+      "bytes": 1444,
+      "sha256": "bd638c6523857de875cf5a3be5e4ff13c709455dc73dce79bdd4362a971dec66"
+    },
+    {
+      "path": "extra/px768-vs-px1024.json",
+      "bytes": 4135,
+      "sha256": "f0166e55307ad66f975557777ee4062e1712cb11457c1648fd1477da16851bca"
+    },
+    {
+      "path": "extra/px768-vs-px1024.md",
+      "bytes": 1445,
+      "sha256": "633fd98b29ce7c88ec82f2aa61e953ef64f782082d82361362c55728aae378dc"
     },
     {
       "path": "extra/px768-vs-px896.json",
-      "bytes": 4080,
-      "sha256": "7e32019201e9119c1350c57e1d9a2a5c9010bb8db2e33f96aeb1af0b886303a0"
+      "bytes": 4052,
+      "sha256": "6d324d200462d0000bb84629082bafe608196d7e08025f10d0fc2b7121caeea4"
     },
     {
       "path": "extra/px768-vs-px896.md",
-      "bytes": 1438,
-      "sha256": "4c5dbdf7f931987256f399d1e2d83ba331c9d1efcb32ef60616cdb0e6d05f4d6"
+      "bytes": 1444,
+      "sha256": "667f307186a0638f9cf58fbc9d4c4f798e9973d2d3d23cdef84da2094cc29ac5"
+    },
+    {
+      "path": "extra/px896-vs-px1024.json",
+      "bytes": 4130,
+      "sha256": "d05a86737429e361578aa304be0aad5dd241257291079da3a782b6b7f32a38f4"
+    },
+    {
+      "path": "extra/px896-vs-px1024.md",
+      "bytes": 1445,
+      "sha256": "346fe94199ff2b9f15deecd968c11691dc19b61603c57e1091e8f13f51b840dc"
     }
   ],
   "missing": [],

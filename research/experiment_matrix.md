@@ -4,7 +4,9 @@ Planned experiments. Results are recorded only once measured, with full run meta
 (spec §18.1) stored in `evaluation/reports/`.
 
 All conditions: identical evaluation protocol for every row (VLM or not), 3+ seeds per
-condition, mean ± std (§20.10), paired significance test for comparisons (§20.11).
+condition, mean ± std (§20.10), paired significance test for comparisons (§20.11). Conditions
+that are compared run on the same GPU model (greedy outputs differ across GPUs; see the
+hardware check under the resolution ablation).
 
 ## Models (§19)
 
@@ -23,7 +25,7 @@ condition, mean ± std (§20.10), paired significance test for comparisons (§20
 | E1  | Complexity robustness: all models × difficulty L1–L4    | §21   | not started |
 | E2  | Image perturbation: blur, compression, low-res, small text, occlusion, crowding | §22 | not started |
 | A-A | Zero-shot vs. QLoRA fine-tuned                          | §24A  | first run measured (below) |
-| A-B | Image resolution 640 / 768 / 896 / 1024 (evaluation only, QLoRA) | §24B  | 640 / 768 / 1024 measured (below); 896 to re-run on the same GPU |
+| A-B | Image resolution 640 / 768 / 896 / 1024 (evaluation only, QLoRA) | §24B  | measured, one GPU (below) |
 | A-C | Prompt variants: simple / structured / + constraints    | §24C  | not started |
 | A-D | Raw VLM output vs. validated/normalized/repaired output | §24D  | not started |
 | A-E | Synthetic-only vs. synthetic + real training data       | §24E  | not started |
@@ -140,54 +142,56 @@ also dominate evaluation time: QLoRA at 4096 tokens took a median of 35 s per sa
 of 122 s and up to 16 min, 3.8 h for the 112 samples.
 
 **Resolution ablation (§24B, evaluation only)** — the QLoRA adapter (trained at 896 px)
-evaluated with `image_max_side` 640 / 768 / 1024 on the same 112 samples, greedy, 2048
-tokens (runs `qwen3vl-2b-qlora-a6000-v1-px{640,768,1024}-s0`; comparisons in
-`evaluation/reports/comparisons/qwen3vl-2b-qlora-a6000-v1-resolution/`; 18/18 files
-sha256-verified, every sample re-scored here, identical). `image_max_side` caps the longest
-side; smaller images are never enlarged (at 640 px, 105 of the 112 images are shrunk; at 1024,
-81; every L4 image is shrunk at 640–896 and 27 of 28 at 1024).
+evaluated with `image_max_side` 640 / 768 / 896 / 1024 on the same 112 samples, greedy, 2048
+tokens, **all four on one RTX 4080 SUPER** (runs `qwen3vl-2b-qlora-a6000-v1-px{640,768,896,1024}-s0`;
+comparisons in `evaluation/reports/comparisons/qwen3vl-2b-qlora-a6000-v1-resolution/`; every
+hand-back file sha256-verified, every sample re-scored here and every comparison recomputed
+here, all identical). `image_max_side` caps the longest side; smaller images are never
+enlarged (shrunk: 105 / 99 / 91 / 81 of the 112 images at 640 / 768 / 896 / 1024; every L4
+image at 640–896, 27 of 28 at 1024).
 
-**Hardware caveat.** These three runs ran on an **RTX 4080 SUPER**; the 896 px run is section 7's
-**RTX A6000** run (same OS, PyTorch 2.11 / transformers 5.17). Greedy decoding is not
-bit-identical across the two GPUs: on the 21 samples whose input image is identical in the
-A6000 896 px and 4080 1024 px runs (never shrunk at either size), 3 first attempts differ
-(L1–L2, diverging after 40–800 characters), while on one GPU the outputs are identical (13 of 13
-and 7 of 7 such samples across the 4080 runs). Long L4 outputs are more exposed. So 896 px is
-**not** directly comparable with the other three sizes; the hand-back's `px*-vs-px896`
-comparisons are cross-GPU and kept only for the record. An 896 px run on the 4080 is pending
-(the notebook now reuses a run only from the same GPU, and the runner refuses to resume a run
-on a different GPU).
+| Size    | Node F1 | Edge F1 | Strict | Graph sim. | Labels | Struct. QA | Valid @1 | Valid (post-repair) | L4 runaways (stuck in nodes) | L4 failed |
+| ------- | ------- | ------- | ------ | ---------- | ------ | ---------- | -------- | ------------------- | ---------------------------- | --------- |
+| 640 px  | 0.784   | 0.581   | 0.556  | 0.677      | 0.989  | 0.538      | 0.714    | 0.812               | 20 (19)                      | 20        |
+| 768 px  | 0.823   | 0.626   | 0.608  | 0.720      | 0.980  | 0.572      | 0.688    | 0.875               | 14 (12)                      | 12        |
+| 896 px  | 0.846   | 0.633   | 0.595  | 0.730      | 0.990  | 0.573      | 0.661    | 0.893               | 10 (9)                       | 9         |
+| 1024 px | 0.855   | 0.659   | 0.627  | 0.749      | 0.991  | 0.590      | 0.670    | 0.884               | 13 (10)                      | 12        |
 
-| Size    | GPU         | Node F1 | Edge F1 | Strict | Graph sim. | Labels | Struct. QA | Valid @1 | Valid (post-repair) | L4 runaways (stuck in nodes) | L4 failed |
-| ------- | ----------- | ------- | ------- | ------ | ---------- | ------ | ---------- | -------- | ------------------- | ---------------------------- | --------- |
-| 640 px  | 4080 SUPER  | 0.784   | 0.581   | 0.556  | 0.677      | 0.989  | 0.538      | 0.714    | 0.812               | 20 (19)                      | 20        |
-| 768 px  | 4080 SUPER  | 0.823   | 0.626   | 0.608  | 0.720      | 0.980  | 0.572      | 0.688    | 0.875               | 14 (12)                      | 12        |
-| 896 px  | A6000       | 0.844   | 0.624   | 0.591  | 0.727      | 0.985  | 0.564      | 0.670    | 0.893               | 11 (9)                       | 10        |
-| 1024 px | 4080 SUPER  | 0.855   | 0.659   | 0.627  | 0.749      | 0.991  | 0.590      | 0.670    | 0.884               | 13 (10)                      | 12        |
+Paired tests (bootstrap, Holm across the 9 metrics):
 
-Same-GPU paired tests (bootstrap, Holm across the 9 metrics; `*-same-gpu.md`):
+- **640 px is worse.** vs 896: edge F1 −0.052 [−0.083, −0.022] (p_Holm 0.008), graph
+  similarity −0.053 [−0.090, −0.018] (0.035); node F1 −0.062 and post-repair validity −0.080
+  (0.08, n.s. after Holm). vs 1024: edge F1 −0.078 (0.001), strict −0.071 (0.002), graph
+  similarity −0.072 (0.007), QA −0.052 (0.005).
+- **768 – 1024 px is a plateau.** 768 vs 896, 1024 vs 896 and 768 vs 1024: no difference is
+  significant (all p_Holm ≥ 0.33). 1024 is ahead of 896 by +0.026 edge F1 / +0.019 graph
+  similarity, within noise on 112 samples.
 
-- **1024 vs 640 px** — better structure: edge F1 +0.078 [+0.044, +0.116] (p_Holm 0.001),
-  strict +0.071 (0.002), graph similarity +0.072 [+0.032, +0.114] (0.007), QA +0.052 (0.005);
-  node F1 +0.071 (0.059, n.s. after Holm).
-- **768 vs 640 px** — strict edge F1 +0.051 (p_Holm 0.03); edge F1 +0.046 and graph similarity
-  +0.043 (n.s. after Holm).
-- **1024 vs 768 px** — all differences positive for structure (+0.03) but none significant on
-  112 samples.
-
-By level (4080 runs, 640 → 768 → 1024), the gain is in the dense diagrams: graph similarity L3
-0.705 → 0.732 → 0.778 and L4 0.154 → 0.273 → 0.372 (edge F1 L4 0.075 → 0.148 → 0.261), while
-L1–L2 stay flat (L1 0.968 / 0.980 / 0.969, L2 0.881 / 0.895 / 0.876). Label accuracy on matched
+By level (640 → 768 → 896 → 1024), the effect is in the dense diagrams: graph similarity L3
+0.705 / 0.732 / 0.717 / 0.778 and L4 0.154 / 0.273 / 0.365 / 0.372 (L4 node F1 0.239 / 0.407 /
+0.533 / 0.495), while L1–L2 stay flat (L1 0.968–0.980, L2 0.868–0.895). Label accuracy on matched
 nodes barely moves (0.980–0.991): lower resolution costs structure, not label reading.
 
-**Runaways vs resolution.** At 640 px, 20 of 28 L4 first attempts run away (19 stuck in the node
-list); from 768 px up it stays at about half (14 at 768, 13 at 1024). The runaway set is unstable:
-only 7 L4 diagrams run away at all three 4080 sizes, 23 at one size or another, and 5 never.
-Within L4, the runaways are not the larger images (median original longest side, runaway vs
-finished: 1648 vs 1889 px at 640, 1840 vs 1574 at 768, 1536 vs 1858 at 1024), so the weak
-downscale association seen earlier does not hold up. Too little resolution makes runaways more
-frequent, but above 768 px resolution is not their main cause: the next candidates are on the
-decoding side (a logged runaway guard) and in training (more long L4 targets).
+**Runaways vs resolution.** L4 first attempts that run away: 20 / 14 / 10 / 13 of 28 (the fewest
+at the training size). The set is unstable: 6 L4 diagrams run away at all four sizes, 23 at one
+size or another, 5 never. Within L4 the runaways are not the larger images (median original
+longest side, runaway vs finished: 1648 vs 1889 px at 640, 1840 vs 1574 at 768, 1536 vs 1858 at
+1024), so the weak downscale association seen earlier does not hold up. Too little resolution
+makes runaways more frequent; from 768 px up, a third to half of L4 still runs away, so the next
+levers are on the decoding side (a logged runaway guard) and in training (more long L4 targets).
+
+**Recommendation:** keep `image_max_side` 896 for this adapter (its training size): 1024 is not
+significantly better and costs more image tokens; never go below 768.
+
+**Hardware (A6000 vs 4080 SUPER).** The same 896 px setting was run on both GPUs (section 7's
+A6000 run and the 4080 run above; same OS, PyTorch 2.11, transformers 5.17). Greedy decoding is
+not bit-identical across them: 49 of 112 first attempts differ (L1 2, L2 6, L3 16, L4 25 of 28;
+long outputs diverge almost always), while on one GPU identical inputs give identical outputs
+(68 of 68 run pairs that saw the same image on the 4080, every attempt byte-identical).
+The **scores do not move**: every metric within ±0.009, none significant
+(`px896-a6000-vs-4080-hardware.md`). So the GPU acts like run-to-run noise: the A6000 results
+above stand, but conditions that are compared are run on one GPU (the notebook and the runner
+enforce it), and single-run differences below ~0.01–0.03 are not meaningful.
 
 **Hypotheses so far** (synthetic test subset only; one run per condition):
 H1 (fine-tuning helps) — supported. H2 (edges degrade faster than nodes with complexity) —
@@ -196,6 +200,6 @@ on structure: fine-tuned ≈ baseline on node/edge/graph similarity, better on l
 diagram type; zero-shot is below the baseline. The token budget is ruled out as the L4 confound
 (above); L4 failures are runaway enumeration. H3 (small text / dense layouts hurt labels and
 edges most) — partly supported by the resolution ablation: lower resolution hurts edges on
-dense diagrams, but not label accuracy on matched nodes. Open before drawing conclusions: seed
-variance (§20.10), the full 500-sample test, and the real-diagram set (§15). Runs must be compared
-on the same GPU.
+dense diagrams, but not label accuracy on matched nodes (640 px vs 768–1024 px). Open before
+drawing conclusions: seed variance (§20.10), the full 500-sample test, and the real-diagram set
+(§15). Compared runs come from one GPU.

@@ -62,7 +62,7 @@ def test_ground_truth_reproduces_the_runs_split() -> None:
             "qwen3vl-2b-qlora-a6000-v1-tok4096-s0",
             {"truncated": 11, "failed": 10, "stuck_in_nodes": 9, "excess_edges": 2},
         ),
-        # resolution ablation (RTX 4080 SUPER; the 896 px run above is the A6000's)
+        # resolution ablation, all on the RTX 4080 SUPER (the -s0 run above is the A6000's)
         (
             "qwen3vl-2b-qlora-a6000-v1-px640-s0",
             {"truncated": 20, "failed": 20, "stuck_in_nodes": 19, "excess_edges": 1},
@@ -70,6 +70,10 @@ def test_ground_truth_reproduces_the_runs_split() -> None:
         (
             "qwen3vl-2b-qlora-a6000-v1-px768-s0",
             {"truncated": 14, "failed": 12, "stuck_in_nodes": 12, "excess_edges": 1, "other": 1},
+        ),
+        (
+            "qwen3vl-2b-qlora-a6000-v1-px896-s0",
+            {"truncated": 10, "failed": 9, "stuck_in_nodes": 9, "excess_edges": 1},
         ),
         (
             "qwen3vl-2b-qlora-a6000-v1-px1024-s0",
