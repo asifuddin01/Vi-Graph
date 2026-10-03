@@ -58,3 +58,8 @@ Resolution ablation (Phase 7, fine-tuned model, one GPU): runaways at L4 are 20 
 28 at 640 / 768 / 896 / 1024 px. Too little resolution makes them more frequent, but from 768 px
 up a third to half of L4 still runs away, and which diagrams do so changes with the size (6 at
 every size, 23 at some size), so resolution is not their main cause.
+
+Mitigation (Phase 7, A-G in the experiment matrix): the runaway guard (`backend/app/vlm/runaway.py`)
+stops a looping generation early instead of letting it run to the token limit. On the fine-tuned
+model it changed no metric significantly and cut generation time by 26%; runaways are still
+counted (they end with `finish_reason: "runaway"`), and they still usually fail.

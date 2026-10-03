@@ -30,7 +30,7 @@ hardware check under the resolution ablation).
 | A-D | Raw VLM output vs. validated/normalized/repaired output | §24D  | not started |
 | A-E | Synthetic-only vs. synthetic + real training data       | §24E  | not started |
 | A-F | VLM vs. non-VLM baseline                                | §24F  | not started |
-| A-G | Runaway guard: stop generations stuck enumerating (QLoRA, 896 px) | Phase 7 | notebook section 11 ready, not run |
+| A-G | Runaway guard: stop generations stuck enumerating (QLoRA, 896 px) | Phase 7 | measured (below): same scores, 26% less time |
 
 ## Hypotheses under test (§25)
 
@@ -194,20 +194,44 @@ The **scores do not move**: every metric within ±0.009, none significant
 above stand, but conditions that are compared are run on one GPU (the notebook and the runner
 enforce it), and single-run differences below ~0.01–0.03 are not meaningful.
 
-**Runaway guard (A-G, prepared, not run)** — `backend/app/vlm/runaway.py`
-(`RUNAWAY_GUARD_VERSION` "1", opt-in decoding parameter `runaway_guard`, CLI
-`--runaway-guard`). Checked every 16 generated tokens, it stops a generation when (1) at
-least 50 nodes are listed and the last 12 labels use at most 2 templates (numbers → `#`), (2)
-the last 8 edges all point to undeclared node ids, or (3) the last 12 edges hold at most 4
-distinct pairs. Thresholds come from synthetic-v1 train/val ground truth (no 12-label window
-has fewer than 3 templates; at most 49 nodes); the guard never fires on that ground truth
-(tested, compact and indented, at every object boundary for a sample). Replayed offline on
-every stored attempt of the earlier runs (an estimate, not a run): fine-tuned model, it would
-stop 179 of 181 cut-off outputs (median 56% of the text saved) and 3 of 707 finished ones, all
-the same degenerate retry (`test-000083`: 80+ edges to undeclared ids, then a closed JSON that
-Stage C repaired to 23 nodes); zero-shot, 63 of 118 cut-off and 0 of 213 finished. The run
-(notebook section 11: 896 px, 2048 tokens, same 112 samples, same GPU as 10.4) measures the
-real effect, including on the Stage C retry.
+**Runaway guard (A-G)** — `backend/app/vlm/runaway.py` (`RUNAWAY_GUARD_VERSION` "1", opt-in
+decoding parameter `runaway_guard`, CLI `--runaway-guard`). Checked every 16 generated tokens,
+it stops a generation when (1) at least 50 nodes are listed and the last 12 labels use at most
+2 templates (numbers → `#`), (2) the last 8 edges all point to undeclared node ids, or (3) the
+last 12 edges hold at most 4 distinct pairs. Thresholds come from synthetic-v1 train/val ground
+truth (no 12-label window has fewer than 3 templates; at most 49 nodes), on which it never fires.
+It only stops early: the text is never edited, and Stage C's retry is told why it stopped.
+
+Run `qwen3vl-2b-qlora-a6000-v1-px896-guard-s0`: the QLoRA adapter at 896 px, 2048 tokens,
+greedy, the same 112 samples, on the same RTX 4080 SUPER as the unguarded 896 px run; the
+guard is the only config difference and all 112 input images are byte-identical (6/6 hand-back
+files sha256-verified, every sample re-scored here and the comparison recomputed, identical;
+`evaluation/reports/comparisons/qwen3vl-2b-qlora-a6000-v1-guard/`).
+
+| Run (896 px, 4080 SUPER) | Node F1 | Edge F1 | Strict | Graph sim. | Labels | Struct. QA | Valid @1 | Valid (post-repair) | Tokens generated | Time (112 samples) | p90 / max per sample |
+| ------------------------ | ------- | ------- | ------ | ---------- | ------ | ---------- | -------- | ------------------- | ---------------- | ------------------ | -------------------- |
+| No guard                 | 0.846   | 0.633   | 0.595  | 0.730      | 0.990  | 0.573      | 0.661    | 0.893               | 123,273          | 1.61 h             | 183 s / 195 s        |
+| Guard                    | 0.853   | 0.637   | 0.600  | 0.736      | 0.991  | 0.570      | 0.661    | 0.902               | 91,639 (−26%)    | 1.19 h (−26%)      | 94 s / 109 s         |
+
+- **No metric changes significantly** (all p_Holm = 1.00; largest Δ: node F1 +0.008, graph
+  similarity +0.006, post-repair validity +0.009, QA −0.003).
+- **It only stopped early, as designed.** On the 97 samples where it never fired, every attempt
+  is byte-identical to the unguarded run. It fired on 15 first attempts (5 L3, 10 L4; 26 stops
+  counting retries: 20 node loop, 6 undeclared edges); each stopped text is a prefix of the
+  unguarded attempt, and every one of those unguarded attempts had hit the token limit, so
+  no first attempt that would have finished was stopped.
+- **Outcomes changed on 3 samples, all through the Stage C retry.** Two L3 runaways now recover
+  (`test-000010` failed → repaired, graph similarity 0 → 0.565; `test-000078` failed → valid
+  after retry, 0 → 0.842): the retry sees a short prefix and the reason it was stopped instead
+  of 2,048 tokens of loop. One L4 sample is lost (`test-000083` repaired → failed, 0.593 → 0):
+  the case the offline replay flagged in advance, a retry that listed 80+ edges to undeclared
+  nodes and then happened to close its JSON.
+- The offline replay (before the run) estimated it well: 179 of 181 cut-off outputs caught at
+  about half their length, and the same single false stop.
+
+**Decision:** the remaining Phase 7 runs (500 samples, seeds) use the guard, for every condition
+alike. It is part of the logged decoding protocol (`runaway_guard: "1"` in each run's config),
+so runs with and without it are never mixed in a comparison. The app default stays off.
 
 **Hypotheses so far** (synthetic test subset only; one run per condition):
 H1 (fine-tuning helps) — supported. H2 (edges degrade faster than nodes with complexity) —

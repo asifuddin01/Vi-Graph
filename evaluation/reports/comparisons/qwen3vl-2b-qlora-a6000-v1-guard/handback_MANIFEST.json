@@ -1,0 +1,51 @@
+{
+  "files": [
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px896-guard-s0/run.json",
+      "bytes": 3963,
+      "sha256": "e403962e0db4be69c977622f48bddfeee2bdcb4ba82d2d885f7719c3ea1bce91"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px896-guard-s0/summary.json",
+      "bytes": 12962,
+      "sha256": "2b104a1cc170344b077b42670432d5f5f82e3aa4257ad5c3e179cd83dc3093fd"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px896-guard-s0/report.md",
+      "bytes": 5563,
+      "sha256": "10cf1462ce85d2e5cb7a1663bf5b1e273955c335b040201a31d9cf4ba5d5bf20"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-px896-guard-s0/predictions.jsonl.gz",
+      "bytes": 108106,
+      "sha256": "e911fcff9c9374a0b53cb265e3734312a2095118e8840ca6fa684c8c23978b1f"
+    },
+    {
+      "path": "extra/guard-vs-noguard-px896.json",
+      "bytes": 3927,
+      "sha256": "f5f825b4a4e0d2958032f2baf843d1c4583d1662df6a6e2dbd7f07f67ba93ea3"
+    },
+    {
+      "path": "extra/guard-vs-noguard-px896.md",
+      "bytes": 1450,
+      "sha256": "55118c1c5ff326607662b31dc339c755c0d95879861f3b31da801e168870fde7"
+    }
+  ],
+  "missing": [],
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "packages": {
+      "torch": "2.11.0+cu128",
+      "transformers": "5.17.0",
+      "peft": "0.21.1",
+      "bitsandbytes": "0.50.2",
+      "accelerate": "1.15.0",
+      "pillow": "12.3.0"
+    },
+    "git_commit": null,
+    "torch_cuda": "12.8",
+    "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+    "gpu_memory_gb": 16.0
+  }
+}

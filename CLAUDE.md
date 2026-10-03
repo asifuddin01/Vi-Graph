@@ -10,9 +10,9 @@ work block (§33.1).
 Phase: 7 — Research experiments (in progress). Phases 1–6 complete: usable product, synthetic
   dataset, evaluation framework + classical baseline, first QLoRA run trained and evaluated
   (on the user's RTX A6000; results in research/experiment_matrix.md).
-Last completed: Phase 7 step 3 (resolution ablation, all sizes on one RTX 4080 SUPER). Then the
-  runaway guard (step 5 below) built, tested and replayed offline; notebook section 11 delivered
-  (the user runs it). 748 tests.
+Last completed: Phase 7 step 5 — runaway guard run (6/6 hand-back files sha256-verified, every
+  sample re-scored here, comparison recomputed → identical): same scores, 26% less time.
+  750 tests.
 Phase 7 plan (GPU steps run on the user's PC via the Windows notebook; since section 10 the
   repo copy training/notebooks/vigraph_qlora_windows.ipynb holds every section — the user sent
   their working copy (sources identical to the repo) and got it back with outputs kept + the new
@@ -27,14 +27,9 @@ Phase 7 plan (GPU steps run on the user's PC via the Windows notebook; since sec
      px896-a6000-vs-4080-hardware). The first, cross-GPU vs-896 comparisons were replaced.
   4. Perturbation study (§22), repair ablation (§24D, data already logged as first-attempt
      scores), real-diagram set (§15)
-  5. Runaway guard ablation (A-G): notebook section 11 DELIVERED, not run. QLoRA, 896 px,
-     2048 tokens, greedy, 112 samples, --runaway-guard, run <RUN_NAME>-px896-guard-s0 on the
-     4080, compared with px896 (10.4, same GPU) → comparisons-guard/guard-vs-noguard-px896;
-     hand-back zip vigraph-handback-<RUN_NAME>-guard.zip + cell 11.3 output. On return:
-     commit run + comparison, check that non-runaway samples are byte-identical to px896
-     (greedy, same GPU: the guard only stops early), measure tokens/time saved, how the
-     Stage C retry behaves after a guard stop, and decide whether the 500-sample + seed runs
-     (step 2) use the guard.
+  5. [done] Runaway guard ablation (A-G): notebook section 11; run
+     <RUN_NAME>-px896-guard-s0 (4080, 896 px, 2048 tokens, greedy, 112 samples) vs px896;
+     comparison in evaluation/reports/comparisons/qwen3vl-2b-qlora-a6000-v1-guard/.
 Phase 7 step 1 findings (research/experiment_matrix.md, research/error_taxonomy.md):
   - QLoRA 4096 = 2048: the same 14 first attempts hit the limit; the other 98 are
     byte-identical; one L3 retry differs (QA −0.002, n.s.). Zero-shot: L4 truncations
@@ -83,6 +78,13 @@ Runaway guard decisions (backend/app/vlm/runaway.py, RUNAWAY_GUARD_VERSION "1"):
   - Offline replay over every stored attempt (estimate only, see experiment matrix A-G):
     QLoRA 179/181 cut-offs caught, 3/707 finished outputs stopped (all test-000083's
     degenerate retry); zero-shot 63/118, 0/213.
+  - Measured (A-G): no metric changes significantly (p_Holm 1.00); tokens −26%, time
+    1.61 → 1.19 h, p90 183 → 94 s/sample. Non-stopped samples byte-identical to px896 (97);
+    15 first attempts stopped, each a prefix of an unguarded attempt that hit the limit (no
+    false stop). 3 outcomes changed via the retry: test-000010 and test-000078 (L3) recover,
+    test-000083 (L4, the predicted degenerate retry) is lost.
+  - DECISION: remaining Phase 7 runs (500 samples + seeds) use --runaway-guard for every
+    condition; the app default stays off (DecodingParams.runaway_guard None).
 Phase 6 plan (done, in order):
   1. [done] Config (training/configs/qlora_t4.yaml), examples = inference conversation +
      compact GT JSON, loss masking through the template's assistant header
@@ -144,8 +146,9 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: the user runs notebook section 11 (runaway guard, ~1–1.5 h on the 4080) and hands back
-  the zip + cell 11.3 output; process it (step 5). Then step 2 (500 samples + 3 seeds).
+Next up: Phase 7 step 2 — full 500-sample test, zero-shot + QLoRA, 896 px, 2048 tokens,
+  --runaway-guard, all on the 4080. Open design choice for the user: the seeds need sampling
+  (greedy has no seed variance) — temperature/top_p not yet chosen.
 Results decisions (hand-back of qwen3vl-2b-qlora-a6000-v1):
   - Committed: evaluation/reports/{qwen3-vl-2b-instruct-zeroshot-s0, qwen3vl-2b-qlora-a6000-v1-s0,
     baseline-v1-windows}/ (run.json, summary.json, report.md, predictions.jsonl.gz),

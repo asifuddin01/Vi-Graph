@@ -1,0 +1,136 @@
+{
+  "name": "qwen3vl-2b-qlora-a6000-v1-px896-guard-s0",
+  "created_at": "2026-10-02T19:40:54.231511Z",
+  "completed_at": "2026-10-02T20:52:06.067657Z",
+  "command": [
+    "E:\\Asif\\vigraph\\Vi-Graph\\evaluation\\__main__.py",
+    "run",
+    "--dataset",
+    "E:\\Asif\\vigraph\\data\\synthetic-v1",
+    "--split",
+    "test",
+    "--out",
+    "E:\\Asif\\vigraph\\output\\eval\\qwen3vl-2b-qlora-a6000-v1-px896-guard-s0",
+    "--image-max-side",
+    "896",
+    "--backend",
+    "hf",
+    "--model-id",
+    "Qwen/Qwen3-VL-2B-Instruct",
+    "--dtype",
+    "bfloat16",
+    "--device-map",
+    "cuda:0",
+    "--max-new-tokens",
+    "2048",
+    "--adapter",
+    "E:\\Asif\\vigraph\\output\\runs\\qwen3vl-2b-qlora-a6000-v1\\adapter",
+    "--runaway-guard",
+    "--limit",
+    "112"
+  ],
+  "config": {
+    "dataset": "E:\\Asif\\vigraph\\data\\synthetic-v1",
+    "split": "test",
+    "limit": 112,
+    "predictor": "vlm:hf",
+    "model_id": "Qwen/Qwen3-VL-2B-Instruct",
+    "revision": null,
+    "adapter": "E:\\Asif\\vigraph\\output\\runs\\qwen3vl-2b-qlora-a6000-v1\\adapter",
+    "dtype": "bfloat16",
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "max_new_tokens": 2048,
+    "seed": 0,
+    "runaway_guard": "1",
+    "image_max_side": 896,
+    "image_max_pixels": 40000000
+  },
+  "split": {
+    "dataset": "synthetic-v1",
+    "directory": "E:\\Asif\\vigraph\\data\\synthetic-v1",
+    "split": "test",
+    "samples": 500,
+    "split_hash": "88ae7d751259f2eaa2fd612bb0aa2ad0e84c5ca57a06c029214031223309b6e3",
+    "graph_hash": "8d4d2c69624c1a414c4c1d7073d3443736f5bb1e75e3abca2d1241a7989d6515",
+    "dataset_hash": "45e37fa428b193c10dc8f71520f067b156016978c0ec1b0afe9b96109bfaef4f",
+    "generator_version": "1",
+    "graphviz_version": "dot - graphviz version 16.1.0 (20260904.0139)"
+  },
+  "metadata": {
+    "app_version": "0.1.0",
+    "schema_version": "2.0",
+    "model": {
+      "backend": "hf",
+      "model_id": "Qwen/Qwen3-VL-2B-Instruct",
+      "revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+      "adapter_path": "E:\\Asif\\vigraph\\output\\runs\\qwen3vl-2b-qlora-a6000-v1\\adapter"
+    },
+    "params": {
+      "temperature": 0.0,
+      "top_p": 1.0,
+      "max_new_tokens": 2048,
+      "seed": 0,
+      "runaway_guard": "1"
+    },
+    "prompt_id": "graph_extraction@1",
+    "prompt_sha256": "d7097c8ad971e570ebacd9fa5c62d96fe0ee3293ff4bc593e5f8021da107d409",
+    "correction_prompt_id": "graph_correction@1",
+    "correction_prompt_sha256": "e0f443ebad7d560db6e0a496b5431868c89b114a49177e11b2dce29e5554ae32",
+    "image_max_side": 896,
+    "split_version": "88ae7d751259f2eaa2fd612bb0aa2ad0e84c5ca57a06c029214031223309b6e3"
+  },
+  "adapter_config": {
+    "base_model_name_or_path": "Qwen/Qwen3-VL-2B-Instruct",
+    "peft_type": "LORA",
+    "r": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "target_modules": [
+      "v_proj",
+      "k_proj",
+      "up_proj",
+      "o_proj",
+      "down_proj",
+      "gate_proj",
+      "q_proj"
+    ]
+  },
+  "predictor_info": {},
+  "versions": {
+    "app": "0.1.0",
+    "schema": "2.0",
+    "matching": "1",
+    "scores": "1",
+    "qa_benchmark": "1",
+    "matching_config": {
+      "matching_version": "1",
+      "label_similarity": "rapidfuzz Levenshtein.normalized_similarity on NFC, whitespace-collapsed, casefolded labels",
+      "threshold": 0.7,
+      "type_bonus": 0.05,
+      "type_penalty": 0.05,
+      "context_weight": 0.01,
+      "rapidfuzz_version": "3.14.6",
+      "scipy_version": "1.18.1"
+    },
+    "git_commit": null,
+    "packages": {
+      "pydantic": "2.13.5",
+      "networkx": "3.7",
+      "rapidfuzz": "3.14.6",
+      "scipy": "1.18.1",
+      "torch": "2.11.0+cu128",
+      "transformers": "5.17.0",
+      "peft": "0.21.1",
+      "opencv-python-headless": "5.0.0.93",
+      "pytesseract": "0.3.13"
+    }
+  },
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "gpu": "NVIDIA GeForce RTX 4080 SUPER"
+  },
+  "samples_done": 112,
+  "errors": 0
+}

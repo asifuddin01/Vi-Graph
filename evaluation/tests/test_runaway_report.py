@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from app.vlm.runaway import RunawayGuard
 from evaluation.results import read_results, read_run
 from evaluation.scripts.runaway_report import classify, ground_truth, runaway_by_level
 from evaluation.tests.helpers import graph
@@ -75,6 +76,10 @@ def test_ground_truth_reproduces_the_runs_split() -> None:
             "qwen3vl-2b-qlora-a6000-v1-px896-s0",
             {"truncated": 10, "failed": 9, "stuck_in_nodes": 9, "excess_edges": 1},
         ),
+        (  # runaway guard on: stopped attempts count as truncated
+            "qwen3vl-2b-qlora-a6000-v1-px896-guard-s0",
+            {"truncated": 10, "failed": 10, "stuck_in_nodes": 9, "other": 1},
+        ),
         (
             "qwen3vl-2b-qlora-a6000-v1-px1024-s0",
             {"truncated": 13, "failed": 12, "stuck_in_nodes": 10, "excess_edges": 1, "other": 2},
@@ -87,3 +92,30 @@ def test_l4_runaways_in_the_committed_runs(run_name: str, expected: dict[str, in
     table = runaway_by_level(read_results(run_dir), ground_truth(read_run(run_dir)))
 
     assert dict(table[4]) == {"samples": 28, **expected}
+
+
+def test_the_guard_run_only_stopped_early() -> None:
+    """Greedy decoding on one GPU: where the guard never fired, every attempt is byte-identical
+    to the unguarded run; where it fired, the stopped text is a prefix of the unguarded text and
+    the logged rule fires again on it."""
+    guarded = {
+        r.sample_id: r for r in read_results(REPORTS / "qwen3vl-2b-qlora-a6000-v1-px896-guard-s0")
+    }
+    plain = {r.sample_id: r for r in read_results(REPORTS / "qwen3vl-2b-qlora-a6000-v1-px896-s0")}
+    stopped = 0
+    for sample_id, result in guarded.items():
+        attempts = result.prediction.analysis.extraction.attempts
+        reference = plain[sample_id].prediction.analysis.extraction.attempts
+        if all(a.output.finish_reason != "runaway" for a in attempts):
+            assert [a.output.text for a in attempts] == [a.output.text for a in reference]
+            continue
+        stopped += 1
+        first, unguarded = attempts[0].output, reference[0].output
+        assert first.finish_reason == "runaway" and unguarded.finish_reason == "length"
+        assert unguarded.text.startswith(first.text)
+        for attempt in attempts:
+            if attempt.output.finish_reason == "runaway":
+                rule = RunawayGuard().check(attempt.output.text)
+                assert rule.split(":")[0] == attempt.output.runaway.split(":")[0]
+
+    assert stopped == 15
