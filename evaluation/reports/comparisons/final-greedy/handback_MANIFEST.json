@@ -1,0 +1,76 @@
+{
+  "files": [
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-final-greedy/run.json",
+      "bytes": 3934,
+      "sha256": "bf189c12bd5d5a808afb50148566e9b7554d58743415d9ff5f165571477350dd"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-final-greedy/summary.json",
+      "bytes": 13042,
+      "sha256": "6528f55cb93003a84d0b6bf11285f15a1a52a2d0d238ca10bbc15570f2b0706c"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-final-greedy/report.md",
+      "bytes": 5601,
+      "sha256": "fc6df7dc76f0292bc4442c478ebd85e001d7edd49c7bcf7c096488257f87f523"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-final-greedy/predictions.jsonl.gz",
+      "bytes": 477969,
+      "sha256": "260cba64c2481796343fcf12b80abe6ff00e1ee7df8faf1c4d738856e8d5a2df"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-final-greedy/run.json",
+      "bytes": 3425,
+      "sha256": "bd3f2fc8ddbc684b5c75063e2241ff5caeec54cec7d1b8533ecb131f38444538"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-final-greedy/summary.json",
+      "bytes": 13076,
+      "sha256": "0eb5690bbc9ea81bca3a32c9d8c80111d23aa631dee25e91a9dfca06dd559b5b"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-final-greedy/report.md",
+      "bytes": 5256,
+      "sha256": "d65e4764a161ca834ad2f3f279a2347417f23718aca2c67b21decc4a88fd58d6"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-final-greedy/predictions.jsonl.gz",
+      "bytes": 537291,
+      "sha256": "bed4f1f41f1b01dbab7be3c7a842ebda4ab4b807ed93ca1d1a23d2989b741a2a"
+    },
+    {
+      "path": "extra/qlora-vs-zeroshot.json",
+      "bytes": 4139,
+      "sha256": "7d28e959eae3f2a870a4142cb7d46408a11b05553f4683c2b0cb53992d03385d"
+    },
+    {
+      "path": "extra/qlora-vs-zeroshot.md",
+      "bytes": 1457,
+      "sha256": "b5ae9bde7b3e5e25d474a56c051c41ca874178be8fa840c5208f6659cb52b43a"
+    },
+    {
+      "path": "extra/manifest.json",
+      "bytes": 2079,
+      "sha256": "b13a5387be08096064788718a11cb25f93555f51e94035d41f3766e579d00bc6"
+    }
+  ],
+  "missing": [],
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "packages": {
+      "torch": "2.11.0+cu128",
+      "transformers": "5.17.0",
+      "peft": "0.21.1",
+      "bitsandbytes": "0.50.2",
+      "accelerate": "1.15.0",
+      "pillow": "12.3.0"
+    },
+    "git_commit": null,
+    "torch_cuda": "12.8",
+    "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+    "gpu_memory_gb": 16.0
+  }
+}

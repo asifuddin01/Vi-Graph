@@ -15,6 +15,7 @@ Everything builds on the locked node/edge matching in `metrics/matching.py` (§2
 | `runner.py`, `aggregate.py`, `report.py` | Resumable runs, summaries, markdown reports        |
 | `stats.py`, `compare.py`    | Variance over seeds (§20.10), paired significance tests (§20.11) |
 | `scripts/runaway_report.py` | Why outputs hit max_new_tokens, per level (runaway enumeration) |
+| `scripts/repair_ablation.py` | First attempt as-is vs final output, per run (§24D)            |
 | `reports/<run>/`            | One directory per run                                           |
 
 Every definition is in the module docstrings, pinned by a version constant

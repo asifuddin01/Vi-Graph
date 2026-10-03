@@ -13,7 +13,7 @@ hardware check under the resolution ablation).
 | ID       | Model                             | Status      |
 | -------- | --------------------------------- | ----------- |
 | Baseline | OCR + rule-based geometry (§19.1) — `evaluation/baseline/` v1 | evaluated (synthetic test) |
-| A        | Compact VLM: Qwen3-VL-2B-Instruct                      | zero-shot + QLoRA evaluated (112-sample test subset, 2048 + 4096 tokens) |
+| A        | Compact VLM: Qwen3-VL-2B-Instruct                      | zero-shot + QLoRA evaluated on all 500 test samples (final, greedy); ablations on the 112-sample subset |
 | B        | Another compact VLM               | not chosen  |
 | C        | Medium VLM                        | not chosen  |
 | D        | Larger VLM, if resources permit   | not chosen  |
@@ -22,14 +22,14 @@ hardware check under the resolution ablation).
 
 | ID  | Experiment                                              | Spec  | Status      |
 | --- | ------------------------------------------------------- | ----- | ----------- |
-| E1  | Complexity robustness: all models × difficulty L1–L4    | §21   | not started |
-| E2  | Image perturbation: blur, compression, low-res, small text, occlusion, crowding | §22 | not started |
-| A-A | Zero-shot vs. QLoRA fine-tuned                          | §24A  | first run measured (below) |
+| E1  | Complexity robustness: all models × difficulty L1–L4    | §21   | measured for Model A (final evaluation, by level); baseline on the same build pending |
+| E2  | Image perturbation: blur, compression, low-res, small text, occlusion, crowding | §22 | not done (future work) |
+| A-A | Zero-shot vs. QLoRA fine-tuned                          | §24A  | measured on all 500 (final evaluation) |
 | A-B | Image resolution 640 / 768 / 896 / 1024 (evaluation only, QLoRA) | §24B  | measured, one GPU (below) |
-| A-C | Prompt variants: simple / structured / + constraints    | §24C  | not started |
-| A-D | Raw VLM output vs. validated/normalized/repaired output | §24D  | not started |
-| A-E | Synthetic-only vs. synthetic + real training data       | §24E  | not started |
-| A-F | VLM vs. non-VLM baseline                                | §24F  | not started |
+| A-C | Prompt variants: simple / structured / + constraints    | §24C  | not done (future work) |
+| A-D | Raw VLM output vs. validated/normalized/repaired output | §24D  | measured on all 500 (final evaluation) |
+| A-E | Synthetic-only vs. synthetic + real training data       | §24E  | not done (no real-diagram set; future work) |
+| A-F | VLM vs. non-VLM baseline                                | §24F  | 112-sample subset measured; all 500 on the same image build pending |
 | A-G | Runaway guard: stop generations stuck enumerating (QLoRA, 896 px) | Phase 7 | measured (below): same scores, 26% less time |
 
 ## Hypotheses under test (§25)
@@ -40,6 +40,62 @@ reduces invalid predictions · H5 synthetic → real transfer · H6 VLM beats th
 baseline, with the gap widening as complexity grows.
 
 ## Measured results
+
+### Final evaluation — all 500 test samples (headline)
+
+synthetic-v1 **test**, all 500 samples (held-out layouts layered_tb / radial / circular, held-out
+themes dark / blueprint / paper), Windows data build (Graphviz 16.1, split hash `88ae7d75…`),
+one RTX 4080 SUPER, greedy decoding, 896 px, 2048 tokens, runaway guard on (runs
+`qwen3vl-2b-qlora-a6000-v1-final-greedy`, `qwen3-vl-2b-instruct-zeroshot-final-greedy`; 11/11
+hand-back files sha256-verified, every sample re-scored here and the comparison recomputed,
+identical; `evaluation/reports/comparisons/final-greedy/`). Macro means; failed predictions
+count as 0.
+
+| Model (500 samples)      | Node F1 | Edge F1 | Strict | Graph sim. | Labels | Struct. QA | Diagram type | Valid @1 | Valid (post-repair) | Time / sample |
+| ------------------------ | ------- | ------- | ------ | ---------- | ------ | ---------- | ------------ | -------- | ------------------- | ------------- |
+| Qwen3-VL-2B zero-shot    | 0.703   | 0.499   | 0.415  | 0.581      | 0.979  | 0.437      | 0.334        | 0.512    | 0.720               | 44 s          |
+| Qwen3-VL-2B QLoRA        | 0.854   | 0.638   | 0.611  | 0.740      | 0.984  | 0.582      | 0.882        | 0.728    | 0.910               | 36 s          |
+
+**QLoRA vs zero-shot** (paired bootstrap, Holm; all p_Holm < 0.001): node F1 +0.151 [+0.122,
++0.183], edge F1 +0.139 [+0.114, +0.164], strict +0.196, graph similarity +0.159 [+0.137,
++0.181], labels +0.017, QA +0.145 [+0.123, +0.168], diagram type +0.548, valid @1 +0.216,
+post-repair validity +0.190. The 112-sample estimates (same settings, section 11) were within
+0.004 of these on node F1, edge F1 and graph similarity.
+
+By level (graph similarity / edge F1; QLoRA | zero-shot; 125 samples each):
+
+| Level | QLoRA          | Zero-shot      | L4 runaways (QLoRA / zero-shot) |
+| ----- | -------------- | -------------- | ------------------------------- |
+| L1    | 0.961 / 0.930  | 0.875 / 0.780  |                                 |
+| L2    | 0.897 / 0.817  | 0.809 / 0.721  |                                 |
+| L3    | 0.754 / 0.598  | 0.552 / 0.446  |                                 |
+| L4    | 0.349 / 0.208  | 0.089 / 0.051  | 45 / 108 (41 / 104 failed)      |
+
+By held-out layout (graph similarity, QLoRA | zero-shot): circular 0.878 | 0.823 (72 samples),
+radial 0.742 | 0.580 (103), layered_tb 0.709 | 0.528 (325). By diagram type, QLoRA's weakest
+is UML (graph similarity 0.574, edge F1 0.406; relations drawn in UML notation), the rest are
+0.743–0.795. Themes differ little (0.725–0.758).
+
+**Repair ablation (§24D, H4)** — every run stores the first attempt's scores as-is (no retry,
+repair or normalization; an invalid first attempt scores as an empty graph) next to the final
+scores, so this needs no extra model calls (`evaluation/scripts/repair_ablation.py`;
+`comparisons/final-greedy/repair-ablation.md`):
+
+| Model     | Valid: raw → final | Graph sim.: raw → final | Edge F1: raw → final | Final graph from: first attempt / retry / repair / failed |
+| --------- | ------------------ | ----------------------- | -------------------- | --------------------------------------------------------- |
+| QLoRA     | 0.728 → 0.910      | 0.610 → 0.740 (+0.130)  | 0.534 → 0.638        | 364 / 26 / 65 / 45                                        |
+| Zero-shot | 0.512 → 0.720      | 0.414 → 0.581 (+0.167)  | 0.357 → 0.499        | 256 / 34 / 70 / 140                                       |
+
+All gains significant (p_Holm < 0.001, CIs exclude 0). Repaired graphs are worth keeping: mean
+graph similarity 0.713 (QLoRA) and 0.753 (zero-shot), against 0 for a failure.
+
+**OCR baseline on the same 500:** pending — it did not run on this PC (Tesseract missing). The
+committed 500-sample baseline run (`baseline-v1`) uses the Linux build's images, and the build
+matters for it: on the same 112 samples its node F1 is 0.931 on the Linux build and 0.865 on the
+Windows build (graph similarity 0.777 vs 0.736). So it is not used as a paired comparison here.
+
+### Earlier results
+
 
 All on synthetic-v1 **test** (500 samples; held-out layouts layered_tb / radial / circular
 and themes dark / blueprint / paper; split hash `2c67f24b3b83…`). Macro means over
@@ -233,13 +289,16 @@ files sha256-verified, every sample re-scored here and the comparison recomputed
 alike. It is part of the logged decoding protocol (`runaway_guard: "1"` in each run's config),
 so runs with and without it are never mixed in a comparison. The app default stays off.
 
-**Hypotheses so far** (synthetic test subset only; one run per condition):
-H1 (fine-tuning helps) — supported. H2 (edges degrade faster than nodes with complexity) —
-consistent for all three systems. H6 (VLM beats the classical baseline) — **not supported yet**
-on structure: fine-tuned ≈ baseline on node/edge/graph similarity, better on labels, QA and
-diagram type; zero-shot is below the baseline. The token budget is ruled out as the L4 confound
-(above); L4 failures are runaway enumeration. H3 (small text / dense layouts hurt labels and
-edges most) — partly supported by the resolution ablation: lower resolution hurts edges on
-dense diagrams, but not label accuracy on matched nodes (640 px vs 768–1024 px). Open before
-drawing conclusions: seed variance (§20.10), the full 500-sample test, and the real-diagram set
-(§15). Compared runs come from one GPU.
+**Hypotheses** (synthetic test split; final greedy evaluation on all 500 unless noted):
+H1 (fine-tuning helps validity and accuracy) — **supported** on all 500: every metric,
+p_Holm < 0.001. H2 (edges degrade faster than nodes with complexity) — **supported** for both
+models: QLoRA node F1 1.000 → 0.503 and edge F1 0.930 → 0.208 from L1 to L4. H3 (small text /
+dense layouts hurt labels and edges most) — partly supported (112-sample resolution ablation):
+lower resolution hurts edges on dense diagrams, not label accuracy. H4 (validation/repair reduces
+invalid predictions) — **supported**: valid 0.728 → 0.910 (QLoRA), 0.512 → 0.720 (zero-shot).
+H5 (synthetic → real transfer) — **not tested** (no real-diagram set; future work). H6 (VLM beats
+the classical baseline, gap widening with complexity) — on the 112-sample subset the fine-tuned
+model ties the baseline on structure and beats it on labels, QA and diagram type, and the
+zero-shot model is below it; the 500-sample comparison on the same images is pending. Run-to-run
+variance over sampling seeds (§20.10) is pending (final notebook, section B); compared runs come
+from one GPU.

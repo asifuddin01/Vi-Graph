@@ -10,9 +10,9 @@ work block (§33.1).
 Phase: 7 — Research experiments (in progress). Phases 1–6 complete: usable product, synthetic
   dataset, evaluation framework + classical baseline, first QLoRA run trained and evaluated
   (on the user's RTX A6000; results in research/experiment_matrix.md).
-Last completed: Phase 7 step 5 — runaway guard run (6/6 hand-back files sha256-verified, every
-  sample re-scored here, comparison recomputed → identical): same scores, 26% less time.
-  Final-run notebook delivered. 755 tests.
+Last completed: Phase 7 step 2, section A — final greedy evaluation on all 500 (11/11 hand-back
+  files sha256-verified; both runs re-scored here and the comparison recomputed → identical),
+  and the repair ablation (§24D) offline. 758 tests. OCR baseline on the same build pending.
 Phase 7 plan (GPU steps run on the user's PC via the Windows notebook; since section 10 the
   repo copy training/notebooks/vigraph_qlora_windows.ipynb holds every section — the user sent
   their working copy (sources identical to the repo) and got it back with outputs kept + the new
@@ -34,13 +34,27 @@ Phase 7 plan (GPU steps run on the user's PC via the Windows notebook; since sec
      After it, finish offline: final results + write-up (README, research/), repair ablation
      (§24D) from the logged first-attempt scores; perturbation study (§22) and real diagrams
      (§15) are NOT done → limitations / future work, not claimed.
+     SECTION A DONE (committed: evaluation/reports/{qwen3vl-2b-qlora-a6000-v1,
+     qwen3-vl-2b-instruct-zeroshot}-final-greedy, comparisons/final-greedy/ incl.
+     repair-ablation.md). QLoRA vs zero-shot, all 500, every metric p_Holm < 0.001: node F1
+     0.703 → 0.854, edge F1 0.499 → 0.638, graph sim 0.581 → 0.740, QA 0.437 → 0.582, type
+     0.334 → 0.882, valid@1 0.512 → 0.728, valid 0.720 → 0.910. L4 graph sim 0.089 → 0.349;
+     L4 runaways 108 → 45 of 125. Weakest: L4, UML (graph sim 0.574), layered_tb (0.709).
+     The 112-subset estimates were within 0.004 (node/edge/graph sim).
+     A.4 (OCR baseline) SKIPPED on the E: PC: Tesseract not installed. The committed
+     baseline-v1 (500) is on the Linux build's images and the build matters (same 112: node F1
+     0.931 Linux vs 0.865 Windows) → not a paired comparison. User asked to install Tesseract,
+     re-run section 1, then A.4–A.6 (can be after section B).
+     Repair ablation (§24D, H4; evaluation/scripts/repair_ablation.py): valid 0.728 → 0.910
+     (QLoRA), 0.512 → 0.720 (zero-shot); graph sim +0.130 / +0.167; all p_Holm < 0.001.
   3. [done] Resolution ablation (§24B): Windows notebook section 10 (QLoRA adapter trained at
      896, evaluated at 640 / 768 / 896 / 1024 px, 2048 tokens, greedy, 112 samples, all on the
      4080 SUPER; runs <RUN_NAME>-px<size>-s0; comparisons in
      evaluation/reports/comparisons/qwen3vl-2b-qlora-a6000-v1-resolution/ incl.
      px896-a6000-vs-4080-hardware). The first, cross-GPU vs-896 comparisons were replaced.
-  4. Perturbation study (§22), repair ablation (§24D, data already logged as first-attempt
-     scores), real-diagram set (§15)
+  4. [done offline] Repair ablation (§24D). NOT DONE (future work, stated as limitations):
+     perturbation study (§22), real-diagram set (§15), prompt variants (§24C), real training
+     data (§24E)
   5. [done] Runaway guard ablation (A-G): notebook section 11; run
      <RUN_NAME>-px896-guard-s0 (4080, 896 px, 2048 tokens, greedy, 112 samples) vs px896;
      comparison in evaluation/reports/comparisons/qwen3vl-2b-qlora-a6000-v1-guard/.
@@ -160,9 +174,8 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: the user runs the final notebook (section A ~12–14 h, then sends its zip + A.5 output;
-  then section B). Meanwhile/after: the offline finish (repair ablation §24D from logged
-  first-attempt scores, final write-up). Process the A and B hand-backs as they arrive.
+Next up: section B hand-back (seeds) and the OCR baseline on the E: build (A.4 after installing
+  Tesseract) → process both, then the final write-up (README results, limitations, research/).
 Results decisions (hand-back of qwen3vl-2b-qlora-a6000-v1):
   - Committed: evaluation/reports/{qwen3-vl-2b-instruct-zeroshot-s0, qwen3vl-2b-qlora-a6000-v1-s0,
     baseline-v1-windows}/ (run.json, summary.json, report.md, predictions.jsonl.gz),
