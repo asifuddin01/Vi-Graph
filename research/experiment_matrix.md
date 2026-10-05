@@ -89,6 +89,29 @@ scores, so this needs no extra model calls (`evaluation/scripts/repair_ablation.
 All gains significant (p_Holm < 0.001, CIs exclude 0). Repaired graphs are worth keeping: mean
 graph similarity 0.713 (QLoRA) and 0.753 (zero-shot), against 0 for a failure.
 
+**Run-to-run variance (§20.10): 3 sampling seeds per model** — temperature 0.7, top-p 0.8
+(top-k off), seeds 0 / 1 / 2, otherwise as above, all 500 samples, same GPU (runs
+`*-final-t0.7-s{0,1,2}`; 34/34 hand-back files sha256-verified, all six runs re-scored here and
+the seed statistics and comparisons recomputed, identical except one reference-only Wilcoxon
+p-value per sampled-vs-greedy file, which differs between SciPy 1.18.1 and 1.17.1; every
+bootstrap result matches; `evaluation/reports/comparisons/final-seeds/`). Mean ± std of the
+per-run means:
+
+| Model (3 seeds × 500) | Node F1       | Edge F1       | Strict        | Graph sim.    | Labels        | Struct. QA    | Diagram type  | Valid @1      | Valid (post-repair) |
+| --------------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------------- |
+| Zero-shot             | 0.708 ± 0.012 | 0.495 ± 0.009 | 0.411 ± 0.005 | 0.582 ± 0.009 | 0.978 ± 0.002 | 0.441 ± 0.010 | 0.342 ± 0.010 | 0.507 ± 0.009 | 0.727 ± 0.012       |
+| QLoRA                 | 0.869 ± 0.007 | 0.639 ± 0.004 | 0.614 ± 0.006 | 0.748 ± 0.006 | 0.980 ± 0.001 | 0.581 ± 0.005 | 0.909 ± 0.004 | 0.718 ± 0.011 | 0.937 ± 0.005       |
+
+- **The seed spread is small** (std ≤ 0.012 on every metric; ≤ 0.025 per level, L4 node F1
+  being the widest), far below the QLoRA − zero-shot gaps, which stay significant on every
+  metric when each sample is averaged over its 3 seeds (p_Holm < 0.001; graph similarity
+  +0.167 [+0.148, +0.185], edge F1 +0.144, QA +0.140, validity +0.210).
+- **Sampling vs greedy:** for zero-shot no difference (all p_Holm = 1.00). For QLoRA, structure
+  and QA are unchanged (graph similarity +0.008, n.s.), while post-repair validity (+0.027) and
+  diagram type (+0.027) are higher (p_Holm 0.04): fewer L4 samples fail (failed at L4: 41 greedy
+  vs 28 / 26 / 31 sampled), i.e. sampling escapes some runaways. Greedy stays the reported
+  protocol; the seeds give its variance.
+
 **OCR baseline on the same 500:** pending — it did not run on this PC (Tesseract missing). The
 committed 500-sample baseline run (`baseline-v1`) uses the Linux build's images, and the build
 matters for it: on the same 112 samples its node F1 is 0.931 on the Linux build and 0.865 on the
@@ -297,8 +320,6 @@ dense layouts hurt labels and edges most) — partly supported (112-sample resol
 lower resolution hurts edges on dense diagrams, not label accuracy. H4 (validation/repair reduces
 invalid predictions) — **supported**: valid 0.728 → 0.910 (QLoRA), 0.512 → 0.720 (zero-shot).
 H5 (synthetic → real transfer) — **not tested** (no real-diagram set; future work). H6 (VLM beats
-the classical baseline, gap widening with complexity) — on the 112-sample subset the fine-tuned
-model ties the baseline on structure and beats it on labels, QA and diagram type, and the
-zero-shot model is below it; the 500-sample comparison on the same images is pending. Run-to-run
-variance over sampling seeds (§20.10) is pending (final notebook, section B); compared runs come
-from one GPU.
+the classical baseline, gap widening with complexity) — see the OCR baseline paragraph above.
+Run-to-run variance (§20.10): 3 sampling seeds per model, std ≤ 0.012. Compared runs come from
+one GPU.

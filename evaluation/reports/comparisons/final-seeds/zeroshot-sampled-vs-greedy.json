@@ -1,0 +1,148 @@
+{
+  "a": [
+    "E:\\Asif\\vigraph\\output\\eval\\qwen3-vl-2b-instruct-zeroshot-final-greedy"
+  ],
+  "b": [
+    "E:\\Asif\\vigraph\\output\\eval\\qwen3-vl-2b-instruct-zeroshot-final-t0.7-s0",
+    "E:\\Asif\\vigraph\\output\\eval\\qwen3-vl-2b-instruct-zeroshot-final-t0.7-s1",
+    "E:\\Asif\\vigraph\\output\\eval\\qwen3-vl-2b-instruct-zeroshot-final-t0.7-s2"
+  ],
+  "samples": 500,
+  "metrics": [
+    {
+      "metric": "node_f1",
+      "test": {
+        "n": 500,
+        "mean_a": 0.7031456184057803,
+        "mean_b": 0.7082423313410517,
+        "mean_diff": 0.005096712935271442,
+        "ci_low": -0.012429242564911706,
+        "ci_high": 0.02326364403187388,
+        "p_bootstrap": 0.577042295770423,
+        "p_ttest": 0.5746404025603362,
+        "p_wilcoxon": 0.8777364526183618
+      },
+      "p_holm": 1.0
+    },
+    {
+      "metric": "edge_f1",
+      "test": {
+        "n": 500,
+        "mean_a": 0.49943775953410435,
+        "mean_b": 0.4949702306801994,
+        "mean_diff": -0.004467528853904976,
+        "ci_low": -0.015605634814017841,
+        "ci_high": 0.006758654808564392,
+        "p_bootstrap": 0.42625737426257376,
+        "p_ttest": 0.43216235490439225,
+        "p_wilcoxon": 0.14993663155536946
+      },
+      "p_holm": 1.0
+    },
+    {
+      "metric": "edge_strict_f1",
+      "test": {
+        "n": 500,
+        "mean_a": 0.41542147542066177,
+        "mean_b": 0.4111018767531861,
+        "mean_diff": -0.004319598667475692,
+        "ci_low": -0.014031770360601846,
+        "ci_high": 0.005237045030703882,
+        "p_bootstrap": 0.38886111388861117,
+        "p_ttest": 0.3832714867821845,
+        "p_wilcoxon": 0.3005699527442397
+      },
+      "p_holm": 1.0
+    },
+    {
+      "metric": "graph_similarity",
+      "test": {
+        "n": 500,
+        "mean_a": 0.5812815168394174,
+        "mean_b": 0.5817475567436771,
+        "mean_diff": 0.00046603990425967724,
+        "ci_low": -0.011814316215133302,
+        "ci_high": 0.013214356789549587,
+        "p_bootstrap": 0.9445055494450555,
+        "p_ttest": 0.9418818931433971,
+        "p_wilcoxon": 0.34369091236733185
+      },
+      "p_holm": 1.0
+    },
+    {
+      "metric": "label_accuracy",
+      "test": {
+        "n": 326,
+        "mean_a": 0.982422872734283,
+        "mean_b": 0.9828147358071465,
+        "mean_diff": 0.00039186307286352207,
+        "ci_low": -0.0014042793617558818,
+        "ci_high": 0.0025616595556715986,
+        "p_bootstrap": 0.706929307069293,
+        "p_ttest": 0.7033715810913324,
+        "p_wilcoxon": 0.5701551868732933
+      },
+      "p_holm": 1.0
+    },
+    {
+      "metric": "qa_accuracy",
+      "test": {
+        "n": 500,
+        "mean_a": 0.4369555555555556,
+        "mean_b": 0.44095,
+        "mean_diff": 0.003994444444444442,
+        "ci_low": -0.006205972222222223,
+        "ci_high": 0.014489351851851844,
+        "p_bootstrap": 0.44225577442255776,
+        "p_ttest": 0.4437943016503857,
+        "p_wilcoxon": 0.7820542443823358
+      },
+      "p_holm": 1.0
+    },
+    {
+      "metric": "diagram_type_accuracy",
+      "test": {
+        "n": 500,
+        "mean_a": 0.334,
+        "mean_b": 0.342,
+        "mean_diff": 0.007999999999999997,
+        "ci_low": -0.009333333333333338,
+        "ci_high": 0.02533333333333333,
+        "p_bootstrap": 0.39616038396160386,
+        "p_ttest": 0.37162032081013985,
+        "p_wilcoxon": 0.6982065090662047
+      },
+      "p_holm": 1.0
+    },
+    {
+      "metric": "valid_first_attempt",
+      "test": {
+        "n": 500,
+        "mean_a": 0.512,
+        "mean_b": 0.5066666666666666,
+        "mean_diff": -0.005333333333333339,
+        "ci_low": -0.026000000000000006,
+        "ci_high": 0.015333333333333327,
+        "p_bootstrap": 0.6418358164183582,
+        "p_ttest": 0.6133693996176695,
+        "p_wilcoxon": 0.03935014625105642
+      },
+      "p_holm": 1.0
+    },
+    {
+      "metric": "valid_post_repair",
+      "test": {
+        "n": 500,
+        "mean_a": 0.72,
+        "mean_b": 0.7273333333333333,
+        "mean_diff": 0.007333333333333328,
+        "ci_low": -0.012000000000000007,
+        "ci_high": 0.027333333333333328,
+        "p_bootstrap": 0.48975102489751027,
+        "p_ttest": 0.4639063193334745,
+        "p_wilcoxon": 0.4175306798148065
+      },
+      "p_holm": 1.0
+    }
+  ]
+}

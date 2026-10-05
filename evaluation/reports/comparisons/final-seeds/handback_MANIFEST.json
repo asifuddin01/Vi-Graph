@@ -1,0 +1,191 @@
+{
+  "files": [
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-final-t0.7-s0/run.json",
+      "bytes": 4017,
+      "sha256": "219354381f5b70dd8a778065097df7c3eec948d5aad8dfca21ec3ecfbc2d1f26"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-final-t0.7-s0/summary.json",
+      "bytes": 13080,
+      "sha256": "a5a5d6419b181555a883bbde92edc8c1296ff0847433c190a4b67e0445d7bff3"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-final-t0.7-s0/report.md",
+      "bytes": 5604,
+      "sha256": "3583e22d6624bc3e8abbdfaffca66466e623db9a90c19447487106619f4c0776"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-final-t0.7-s0/predictions.jsonl.gz",
+      "bytes": 503915,
+      "sha256": "b3b6d023544796e9bc29cff96486915a0ea62192e423ce23791f0ede1e5d6ac8"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-final-t0.7-s1/run.json",
+      "bytes": 4017,
+      "sha256": "295407ca2ca1cd81d610e5509dc94468c78bc28b972b7451ced22c2cb9166a49"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-final-t0.7-s1/summary.json",
+      "bytes": 13036,
+      "sha256": "90d1acf0b0535b1a41932be3ba7c472d022ca91f46dc7a5a67b7a700b55ec398"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-final-t0.7-s1/report.md",
+      "bytes": 5605,
+      "sha256": "7d79046a6ee7040695f7f2e643d28aa8231ddd7de5b64cdd589b5a11ae182312"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-final-t0.7-s1/predictions.jsonl.gz",
+      "bytes": 500725,
+      "sha256": "def158d02b0e03ad531c27415d751a8a41d929a13f38f0befd10a4601fd1c718"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-final-t0.7-s2/run.json",
+      "bytes": 4017,
+      "sha256": "4ae3846ea50cd332bea614b785d934ac650911797a4722944c33a1738e5a3681"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-final-t0.7-s2/summary.json",
+      "bytes": 13066,
+      "sha256": "03f8b8ebf14dd5ffea9309123e67a1bad0df3186ed1c5b5bc5961c0ce426ccfe"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-final-t0.7-s2/report.md",
+      "bytes": 5604,
+      "sha256": "d2fb0a5affffffa824d3266eeaa985fd80087feab5ed912b8440209748aa6543"
+    },
+    {
+      "path": "evaluation/qwen3vl-2b-qlora-a6000-v1-final-t0.7-s2/predictions.jsonl.gz",
+      "bytes": 502995,
+      "sha256": "b0b9f81e3a9980372f8ae050c099fb850344080934f79a7619ea1f373c2e8ae9"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-final-t0.7-s0/run.json",
+      "bytes": 3508,
+      "sha256": "4c5c679542d1b5a1e065fcdc58c176500dd76fd2ede3ed08b27ac7ffc2dac3bd"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-final-t0.7-s0/summary.json",
+      "bytes": 13072,
+      "sha256": "94b0c226106950779623345193daf4f59294dea4189a22c64aabeb97393325bd"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-final-t0.7-s0/report.md",
+      "bytes": 5257,
+      "sha256": "1e9e51f5d8fb158ca82d7a74b18fe21ef908e2e02696254e7f2eb5f38baf545d"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-final-t0.7-s0/predictions.jsonl.gz",
+      "bytes": 539780,
+      "sha256": "9bf027a52d73c5d141e8ac8ad1c7c851373e690a0a65bbb3d8f8a57dd263b654"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-final-t0.7-s1/run.json",
+      "bytes": 3508,
+      "sha256": "2cf6c324ed04041a25bcf8a303a625b924587da2f17486ad46c79bdf9960e95c"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-final-t0.7-s1/summary.json",
+      "bytes": 13061,
+      "sha256": "0074cbf2d76fecc524d5828d39b7b5fed4efa0277241c6487b97236df2016365"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-final-t0.7-s1/report.md",
+      "bytes": 5258,
+      "sha256": "6c56c13c0651594d5583f9c662b74d81a239a53a9052b5f291b77b9f43292623"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-final-t0.7-s1/predictions.jsonl.gz",
+      "bytes": 535589,
+      "sha256": "44114e17ae09f3ae0d40185bd41a09a5976b386e7afa62730d939b2705bcda16"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-final-t0.7-s2/run.json",
+      "bytes": 3508,
+      "sha256": "02fddb36021c3b5946887eade908d574d4233f661b48e66845a80e1282735f24"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-final-t0.7-s2/summary.json",
+      "bytes": 13042,
+      "sha256": "07f9b6729db504c6a73f5192e9ecd735b1164ebbcd612ecb622ea7f00f82a8c4"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-final-t0.7-s2/report.md",
+      "bytes": 5257,
+      "sha256": "1e05e360ce9d8807eabc4ea3c4077bd799749275bbbf793b149350547a29fccc"
+    },
+    {
+      "path": "evaluation/qwen3-vl-2b-instruct-zeroshot-final-t0.7-s2/predictions.jsonl.gz",
+      "bytes": 551464,
+      "sha256": "d4c9cd7d29b92fdde74a525400dc9d4a1eea48d0fcbd20cbc7a1a472968264b1"
+    },
+    {
+      "path": "extra/qlora-sampled-vs-greedy.json",
+      "bytes": 4316,
+      "sha256": "61f9586fdd2d87afe8760359176a31ad5498af620b1e549e4f073c7fcb663ff2"
+    },
+    {
+      "path": "extra/qlora-sampled-vs-greedy.md",
+      "bytes": 1596,
+      "sha256": "fac55558b1bb7b06ea9d43efc1085913c9a08506fbd691c0b5bf15635e77ba9b"
+    },
+    {
+      "path": "extra/qlora-seeds.json",
+      "bytes": 4909,
+      "sha256": "f1e830125faf932ffe9e7f071c7ec25453a57585e42a544af88ad3ac65d6ad9a"
+    },
+    {
+      "path": "extra/qlora-seeds.md",
+      "bytes": 866,
+      "sha256": "681faea0d3cf9180cbc7907d6017cca2a2f5751cb75284fd8b92bf5e7246061d"
+    },
+    {
+      "path": "extra/qlora-vs-zeroshot-seeds.json",
+      "bytes": 4616,
+      "sha256": "4507089aecb39a77c23090c08325db8bcf4c76f78d61c8d5ef6a791aa39082c4"
+    },
+    {
+      "path": "extra/qlora-vs-zeroshot-seeds.md",
+      "bytes": 1751,
+      "sha256": "88ee0cfb87c331c1f87c9463932e90cee24e022d6bea4564e1f9b62fb36f9060"
+    },
+    {
+      "path": "extra/zeroshot-sampled-vs-greedy.json",
+      "bytes": 4259,
+      "sha256": "3cc0ab93ae516493f0805803c72c1d58e02ec635efa1a64dabdda1852afdddfc"
+    },
+    {
+      "path": "extra/zeroshot-sampled-vs-greedy.md",
+      "bytes": 1612,
+      "sha256": "dcabb5c3a55a886158b4cd0d6e51b3382c30bac3479fa0fe8463e324f1b2834e"
+    },
+    {
+      "path": "extra/zeroshot-seeds.json",
+      "bytes": 5083,
+      "sha256": "8b65d76900cd4bf6a3271dc52d57f6c2815a308700a11191dfdc18be97512054"
+    },
+    {
+      "path": "extra/zeroshot-seeds.md",
+      "bytes": 866,
+      "sha256": "ed7250f2075dfdd612688dd3ed40c68fcc2ed0ae2c512686b3d636d811757e46"
+    }
+  ],
+  "missing": [],
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "packages": {
+      "torch": "2.11.0+cu128",
+      "transformers": "5.17.0",
+      "peft": "0.21.1",
+      "bitsandbytes": "0.50.2",
+      "accelerate": "1.15.0",
+      "pillow": "12.3.0"
+    },
+    "git_commit": null,
+    "torch_cuda": "12.8",
+    "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+    "gpu_memory_gb": 16.0
+  }
+}
