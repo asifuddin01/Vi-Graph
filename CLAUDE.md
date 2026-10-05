@@ -10,8 +10,8 @@ work block (§33.1).
 Phase: PROJECT COMPLETE (v1). Phases 1–7 done: usable product, synthetic benchmark, evaluation
   framework + OCR baseline, QLoRA fine-tuning, final evaluation on all 500 test samples with
   seeds, ablations, final report (research/paper/report.md), README results.
-Last completed: trained adapter committed (models/qwen3vl-2b-qlora-a6000-v1/, see Next up);
-  before that the final OCR baseline on the user's images + final write-up. 765 tests.
+Last completed: demo video + screenshots for publishing (docs/demo/, README "Demo"; see Next
+  up); before that the trained adapter (models/qwen3vl-2b-qlora-a6000-v1/). 765 tests.
 Final results (all 500 test, same images, greedy, 896 px, 2048 tokens, guard, RTX 4080 SUPER):
   graph sim / edge F1 / QA / valid — baseline 0.738 / 0.610 / 0.450 / 0.998; zero-shot 0.581 /
   0.499 / 0.437 / 0.720; QLoRA 0.740 / 0.638 / 0.582 / 0.910. QLoRA > zero-shot on every metric
@@ -199,6 +199,16 @@ Next up: nothing required; everything is committed or reproducible. The trained 
   shapes). Plain git file, not a release: creating GitHub releases is refused for this session
   type (HTTP 403), git-lfs is not installed here. .gitignore has a single negation for it;
   .dockerignore excludes models/.
+  Demo (user asked for screenshots + a video to publish): docs/demo/ = vigraph-demo.mp4 (53 s,
+  1920x1200) + .gif (README) + 5 PNGs, made by scripts/demo/ (README there). The real app with a
+  REPLAY backend (replay_server.py): the fine-tuned model's recorded raw output from the final
+  greedy run for the same image (matched by content), with its recorded generation time;
+  Stages C/D, graph, editor, QA, Mermaid run live; /health says "VLM: replay"; the video
+  shortens the wait and its caption gives the real time. Disclosed in README + scripts/demo.
+  Diagrams test-000381 / 181 / 329: graph sim 1.0, edge text correct (test-000401 was dropped:
+  it swapped Yes/No). Chromium screencast frames + ffmpeg concat (Playwright's recorder blurs
+  text); screenshots at 2x with overlays hidden. The user's PC uses PowerShell: env vars are
+  `$env:NAME = "value"`, not `NAME=value cmd`.
 Results decisions (hand-back of qwen3vl-2b-qlora-a6000-v1):
   - Committed: evaluation/reports/{qwen3-vl-2b-instruct-zeroshot-s0, qwen3vl-2b-qlora-a6000-v1-s0,
     baseline-v1-windows}/ (run.json, summary.json, report.md, predictions.jsonl.gz),

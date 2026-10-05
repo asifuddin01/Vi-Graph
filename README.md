@@ -44,6 +44,27 @@ improves over the zero-shot model on every metric (edge F1 0.499 → 0.638, grap
 tests) — see the
 [results and caveats](research/experiment_matrix.md#final-evaluation--all-500-test-samples-headline).
 
+## Demo
+
+![Vi-Graph demo: upload a diagram, get a validated graph, edit it and ask questions](docs/demo/vigraph-demo.gif)
+
+The video is 53 s; the [full-resolution MP4](docs/demo/vigraph-demo.mp4) is sharper. Steps: upload →
+the fine-tuned model reconstructs the graph → inspect and edit it → ask questions (the answer's
+nodes light up) → Mermaid → the logged raw model output.
+
+| Diagram → editable graph | Graph-grounded answers |
+| --- | --- |
+| ![Scientific workflow reconstructed as an editable graph](docs/demo/vigraph-analyze.png) | ![Question answered from the graph, with its nodes highlighted](docs/demo/vigraph-qa.png) |
+| ![ML pipeline with a Yes/No decision, circular layout](docs/demo/vigraph-ml-pipeline.png) | ![System architecture with a group and dependency edges, dark theme](docs/demo/vigraph-system-architecture.png) |
+
+These are three held-out test diagrams (layouts and themes not seen in training). The model scored
+graph similarity 1.0 on each, chosen to show the app working, not as typical results. The typical
+results are in the table below. The model's outputs are **replayed from the recorded final
+evaluation run** of the fine-tuned adapter (an RTX 4080 SUPER, 15–19 s per diagram). Everything
+after the model runs live: validation, normalization, the graph, the editor, QA and Mermaid. The
+video shortens the model's wait; its caption gives the real time. How the demo is made and how to
+re-record it: [`scripts/demo/`](scripts/demo/README.md).
+
 ## Results
 
 All 500 held-out test diagrams (synthetic-v1; layouts and themes never seen in training), the
@@ -83,7 +104,7 @@ size, no perturbation study, an uncalibrated matching threshold. See the
 | `evaluation/` | Metrics (incl. node/edge matching), evaluation scripts, reports       |
 | `research/`   | Experiment matrix, error taxonomy, paper drafts                       |
 | `examples/`   | Example synthetic diagrams with their ground-truth graphs             |
-| `docs/`       | Project specification                                                 |
+| `docs/`       | Project specification, demo video and screenshots (`docs/demo/`)      |
 
 ## Getting started
 
