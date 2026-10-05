@@ -1,11 +1,12 @@
 import json
+import logging
 from pathlib import Path
 
 import pytest
 
 from app.vlm.factory import get_vlm_backend
 from tests.api_env import Env, make_env, png, upload
-from tests.vlm_doubles import RecordingVLM
+from tests.vlm_doubles import ExplodingVLM, RecordingVLM
 
 
 @pytest.fixture
@@ -74,6 +75,34 @@ def test_visual_question_goes_to_a_real_model_with_the_stored_image(tmp_path: Pa
     assert body["model"]["model_id"] == "recording-vlm"
     [message] = vlm.calls[0]
     assert message.images[0].size == (512, 256)  # the stored upload, preprocessed again
+
+
+def test_model_failure_during_qa_is_503_without_leaking_details(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    env = make_env(tmp_path)
+    diagram_id = analyzed(env)  # analyzed with the mock ...
+    env.app.dependency_overrides[get_vlm_backend] = ExplodingVLM  # ... then the model fails
+
+    with caplog.at_level(logging.ERROR, logger="app.api.qa"):
+        response = ask(env, diagram_id, "What color is the CNN Encoder?")
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "the model backend failed; see the server logs"}
+    assert "secret" not in response.text
+    assert "secret internal detail" in caplog.text  # the cause is kept for the operator
+    assert env.client.get(f"/api/analyses/{diagram_id}/qa").json() == []  # nothing logged
+
+
+def test_graph_questions_do_not_need_a_working_model(tmp_path: Path) -> None:
+    env = make_env(tmp_path)
+    diagram_id = analyzed(env)
+    env.app.dependency_overrides[get_vlm_backend] = ExplodingVLM
+
+    response = ask(env, diagram_id, "What is the final output?")
+
+    assert response.status_code == 200
+    assert response.json()["source"] == "graph"
 
 
 def test_questions_are_logged_and_listed_newest_first(env: Env) -> None:

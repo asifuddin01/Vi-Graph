@@ -7,13 +7,14 @@ question is logged with its routing decision.
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from app.api.analyze import find_analysis
+from app.api.analyze import MODEL_FAILURE_DETAIL, find_analysis
 from app.api.deps import ImageStoreDep, RunStoreDep, SettingsDep, VLMDep, enforce_qa_rate_limit
 from app.qa.answers import Grounding
 from app.qa.engine import AnswerSource, answer_question
@@ -21,6 +22,8 @@ from app.qa.router import Category, route_question
 from app.storage.runs import QALogEntry
 from app.utils.images import ImageError, preprocess_image
 from app.vlm.base import ModelInfo
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["qa"])
 
@@ -75,13 +78,19 @@ def ask(
                 image = None
 
     usable_vlm = vlm if vlm.info.backend != "mock" else None
-    result = answer_question(
-        question,
-        diagram,
-        vlm=usable_vlm,
-        image=image,
-        vlm_unavailable_reason="the server is running the mock VLM, which can't look at images",
-    )
+    try:
+        result = answer_question(
+            question,
+            diagram,
+            vlm=usable_vlm,
+            image=image,
+            vlm_unavailable_reason="the server is running the mock VLM, which can't look at images",
+        )
+    except RuntimeError as exc:
+        # Same contract as /api/analyze: details only in the server logs; nothing is logged
+        # to the QA history for a question that got no answer.
+        logger.exception("VLM backend failed while answering a question")
+        raise HTTPException(status_code=503, detail=MODEL_FAILURE_DETAIL) from exc
     return _to_response(runs.log_qa(record.id, result, edited.version if edited else None))
 
 

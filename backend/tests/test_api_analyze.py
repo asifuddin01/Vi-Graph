@@ -1,14 +1,13 @@
 import copy
 import json
-from collections.abc import Sequence
 from pathlib import Path
 
 import pytest
 
-from app.vlm import DecodingParams, Message, MockVLM
-from app.vlm.base import Completion, ModelInfo, VLMBackend
+from app.vlm import MockVLM
 from app.vlm.mock import DEFAULT_RESPONSE
 from tests.api_env import Env, make_env, png, upload
+from tests.vlm_doubles import ExplodingVLM
 
 
 @pytest.fixture
@@ -181,15 +180,6 @@ def test_rate_limit_returns_429_with_retry_after(tmp_path: Path) -> None:
     assert statuses == [200, 200, 429]
     response = upload(env, png("blue"))
     assert int(response.headers["retry-after"]) >= 1
-
-
-class ExplodingVLM(VLMBackend):
-    @property
-    def info(self) -> ModelInfo:
-        return ModelInfo(backend="test", model_id="exploding")
-
-    def _generate(self, messages: Sequence[Message], params: DecodingParams) -> Completion:
-        raise RuntimeError("CUDA out of memory (secret internal detail)")
 
 
 def test_model_failure_is_503_without_leaking_details(tmp_path: Path) -> None:

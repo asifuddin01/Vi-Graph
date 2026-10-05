@@ -8,7 +8,7 @@ long as that generation took on the GPU, so the UI's latency is the recorded one
 skips the wait). Everything after the model runs live: Stage C validation, Stage D
 normalization, the graph layer, Mermaid, the editor and graph-based QA. /health reports the
 backend as "replay", so screenshots say what they show. Questions that need the model itself
-(visual / "why") fail with a server error: there is no recorded answer to replay.
+(visual / "why") get a 503, as for any model failure: there is no recorded answer to replay.
 
 Images are matched by content: every file in IMAGES_DIR whose sha256 equals a recorded
 sample's image hash is preprocessed as the app does, and those pixels identify the sample

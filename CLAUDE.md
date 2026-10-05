@@ -10,8 +10,8 @@ work block (§33.1).
 Phase: PROJECT COMPLETE (v1). Phases 1–7 done: usable product, synthetic benchmark, evaluation
   framework + OCR baseline, QLoRA fine-tuning, final evaluation on all 500 test samples with
   seeds, ablations, final report (research/paper/report.md), README results.
-Last completed: demo video + screenshots for publishing (docs/demo/, README "Demo"; see Next
-  up); before that the trained adapter (models/qwen3vl-2b-qlora-a6000-v1/). 765 tests.
+Last completed: POST /api/qa returns 503 when the VLM raises (see QA engine/API decisions);
+  before that the demo video + screenshots (docs/demo/, README "Demo"; see Next up). 767 tests.
 Final results (all 500 test, same images, greedy, 896 px, 2048 tokens, guard, RTX 4080 SUPER):
   graph sim / edge F1 / QA / valid — baseline 0.738 / 0.610 / 0.450 / 0.998; zero-shot 0.581 /
   0.499 / 0.437 / 0.720; QLoRA 0.740 / 0.638 / 0.582 / 0.910. QLoRA > zero-shot on every metric
@@ -401,6 +401,9 @@ QA engine/API decisions (Phase 3 step 2):
     Stored upload is re-preprocessed only when the question can use the image.
   - Every question logged in qa_log (route incl. matched rule, mentions, source,
     grounding, VLM output). Separate rate limit VIGRAPH_QA_RATE_LIMIT_PER_MINUTE (30).
+  - A VLM RuntimeError while answering (visual / "why" / unknown routes) → 503 with the same
+    generic detail as /api/analyze (MODEL_FAILURE_DETAIL; cause only in the server log); the
+    question is not written to qa_log. Was an uncaught 500. Graph answers never call the VLM.
 QA decisions (Phase 3 step 1):
   - route_question → Route(category, intent, rule). Categories: direct, structural,
     comparative, explanation (graph-only); visual (VLM); mixed = "why" (graph part +

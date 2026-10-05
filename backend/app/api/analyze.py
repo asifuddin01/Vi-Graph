@@ -31,6 +31,9 @@ from app.vlm.base import DecodingParams, ModelInfo
 
 logger = logging.getLogger(__name__)
 
+# Shown when a VLM backend raises; the exception itself goes only to the server logs.
+MODEL_FAILURE_DETAIL = "the model backend failed; see the server logs"
+
 router = APIRouter(prefix="/api", tags=["analysis"])
 
 _DIAGRAM_ID = re.compile(r"[0-9a-f]{32}")
@@ -182,9 +185,7 @@ def analyze(
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except RuntimeError as exc:
         logger.exception("VLM backend failed")
-        raise HTTPException(
-            status_code=503, detail="the model backend failed; see the server logs"
-        ) from exc
+        raise HTTPException(status_code=503, detail=MODEL_FAILURE_DETAIL) from exc
 
     images.save(data, record.image.sha256, record.image.format)
     runs.save(record)

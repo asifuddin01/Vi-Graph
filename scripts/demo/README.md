@@ -17,8 +17,9 @@ How the replay works:
 
 - **Matching images:** images are matched to recordings by content (SHA-256 of the file),
   not by file name.
-- **Questions:** questions that need the model itself (visual or "why" questions) fail
-  with a server error, because there is no recorded answer to replay. Graph questions work.
+- **Questions:** questions that need the model itself (visual or "why" questions) get a
+  503 ("the model backend failed"), because there is no recorded answer to replay. Graph
+  questions work.
 
 To show the live model instead, run the backend with `VIGRAPH_VLM_BACKEND=hf` and the
 adapter (see [`models/`](../../models/qwen3vl-2b-qlora-a6000-v1/README.md)). After that,
