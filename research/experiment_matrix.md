@@ -12,7 +12,7 @@ hardware check under the resolution ablation).
 
 | ID       | Model                             | Status      |
 | -------- | --------------------------------- | ----------- |
-| Baseline | OCR + rule-based geometry (§19.1) — `evaluation/baseline/` v1 | evaluated (synthetic test) |
+| Baseline | OCR + rule-based geometry (§19.1) — `evaluation/baseline/` v1 | evaluated on all 500 test samples, same images as the VLMs |
 | A        | Compact VLM: Qwen3-VL-2B-Instruct                      | zero-shot + QLoRA evaluated on all 500 test samples (final, greedy); ablations on the 112-sample subset |
 | B        | Another compact VLM               | not chosen  |
 | C        | Medium VLM                        | not chosen  |
@@ -22,14 +22,14 @@ hardware check under the resolution ablation).
 
 | ID  | Experiment                                              | Spec  | Status      |
 | --- | ------------------------------------------------------- | ----- | ----------- |
-| E1  | Complexity robustness: all models × difficulty L1–L4    | §21   | measured for Model A (final evaluation, by level); baseline on the same build pending |
+| E1  | Complexity robustness: all models × difficulty L1–L4    | §21   | measured: baseline, zero-shot, QLoRA × L1–L4 (final evaluation) |
 | E2  | Image perturbation: blur, compression, low-res, small text, occlusion, crowding | §22 | not done (future work) |
 | A-A | Zero-shot vs. QLoRA fine-tuned                          | §24A  | measured on all 500 (final evaluation) |
 | A-B | Image resolution 640 / 768 / 896 / 1024 (evaluation only, QLoRA) | §24B  | measured, one GPU (below) |
 | A-C | Prompt variants: simple / structured / + constraints    | §24C  | not done (future work) |
 | A-D | Raw VLM output vs. validated/normalized/repaired output | §24D  | measured on all 500 (final evaluation) |
 | A-E | Synthetic-only vs. synthetic + real training data       | §24E  | not done (no real-diagram set; future work) |
-| A-F | VLM vs. non-VLM baseline                                | §24F  | 112-sample subset measured; all 500 on the same image build pending |
+| A-F | VLM vs. non-VLM baseline                                | §24F  | measured on all 500, same images (final evaluation) |
 | A-G | Runaway guard: stop generations stuck enumerating (QLoRA, 896 px) | Phase 7 | measured (below): same scores, 26% less time |
 
 ## Hypotheses under test (§25)
@@ -53,6 +53,7 @@ count as 0.
 
 | Model (500 samples)      | Node F1 | Edge F1 | Strict | Graph sim. | Labels | Struct. QA | Diagram type | Valid @1 | Valid (post-repair) | Time / sample |
 | ------------------------ | ------- | ------- | ------ | ---------- | ------ | ---------- | ------------ | -------- | ------------------- | ------------- |
+| OCR + CV baseline v1     | 0.872   | 0.610   | 0.562  | 0.738      | 0.885  | 0.450      | 0.702        | –        | 0.998               | 2.8 s (CPU)   |
 | Qwen3-VL-2B zero-shot    | 0.703   | 0.499   | 0.415  | 0.581      | 0.979  | 0.437      | 0.334        | 0.512    | 0.720               | 44 s          |
 | Qwen3-VL-2B QLoRA        | 0.854   | 0.638   | 0.611  | 0.740      | 0.984  | 0.582      | 0.882        | 0.728    | 0.910               | 36 s          |
 
@@ -112,10 +113,33 @@ per-run means:
   vs 28 / 26 / 31 sampled), i.e. sampling escapes some runaways. Greedy stays the reported
   protocol; the seeds give its variance.
 
-**OCR baseline on the same 500:** pending — it did not run on this PC (Tesseract missing). The
-committed 500-sample baseline run (`baseline-v1`) uses the Linux build's images, and the build
-matters for it: on the same 112 samples its node F1 is 0.931 on the Linux build and 0.865 on the
-Windows build (graph similarity 0.777 vs 0.736). So it is not used as a paired comparison here.
+**OCR baseline on the same 500 images** (run `baseline-v1-final`, 2.8 s/sample on CPU). It did
+not run on the user's PC (no Tesseract and no admin rights), so the user sent the 500 test images
+and it ran here: they reproduce the build's split hash `88ae7d75…` exactly, so it is paired with
+the VLM runs on identical images. One difference: Tesseract 5.3.4 here vs 5.4.0 in the earlier
+Windows baseline run; on the 112 samples both runs share, 58 predicted graphs are identical and
+the means differ by ≤ 0.011 (graph similarity 0.736 vs 0.730), far below the effects below.
+(`comparisons/final-greedy/{qlora,zeroshot}-vs-baseline.md`.)
+
+- **QLoRA vs baseline, all 500:** structure is a tie (graph similarity +0.002 [−0.016, +0.019],
+  node F1 −0.017, edge F1 +0.029, both n.s. after Holm); QLoRA is better on strict edges
+  (+0.049, relation types), labels (+0.075), QA (+0.132 [+0.108, +0.156]) and diagram type
+  (+0.180); the baseline produces a graph more often (validity 0.998 vs 0.910).
+- **Zero-shot vs baseline:** below on structure (graph similarity −0.157, edge F1 −0.110), equal
+  on QA (−0.013, n.s.), better on labels (+0.032).
+- **By level, the gap narrows and reverses with complexity** (graph similarity, QLoRA − baseline,
+  Holm across the 4 levels): L1 +0.057, L2 +0.093 (both p_Holm < 0.001), L3 −0.019 (n.s.), L4
+  −0.124 [−0.170, −0.079] (p_Holm < 0.001). Edge F1 follows the same pattern (+0.106, +0.151,
+  −0.035 n.s., −0.108); QA stays ahead at L1–L3 (+0.135, +0.249, +0.135) and ties at L4. The L4
+  deficit is runaway enumeration: on the 84 L4 diagrams where QLoRA produced a graph, it is level
+  with the baseline (0.519 vs 0.529); the other 41 fail and score 0.
+
+| Level | Baseline (graph sim. / edge F1) | Zero-shot     | QLoRA         |
+| ----- | ------------------------------- | ------------- | ------------- |
+| L1    | 0.904 / 0.825                   | 0.875 / 0.780 | 0.961 / 0.930 |
+| L2    | 0.804 / 0.666                   | 0.809 / 0.721 | 0.897 / 0.817 |
+| L3    | 0.773 / 0.632                   | 0.552 / 0.446 | 0.754 / 0.598 |
+| L4    | 0.472 / 0.316                   | 0.089 / 0.051 | 0.349 / 0.208 |
 
 ### Earlier results
 
@@ -320,6 +344,10 @@ dense layouts hurt labels and edges most) — partly supported (112-sample resol
 lower resolution hurts edges on dense diagrams, not label accuracy. H4 (validation/repair reduces
 invalid predictions) — **supported**: valid 0.728 → 0.910 (QLoRA), 0.512 → 0.720 (zero-shot).
 H5 (synthetic → real transfer) — **not tested** (no real-diagram set; future work). H6 (VLM beats
-the classical baseline, gap widening with complexity) — see the OCR baseline paragraph above.
+the classical baseline, gap widening with complexity) — **not supported as stated**: the
+fine-tuned model ties the OCR baseline on overall structure and beats it on labels, QA and
+diagram type, but its structural lead (L1–L2) shrinks to a tie at L3 and reverses at L4, the
+opposite of a widening gap; the L4 deficit comes from runaway failures, not from worse graphs.
+The zero-shot model is below the baseline on structure.
 Run-to-run variance (§20.10): 3 sampling seeds per model, std ≤ 0.012. Compared runs come from
 one GPU.

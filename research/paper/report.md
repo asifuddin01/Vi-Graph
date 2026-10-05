@@ -1,6 +1,6 @@
 # Vi-Graph: recovering diagram structure with a compact vision-language model
 
-*Technical report, Phase 7 (final; draft until the OCR baseline section is filled in). Every number below was measured on the runs committed in
+*Technical report, Phase 7 (final). Every number below was measured on the runs committed in
 `evaluation/reports/` and can be recomputed from their stored predictions (§18.1); nothing is
 claimed that was not measured. Scope: one synthetic benchmark. No real-diagram set was built,
 and no literature review was done, so no novelty is claimed.*
@@ -15,7 +15,10 @@ test split with held-out layouts and themes, and evaluate with a bipartite-match
 benchmark). Qwen3-VL-2B-Instruct, fine-tuned with 4-bit QLoRA in 1.4 h on one GPU (peak 7.6 GB),
 improves over the zero-shot model on every metric on all 500 test diagrams: graph similarity
 0.581 → 0.740, edge F1 0.499 → 0.638, structural QA 0.437 → 0.582 (paired bootstrap, Holm,
-p < 0.001; seed spread ≤ 0.012). Structure degrades sharply with complexity:
+p < 0.001; seed spread ≤ 0.012). Against a classical OCR + geometry baseline on the same
+images it ties on overall structure (0.740 vs 0.738) and wins on labels, QA and diagram type,
+but its structural lead on small diagrams turns into a deficit on the densest ones. Structure
+degrades sharply with complexity:
 on the densest diagrams (25–40 nodes) graph similarity is 0.349. The dominant failure there is
 *runaway enumeration*: the model keeps listing invented nodes or edges until its token budget
 ends. A schema validation, retry and repair stage lifts the share of usable graphs from 73% to
@@ -113,6 +116,7 @@ hold ≤ 4 distinct pairs. Thresholds come from train/val ground truth, on which
 
 | Model (500 diagrams)  | Node F1 | Edge F1 | Strict | Graph sim. | Labels | Struct. QA | Diagram type | Valid @1 | Valid (post-repair) |
 | --------------------- | ------- | ------- | ------ | ---------- | ------ | ---------- | ------------ | -------- | ------------------- |
+| OCR + CV baseline     | 0.872   | 0.610   | 0.562  | 0.738      | 0.885  | 0.450      | 0.702        | –        | 0.998               |
 | Qwen3-VL-2B zero-shot | 0.703   | 0.499   | 0.415  | 0.581      | 0.979  | 0.437      | 0.334        | 0.512    | 0.720               |
 | Qwen3-VL-2B QLoRA     | 0.854   | 0.638   | 0.611  | 0.740      | 0.984  | 0.582      | 0.882        | 0.728    | 0.910               |
 
@@ -120,7 +124,12 @@ QLoRA vs zero-shot: better on every metric (p_Holm < 0.001): node F1 +0.151 [+0.
 edge F1 +0.139 [+0.114, +0.164], graph similarity +0.159 [+0.137, +0.181], QA +0.145, diagram
 type +0.548, post-repair validity +0.190.
 
-*(Pending: the OCR baseline on the same 500 images is still running; this is filled in when it finishes.)*
+QLoRA vs the OCR baseline (same images): structure ties (graph similarity +0.002
+[−0.016, +0.019], node F1 −0.017 and edge F1 +0.029, n.s.); QLoRA is better on strict edges
+(+0.049), labels (+0.075), QA (+0.132 [+0.108, +0.156]) and diagram type (+0.180), all
+p_Holm < 0.001; the baseline yields a graph more often (0.998 vs 0.910). The zero-shot model is
+below the baseline on structure (graph similarity −0.157) and equal on QA. The baseline runs at
+2.8 s per diagram on a CPU; the VLMs at 36–44 s on a GPU.
 
 ### 7.2 Run-to-run variance (3 sampling seeds, T = 0.7, top-p 0.8)
 
@@ -137,16 +146,23 @@ it fails less often on L4 (26–31 failures vs 41), so its validity is 0.027 hig
 
 Graph similarity / edge F1 by level (125 diagrams each, greedy):
 
-| Level | QLoRA         | Zero-shot     |
-| ----- | ------------- | ------------- |
-| L1    | 0.961 / 0.930 | 0.875 / 0.780 |
-| L2    | 0.897 / 0.817 | 0.809 / 0.721 |
-| L3    | 0.754 / 0.598 | 0.552 / 0.446 |
-| L4    | 0.349 / 0.208 | 0.089 / 0.051 |
+| Level | OCR baseline  | Zero-shot     | QLoRA         |
+| ----- | ------------- | ------------- | ------------- |
+| L1    | 0.904 / 0.825 | 0.875 / 0.780 | 0.961 / 0.930 |
+| L2    | 0.804 / 0.666 | 0.809 / 0.721 | 0.897 / 0.817 |
+| L3    | 0.773 / 0.632 | 0.552 / 0.446 | 0.754 / 0.598 |
+| L4    | 0.472 / 0.316 | 0.089 / 0.051 | 0.349 / 0.208 |
 
 Both models are near-perfect on nodes at L1–L2 and lose edges first: QLoRA node F1 falls from
 1.000 to 0.503 from L1 to L4, edge F1 from 0.930 to 0.208 (H2). The fine-tuning gain is largest
 on L3–L4 in absolute terms (L4 graph similarity 0.089 → 0.349).
+
+Against the baseline the picture inverts with complexity (graph similarity, QLoRA − baseline,
+paired, Holm across levels): L1 +0.057 and L2 +0.093 (p_Holm < 0.001), L3 −0.019 (n.s.), L4
+−0.124 [−0.170, −0.079] (p_Holm < 0.001). So the hypothesis that the VLM's advantage *widens*
+with complexity (H6) is not supported. The L4 deficit is runaway enumeration: on the 84 L4
+diagrams where QLoRA returns a graph it is level with the baseline (0.519 vs 0.529); the other
+41 fail outright. On structural QA, QLoRA stays ahead at L1–L3 and ties at L4.
 
 ### 7.4 Held-out layouts and diagram types
 
@@ -193,6 +209,15 @@ The schema-validation and repair layer matters as much as fine-tuning for usable
 points of valid graphs), and the remaining errors are structural (edges, branches, merges,
 grouping), not reading errors.
 
+The comparison with a hand-built OCR + geometry pipeline is sobering in a useful way. On
+overall structure the fine-tuned VLM only ties it, and the baseline is far cheaper (2.8 s on a
+CPU vs ~36 s on a GPU) and almost never fails to return a graph. The VLM's case rests on what
+the pipeline cannot do: reading labels (0.98 vs 0.89), relation types (strict edge F1), answering
+structural questions (+0.13), recognizing the diagram type, and clearly better graphs on small and
+mid-sized diagrams. On dense diagrams its failures are catastrophic (no graph) rather than
+graceful, which is exactly where a guard, salvage of partial output or a hybrid with the
+geometric pipeline would pay off.
+
 ## 10. Limitations
 
 - **Synthetic only.** No real-diagram benchmark (§15), so transfer to hand-drawn, scanned or
@@ -207,6 +232,8 @@ grouping), not reading errors.
   only stopped early, not prevented.
 - **OCR baseline** is a single hand-built pipeline (Tesseract + OpenCV), tuned on validation
   only; it is sensitive to rendering (§7.1).
+- **OCR version.** The 500-sample baseline ran with Tesseract 5.3.4; the earlier Windows run used
+  5.4.0. On the 112 samples both cover, means differ by ≤ 0.011 and 58 graphs are identical.
 - **Hardware non-determinism.** Greedy outputs differ across GPU models; all compared runs here
   come from one GPU, and the spread this causes is within run-to-run noise.
 
@@ -214,7 +241,9 @@ grouping), not reading errors.
 
 On a synthetic benchmark with held-out layouts and themes, QLoRA fine-tuning of a 2B VLM
 raises structural fidelity substantially and significantly over the zero-shot model (graph
-similarity 0.581 → 0.740 on 500 diagrams, seed spread ≤ 0.012). Edges
+similarity 0.581 → 0.740 on 500 diagrams, seed spread ≤ 0.012). It ties a classical OCR +
+geometry baseline on overall structure while clearly winning on labels, QA and diagram type;
+its structural lead on small diagrams reverses on the densest ones. Edges
 degrade faster than nodes with complexity, and on the densest diagrams the model fails by
 runaway enumeration; validation and repair, and a runaway guard, make the system usable and
 cheaper without changing what it gets right.
@@ -225,7 +254,7 @@ cheaper without changing what it gets right.
 | --- | --- |
 | Final greedy runs (500) | `evaluation/reports/{qwen3vl-2b-qlora-a6000-v1,qwen3-vl-2b-instruct-zeroshot}-final-greedy/` |
 | Seed runs (3 × 2 × 500) | `evaluation/reports/*-final-t0.7-s{0,1,2}/` |
-| OCR baseline (500, same images) | `evaluation/reports/baseline-v1-final/` |
+| OCR baseline (500, same images) | `evaluation/reports/baseline-v1-final/` (run here from the user's images; split hash `88ae7d75…`) |
 | Comparisons | `evaluation/reports/comparisons/final-greedy/`, `final-seeds/` |
 | Ablation runs (112) | `evaluation/reports/qwen3vl-2b-qlora-a6000-v1-{px640,px768,px896,px1024,px896-guard,tok4096}-s0/` and comparisons |
 | Training run | `training/runs/qwen3vl-2b-qlora-a6000-v1/` (config, losses, adapter config; weights kept by the author) |
