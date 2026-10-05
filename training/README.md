@@ -76,4 +76,5 @@ the full error output of the failing cell instead (or as well).
   quantization, prompt hash, decoding params, seed, `schema_version`, split hash.
 - Never train on the test split.
 
-Adapters and checkpoints are not committed to git.
+Adapters and checkpoints are not committed to git, with one exception: the final v1 adapter is
+in [`models/qwen3vl-2b-qlora-a6000-v1/`](../models/qwen3vl-2b-qlora-a6000-v1/README.md).

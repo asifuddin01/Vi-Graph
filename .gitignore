@@ -28,7 +28,7 @@ storage/
 *.sqlite3
 *.db
 
-# --- Model weights / adapters (produced in Colab, never committed) ---
+# --- Model weights / adapters (produced by training runs, not committed) ---
 *.safetensors
 *.bin
 *.pt
@@ -37,6 +37,8 @@ storage/
 training/outputs/
 training/checkpoints/
 adapters/
+# ...except the final v1 adapter (models/qwen3vl-2b-qlora-a6000-v1/README.md)
+!models/qwen3vl-2b-qlora-a6000-v1/adapter_model.safetensors
 
 # --- Generated datasets (regenerable; commit only split manifests + READMEs) ---
 data/raw/*

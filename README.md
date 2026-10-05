@@ -79,6 +79,7 @@ size, no perturbation study, an uncalibrated matching threshold. See the
 | `frontend/`   | Next.js + TypeScript + Tailwind UI                                    |
 | `data/`       | Synthetic dataset generator, datasets, annotations, split manifests   |
 | `training/`   | QLoRA training + evaluation notebooks (Colab T4, Windows GPU), configs, run metadata |
+| `models/`     | The trained QLoRA adapter (v1, 70 MB) with its model card                 |
 | `evaluation/` | Metrics (incl. node/edge matching), evaluation scripts, reports       |
 | `research/`   | Experiment matrix, error taxonomy, paper drafts                       |
 | `examples/`   | Example synthetic diagrams with their ground-truth graphs             |
@@ -124,6 +125,18 @@ VIGRAPH_VLM_BACKEND=hf VIGRAPH_VLM_DTYPE=float16 ../.venv/bin/python -m app.vlm 
 ```
 
 `python -m app.vlm` prints the raw model output and its reproducibility metadata.
+
+The fine-tuned model behind the results above is in the repo as a LoRA adapter for
+Qwen3-VL-2B-Instruct:
+[`models/qwen3vl-2b-qlora-a6000-v1/`](models/qwen3vl-2b-qlora-a6000-v1/README.md) (model card,
+checksums). To use it, point the backend at the adapter and use the image size it was trained
+at:
+
+```bash
+cd backend
+VIGRAPH_VLM_BACKEND=hf VIGRAPH_VLM_ADAPTER_PATH=../models/qwen3vl-2b-qlora-a6000-v1 \
+VIGRAPH_VLM_DTYPE=bfloat16 VIGRAPH_IMAGE_MAX_SIDE=896 ../.venv/bin/uvicorn app.main:app
+```
 
 SVG/PNG/PDF export needs [Graphviz](https://graphviz.org/) (`apt install graphviz` /
 `brew install graphviz`); without it, JSON and Mermaid export still work.

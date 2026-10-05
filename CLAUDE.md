@@ -10,8 +10,8 @@ work block (§33.1).
 Phase: PROJECT COMPLETE (v1). Phases 1–7 done: usable product, synthetic benchmark, evaluation
   framework + OCR baseline, QLoRA fine-tuning, final evaluation on all 500 test samples with
   seeds, ablations, final report (research/paper/report.md), README results.
-Last completed: final OCR baseline on the user's images (run here; split hash 88ae7d75… exactly)
-  + final write-up. 763 tests.
+Last completed: trained adapter committed (models/qwen3vl-2b-qlora-a6000-v1/, see Next up);
+  before that the final OCR baseline on the user's images + final write-up. 765 tests.
 Final results (all 500 test, same images, greedy, 896 px, 2048 tokens, guard, RTX 4080 SUPER):
   graph sim / edge F1 / QA / valid — baseline 0.738 / 0.610 / 0.450 / 0.998; zero-shot 0.581 /
   0.499 / 0.437 / 0.720; QLoRA 0.740 / 0.638 / 0.582 / 0.910. QLoRA > zero-shot on every metric
@@ -192,9 +192,13 @@ Phase 1 plan (do in order, one at a time):
   8. [done] Reproducibility metadata logging per inference call (§18.1), SQLite
   9. [done] POST /api/analyze + frontend upload + raw output display (milestone: one image →
      valid graph JSON, including the repair path)
-Next up: nothing required. The user was told only the trained adapter
-  (E:\Asif\vigraph\output\runs\qwen3vl-2b-qlora-a6000-v1\adapter, not in git) must be backed up;
-  everything else is committed or reproducible.
+Next up: nothing required; everything is committed or reproducible. The trained adapter is in
+  git: models/qwen3vl-2b-qlora-a6000-v1/ (adapter_model.safetensors 70 MB + adapter_config.json +
+  model card). The user sent it from their Mac backup in 3 split parts; reassembled here, sha256
+  = handback_MANIFEST.json (training/tests/test_committed_adapter.py checks it and the LoRA
+  shapes). Plain git file, not a release: creating GitHub releases is refused for this session
+  type (HTTP 403), git-lfs is not installed here. .gitignore has a single negation for it;
+  .dockerignore excludes models/.
 Results decisions (hand-back of qwen3vl-2b-qlora-a6000-v1):
   - Committed: evaluation/reports/{qwen3-vl-2b-instruct-zeroshot-s0, qwen3vl-2b-qlora-a6000-v1-s0,
     baseline-v1-windows}/ (run.json, summary.json, report.md, predictions.jsonl.gz),
